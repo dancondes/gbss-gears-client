@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '../../components/form/FormInput'
 import Alert from '../../components/Alert'
@@ -9,6 +10,7 @@ function Login() {
     const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
     const [currentDateTime, setCurrentDateTime] = useState(new Date())
+    const navigate = useNavigate()
 
     const {
         register,
@@ -52,6 +54,10 @@ function Login() {
             setLoading(true)
             // TODO: Implement actual login logic
             console.log('Login attempt:', data)
+            
+            // Simulate successful login and redirect to clock in/out page
+            // In production, this would verify credentials first
+            navigate('/clock')
         } catch (err) {
             setFormError(err?.message || 'Login failed. Please try again.')
         } finally {

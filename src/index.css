@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme {
+	/* Legacy logo color variables - kept for backward compatibility */
+	--color-logo-light: #D3D3D3;
+	--color-logo-teal: #0d416e;
+	--color-logo-lime: #7BAD47;
+	--color-logo-steel: #747C84;
+
+	/* Semantic Color System */
+	/* Use these semantic names instead of color-specific names */
+	/* This allows changing the actual color without changing variable names */
+	
+	/* Primary - Main brand/action color */
+	--color-primary: #0d416e;
+    --color-dark-primary: #0a2e4e;
+	
+	/* Secondary - Supporting/alternative action color */
+	--color-secondary: #7BAD47;
+    --color-dark-secondary: #5a7a36;
+	
+	/* Tertiary - Additional accent color */
+	--color-tertiary: #747C84;
+    --color-dark-tertiary: #5a5f66;
+	
+	/* Light - Light/muted color */
+	--color-light: #D3D3D3;
+	
+	/* Danger - Error/destructive action color */
+	--color-danger: #b91c1c;
+    --color-dark-danger: #7f1414;
+	
+	/* Warning - Warning/caution color */
+	--color-warning: #ca8a04;
+    --color-dark-warning: #8c6b03;
+	
+	/* White - Pure white */
+	--color-white: #ffffff;
+}
+
+/* Color variables for regular CSS usage */
+:root {
+	/* Legacy logo colors - kept for backward compatibility */
+	--logo-light: #D3D3D3;
+	--logo-teal: #0d416e;
+	--logo-lime: #7BAD47;
+	--logo-steel: #747C84;
+	
+	/* Semantic color variables */
+	--primary: #0d416e;
+	--secondary: #7BAD47;
+	--tertiary: #747C84;
+	--light: #D3D3D3;
+	--danger: #b91c1c;
+	--warning: #ca8a04;
+	--white: #ffffff;
+}
+
+::selection {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+/* Hide native password reveal / clear icons across browsers so our custom toggle is the only control */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+	display: none;
+}
+
+/* Blink / WebKit-based browsers (Chrome, Edge Chromium, Safari) — try several selectors for broad coverage */
+input[type="password"]::-webkit-credentials-autofill-button,
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-webkit-textfield-reveal-button,
+input[type="password"]::-webkit-clear-button {
+	display: none !important;
+	visibility: hidden !important;
+	pointer-events: none !important;
+	width: 0 !important;
+	height: 0 !important;
+}
+
+/* As an additional fallback, turn off native appearance for password inputs */
+input[type="password"] {
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+/* Custom Scrollbar Styles */
+/* For WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--logo-teal);
+	border-radius: 4px;
+	transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--logo-steel);
+}
+
+/* For Firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--logo-teal) transparent;
+}
+
+.btn-primary {
+    @apply px-4 py-2 bg-primary text-white rounded-lg hover:bg-dark-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base;
+}
+
+.btn-secondary {
+    @apply px-4 py-2 bg-secondary text-white rounded-lg hover:bg-dark-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base;
+}
+
+.btn-white {
+    @apply px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base;
+}
+
+.btn-danger {
+    @apply px-4 py-2 bg-danger text-white rounded-lg hover:bg-dark-danger transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}

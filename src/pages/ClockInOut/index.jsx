@@ -8,10 +8,18 @@ import MyRequests from './components/MyRequests'
 
 function ClockInOut() {
     const [currentDateTime, setCurrentDateTime] = useState(new Date())
-    const [checkInTime, setCheckInTime] = useState('05:51:49 AM')
-    const [userName] = useState('Jerwin')
+    const [checkInTime, setCheckInTime] = useState()
+    const [userDetails] = useState({
+        userName: 'Jerwin',
+        mac: '00:15:5D:DC:0D:00',
+        ip: '10.8.225.11',
+        location: 'HOME',
+        shift: '6:00am-3:00pm',
+        role: 'User',
+        company: 'GBSS'
+    })
     const [tabs, setTabs] = useState([
-        { id: 'clock-in-out', label: `Clock IN/OUT (${userName})`, closeable: false }
+        { id: 'clock-in-out', label: `Clock IN/OUT (${userDetails.userName})`, closeable: false }
     ])
     const [activeTab, setActiveTab] = useState('clock-in-out')
     const [settingsMenuOpen, setSettingsMenuOpen] = useState(false)
@@ -170,7 +178,7 @@ function ClockInOut() {
                                 </svg>
                             </button>
                             {settingsMenuOpen && (
-                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg min-w-[200px] z-50">
+                                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg min-w-50 z-50">
                                     {settingsMenuItems.map((item, index) => (
                                         <button
                                             key={index}
@@ -405,22 +413,22 @@ function ClockInOut() {
                 <div className="mt-6 px-4 py-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-600">
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">MAC:</span> 00:15:5D:DC:0D:00
+                            <span className="font-semibold">MAC:</span> {userDetails.mac}
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">IP:</span> 10.8.225.11
+                            <span className="font-semibold">IP:</span> {userDetails.ip}
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">Location:</span> HOME
+                            <span className="font-semibold">Location:</span> {userDetails.location}
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">Shift:</span> 6:00am-3:00pm
+                            <span className="font-semibold">Shift:</span> {userDetails.shift}
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">Role:</span> User
+                            <span className="font-semibold">Role:</span> {userDetails.role}
                         </span>
                         <span className="flex items-center gap-1">
-                            <span className="font-semibold">Company:</span> GBSS
+                            <span className="font-semibold">Company:</span> {userDetails.company}
                         </span>
                     </div>
                 </div>

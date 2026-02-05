@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import Table from '../../../components/Table'
 
 function DailyRecords() {
     const [fromDate, setFromDate] = useState('2026-02-01')
@@ -13,6 +14,25 @@ function DailyRecords() {
         { id: 6, workDate: '2026-02-02', time: '3:02PM', logType: 'Check-out' },
         { id: 7, workDate: '2026-02-02', time: '5:49AM', logType: 'Check-in' }
     ])
+
+    const columns = useMemo(
+        () => [
+            {
+                accessorKey: 'workDate',
+                header: 'Work Date',
+                cell: (info) => new Date(info.getValue()).toLocaleDateString('en-GB')
+            },
+            {
+                accessorKey: 'time',
+                header: 'Time'
+            },
+            {
+                accessorKey: 'logType',
+                header: 'Log Type'
+            }
+        ],
+        []
+    )
 
     function handleSearch() {
         console.log(`Search from ${fromDate} to ${toDate}`)
@@ -53,31 +73,15 @@ function DailyRecords() {
             </div>
 
             {/* Time Logs Table */}
-            <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                    <thead>
-                        <tr className="bg-primary text-white">
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Work Date</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Time</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold">Log Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {timeLogs.map((log) => (
-                            <tr
-                                key={log.id}
-                                className={`border-t border-gray-200 hover:bg-gray-50 transition-colors`}
-                            >
-                                <td className="px-4 py-3 text-sm text-primary font-medium">
-                                    {new Date(log.workDate).toLocaleDateString('en-GB')}
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-700">{log.time}</td>
-                                <td className="px-4 py-3 text-sm text-primary font-medium">{log.logType}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <Table
+                columns={columns}
+                data={timeLogs}
+                enablePagination={true}
+                enableSorting={true}
+                enableFiltering={true}
+                pageSize={10}
+                emptyMessage="No time logs found"
+            />
         </main>
     )
 }

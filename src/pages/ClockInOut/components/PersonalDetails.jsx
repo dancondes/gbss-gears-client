@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import Table from '../../../components/Table'
 
 function PersonalDetails() {
     const [personalDetails] = useState({
@@ -21,26 +22,71 @@ function PersonalDetails() {
     const [editingField, setEditingField] = useState(null)
     const [editValue, setEditValue] = useState('')
 
-    const fields = [
-        { label: 'Firstname', key: 'firstname', required: true },
-        { label: 'Lastname', key: 'lastname', required: true },
-        { label: 'Birthdate', key: 'birthdate' },
-        { label: 'Civil Status', key: 'civilStatus', required: true },
-        { label: 'Mobile No.', key: 'mobileNo' },
-        { label: 'Personal Email', key: 'personalEmail', required: true },
-        { label: 'Street', key: 'street' },
-        { label: 'Emergency Contact', key: 'emergencyContact' },
-        { label: 'Emergency Number', key: 'emergencyNumber' },
-        { label: 'SSS', key: 'sss', required: true },
-        { label: 'PHIC', key: 'phic', required: true },
-        { label: 'ATM Number', key: 'atmNumber', required: true },
-        { label: 'TIN', key: 'tin', required: true },
-        { label: 'HDMF', key: 'hdmf', required: true }
-    ]
+    const fields = useMemo(
+        () => [
+            { label: 'Firstname', key: 'firstname', required: true },
+            { label: 'Lastname', key: 'lastname', required: true },
+            { label: 'Birthdate', key: 'birthdate' },
+            { label: 'Civil Status', key: 'civilStatus', required: true },
+            { label: 'Mobile No.', key: 'mobileNo' },
+            { label: 'Personal Email', key: 'personalEmail', required: true },
+            { label: 'Street', key: 'street' },
+            { label: 'Emergency Contact', key: 'emergencyContact' },
+            { label: 'Emergency Number', key: 'emergencyNumber' },
+            { label: 'SSS', key: 'sss', required: true },
+            { label: 'PHIC', key: 'phic', required: true },
+            { label: 'ATM Number', key: 'atmNumber', required: true },
+            { label: 'TIN', key: 'tin', required: true },
+            { label: 'HDMF', key: 'hdmf', required: true }
+        ],
+        []
+    )
+
+    const tableData = useMemo(
+        () => fields.map(field => ({
+            id: field.key,
+            fieldLabel: field.label,
+            fieldKey: field.key,
+            required: field.required,
+            value: personalDetails[field.key]
+        })),
+        [fields, personalDetails]
+    )
+
+    const columns = useMemo(
+        () => [
+            {
+                accessorKey: 'fieldLabel',
+                header: 'FIELD',
+                cell: (info) => {
+                    const row = info.row.original
+                    return (
+                        <span>
+                            {row.required ? <span className="text-danger">*</span> : ''}
+                            {info.getValue()}
+                        </span>
+                    )
+                }
+            },
+            {
+                accessorKey: 'value',
+                header: 'VALUES',
+                cell: (info) => info.getValue()
+            }
+        ],
+        []
+    )
 
     function handleFieldClick(field) {
         setEditingField(field.key)
         setEditValue(personalDetails[field.key])
+    }
+
+    function handleRowClick(rowData) {
+        const field = fields.find(f => f.key === rowData.fieldKey)
+        if (field) {
+            handleFieldClick(field)
+        }
     }
 
     function handleUpdate() {
@@ -59,32 +105,16 @@ function PersonalDetails() {
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Left side - Details Table */}
                 <div className="flex-1">
-                    <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-primary text-white">
-                                    <th className="px-4 py-3 text-left text-sm font-semibold w-1/3">FIELD</th>
-                                    <th className="px-4 py-3 text-left text-sm font-semibold">VALUES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {fields.map((field) => (
-                                    <tr
-                                        key={field.key}
-                                        className={`border-t border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors ${editingField === field.key ? 'bg-primary/10' : ''}`}
-                                        onClick={() => handleFieldClick(field)}
-                                    >
-                                        <td className="px-4 py-3 text-sm text-gray-700">
-                                            {field.required ? <span className="text-danger">*</span> : ''}{field.label}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-primary font-medium">
-                                            {personalDetails[field.key]}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <Table
+                        columns={columns}
+                        data={tableData}
+                        enablePagination={false}
+                        enableSorting={false}
+                        enableFiltering={false}
+                        enableSearch={false}
+                        onRowClick={handleRowClick}
+                        emptyMessage="No personal details found"
+                    />
                 </div>
 
                 {/* Right side - Action Panel */}

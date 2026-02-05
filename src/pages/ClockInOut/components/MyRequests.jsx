@@ -20,19 +20,23 @@ function MyRequests() {
             {
                 accessorKey: 'workDate',
                 header: 'Work Date',
+                type: 'date',
                 cell: (info) => new Date(info.getValue()).toLocaleDateString('en-GB')
             },
             {
                 accessorKey: 'logTime',
-                header: 'LogTime'
+                header: 'LogTime',
+                type: 'time'
             },
             {
                 accessorKey: 'amendmentOn',
-                header: 'Amendment On'
+                header: 'Amendment On',
+                type: 'date'
             },
             {
                 accessorKey: 'requestedTime',
-                header: 'Requested Time'
+                header: 'Requested Time',
+                type: 'time'
             },
             {
                 accessorKey: 'comment',
@@ -41,6 +45,7 @@ function MyRequests() {
             {
                 accessorKey: 'status',
                 header: 'Status',
+                type: 'status',
                 cell: (info) => {
                     const value = info.getValue()
                     return (

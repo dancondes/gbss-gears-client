@@ -6,13 +6,13 @@ function DailyRecords() {
     const [toDate, setToDate] = useState('2026-02-05')
     
     const [timeLogs] = useState([
-        { id: 1, workDate: '2026-02-05', time: '5:50AM', logType: 'Check-in' },
-        { id: 2, workDate: '2026-02-04', time: '3:23PM', logType: 'Check-out' },
-        { id: 3, workDate: '2026-02-04', time: '5:51AM', logType: 'Check-in' },
-        { id: 4, workDate: '2026-02-03', time: '3:12PM', logType: 'Check-out' },
-        { id: 5, workDate: '2026-02-03', time: '5:54AM', logType: 'Check-in' },
-        { id: 6, workDate: '2026-02-02', time: '3:02PM', logType: 'Check-out' },
-        { id: 7, workDate: '2026-02-02', time: '5:49AM', logType: 'Check-in' }
+        { id: 1, workDate: '2026-02-05', time: '05:50', logType: 'Check-in' },
+        { id: 2, workDate: '2026-02-04', time: '15:23', logType: 'Check-out' },
+        { id: 3, workDate: '2026-02-04', time: '05:51', logType: 'Check-in' },
+        { id: 4, workDate: '2026-02-03', time: '15:12', logType: 'Check-out' },
+        { id: 5, workDate: '2026-02-03', time: '05:54', logType: 'Check-in' },
+        { id: 6, workDate: '2026-02-02', time: '15:02', logType: 'Check-out' },
+        { id: 7, workDate: '2026-02-02', time: '05:49', logType: 'Check-in' }
     ])
 
     const columns = useMemo(
@@ -20,11 +20,12 @@ function DailyRecords() {
             {
                 accessorKey: 'workDate',
                 header: 'Work Date',
-                cell: (info) => new Date(info.getValue()).toLocaleDateString('en-GB')
+                type: 'date'
             },
             {
                 accessorKey: 'time',
-                header: 'Time'
+                header: 'Time',
+                type: 'time'
             },
             {
                 accessorKey: 'logType',
@@ -66,7 +67,7 @@ function DailyRecords() {
                             onClick={handleSearch}
                             className="px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-dark-primary transition-colors cursor-pointer"
                         >
-                            🔍
+                            Search
                         </button>
                     </div>
                 </div>

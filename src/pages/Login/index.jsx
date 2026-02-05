@@ -57,7 +57,7 @@ function Login() {
             
             // Simulate successful login and redirect to clock in/out page
             // In production, this would verify credentials first
-            navigate('/clock')
+            navigate('/')
         } catch (err) {
             setFormError(err?.message || 'Login failed. Please try again.')
         } finally {

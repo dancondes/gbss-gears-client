@@ -7,7 +7,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/clock" element={<ClockInOut />} />
+      <Route path="/" element={<ClockInOut />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

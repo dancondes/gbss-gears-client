@@ -5,6 +5,7 @@ import TabBar from '../../components/TabBar'
 import PersonalDetails from './components/PersonalDetails'
 import DailyRecords from './components/DailyRecords'
 import MyRequests from './components/MyRequests'
+import useTabStore from '../../store/tabStore'
 
 function ClockInOut() {
     const [currentDateTime, setCurrentDateTime] = useState(new Date())
@@ -18,32 +19,21 @@ function ClockInOut() {
         role: 'User',
         company: 'GBSS'
     })
-    const [tabs, setTabs] = useState([
-        { id: 'clock-in-out', label: `Clock IN/OUT (${userDetails.userName})`, closeable: false }
-    ])
-    const [activeTab, setActiveTab] = useState('clock-in-out')
     const [settingsMenuOpen, setSettingsMenuOpen] = useState(false)
+    
+    const tabs = useTabStore((state) => state.tabs)
+    const activeTab = useTabStore((state) => state.activeTab)
+    const openTabAction = useTabStore((state) => state.openTab)
+    const closeTabAction = useTabStore((state) => state.closeTab)
+    const setActiveTabAction = useTabStore((state) => state.setActiveTab)
 
     const openTab = useCallback((id, label) => {
-        const existingTab = tabs.find(tab => tab.id === id)
-        if (existingTab) {
-            setActiveTab(id)
-        } else {
-            setTabs(prevTabs => [...prevTabs, { id, label, closeable: true }])
-            setActiveTab(id)
-        }
-    }, [tabs])
+        openTabAction(id, label)
+    }, [openTabAction])
 
     const closeTab = useCallback((id) => {
-        const tabIndex = tabs.findIndex(tab => tab.id === id)
-        const newTabs = tabs.filter(tab => tab.id !== id)
-        setTabs(newTabs)
-
-        if (activeTab === id) {
-            const newActiveIndex = Math.max(0, tabIndex - 1)
-            setActiveTab(newTabs[newActiveIndex]?.id || 'clock-in-out')
-        }
-    }, [tabs, activeTab])
+        closeTabAction(id)
+    }, [closeTabAction])
 
     const handleMenuItemClick = useCallback((menuLabel, itemLabel) => {
         const tabMappings = {
@@ -220,7 +210,7 @@ function ClockInOut() {
                     <TabBar
                         tabs={tabs}
                         activeTab={activeTab}
-                        onTabClick={setActiveTab}
+                        onTabClick={setActiveTabAction}
                         onTabClose={closeTab}
                     />
                 </div>

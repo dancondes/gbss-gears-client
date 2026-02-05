@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
     useReactTable,
     getCoreRowModel,
@@ -11,6 +11,7 @@ import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import TablePagination from './TablePagination'
 import TableSearchBar from './TableSearchBar'
+import { formatCellValue } from './utils/formatters'
 
 function Table({
     columns,
@@ -28,10 +29,17 @@ function Table({
     const [sorting, setSorting] = useState([])
     const [columnFilters, setColumnFilters] = useState([])
 
+    const formattedColumns = useMemo(() => {
+        return columns.map((column) => ({
+            ...column,
+            cell: column.cell || ((info) => formatCellValue(info.getValue(), column.type, column.format))
+        }))
+    }, [columns])
+
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data,
-        columns,
+        columns: formattedColumns,
         state: {
             globalFilter,
             sorting,

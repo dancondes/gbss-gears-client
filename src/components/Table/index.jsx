@@ -4,13 +4,12 @@ import {
     getCoreRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    getFilteredRowModel,
 } from '@tanstack/react-table'
 import PropTypes from 'prop-types'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import TablePagination from './TablePagination'
-import TableSearchBar from './TableSearchBar'
+import TableSearchAndFilter from './TableSearchAndFilter'
 import { formatCellValue } from './utils/formatters'
 
 function Table({
@@ -18,16 +17,108 @@ function Table({
     data,
     enablePagination = true,
     enableSorting = true,
-    enableFiltering = true,
-    enableSearch = false,
     stripedRows = true,
     pageSize = 10,
     emptyMessage = 'No data found',
-    onRowClick = null
+    onRowClick = null,
+    searchFields = [],
+    columnFilters: columnFiltersConfig = []
 }) {
-    const [globalFilter, setGlobalFilter] = useState('')
+    const [searchValue, setSearchValue] = useState('')
+    const [appliedSearchValue, setAppliedSearchValue] = useState('')
     const [sorting, setSorting] = useState([])
     const [columnFilters, setColumnFilters] = useState([])
+    const [filterValues, setFilterValues] = useState(() => {
+        const initialValues = {}
+        columnFiltersConfig.forEach((filter) => {
+            if (filter.type === 'daterange') {
+                initialValues[`${filter.fieldName}_from`] = filter.defaultValue?.from || ''
+                initialValues[`${filter.fieldName}_to`] = filter.defaultValue?.to || ''
+            } else {
+                initialValues[filter.fieldName] = filter.defaultValue || ''
+            }
+        })
+        return initialValues
+    })
+
+    function handleFilterChange(fieldName, value) {
+        setFilterValues((prev) => ({
+            ...prev,
+            [fieldName]: value
+        }))
+    }
+
+    function handleApplySearch() {
+        setAppliedSearchValue(searchValue)
+        
+        const filters = []
+        
+        columnFiltersConfig.forEach((filterConfig) => {
+            if (filterConfig.type === 'daterange') {
+                const fromValue = filterValues[`${filterConfig.fieldName}_from`]
+                const toValue = filterValues[`${filterConfig.fieldName}_to`]
+                
+                if (fromValue || toValue) {
+                    filters.push({
+                        id: filterConfig.fieldName,
+                        value: { from: fromValue, to: toValue }
+                    })
+                }
+            } else {
+                const value = filterValues[filterConfig.fieldName]
+                if (value !== undefined && value !== '' && value !== null) {
+                    filters.push({
+                        id: filterConfig.fieldName,
+                        value: filterConfig.exactMatch ? { exact: value } : value
+                    })
+                }
+            }
+        })
+        
+        setColumnFilters(filters)
+    }
+
+    const filteredData = useMemo(() => {
+        if (columnFilters.length === 0) return data
+
+        return data.filter((row) => {
+            return columnFilters.every((filter) => {
+                const filterConfig = columnFiltersConfig.find(f => f.fieldName === filter.id)
+                const rowValue = row[filter.id]
+
+                if (filterConfig?.type === 'daterange') {
+                    const { from, to } = filter.value
+                    const rowDate = new Date(rowValue)
+                    
+                    if (from && new Date(from) > rowDate) return false
+                    if (to && new Date(to) < rowDate) return false
+                    return true
+                }
+
+                if (filter.value?.exact) {
+                    return rowValue === filter.value.exact
+                }
+
+                if (typeof rowValue === 'string' && typeof filter.value === 'string') {
+                    return rowValue.toLowerCase().includes(filter.value.toLowerCase())
+                }
+
+                return rowValue === filter.value
+            })
+        })
+    }, [data, columnFilters, columnFiltersConfig])
+
+    const searchFilteredData = useMemo(() => {
+        if (!appliedSearchValue || searchFields.length === 0) return filteredData
+
+        return filteredData.filter((row) => {
+            return searchFields.some((field) => {
+                const value = row[field.fieldName]
+                if (value === null || value === undefined) return false
+                return String(value).toLowerCase().includes(appliedSearchValue.toLowerCase())
+            })
+        })
+    }, [filteredData, appliedSearchValue, searchFields])
 
     const formattedColumns = useMemo(() => {
         return columns.map((column) => ({
@@ -38,20 +129,15 @@ function Table({
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
-        data,
+        data: searchFilteredData,
         columns: formattedColumns,
         state: {
-            globalFilter,
-            sorting,
-            columnFilters
+            sorting
         },
-        onGlobalFilterChange: setGlobalFilter,
         onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
         getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-        getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
         initialState: {
             pagination: {
                 pageSize
@@ -61,8 +147,16 @@ function Table({
 
     return (
         <div className="space-y-4">
-            {enableSearch && (
-                <TableSearchBar value={globalFilter} onChange={setGlobalFilter} />
+            {((searchFields && searchFields.length > 0) || (columnFiltersConfig && columnFiltersConfig.length > 0)) && (
+                <TableSearchAndFilter
+                    searchFields={searchFields}
+                    searchValue={searchValue}
+                    onSearchChange={setSearchValue}
+                    columnFilters={columnFiltersConfig}
+                    filterValues={filterValues}
+                    onFilterChange={handleFilterChange}
+                    onApplySearch={handleApplySearch}
+                />
             )}
 
             <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
@@ -82,12 +176,31 @@ Table.propTypes = {
     data: PropTypes.array.isRequired,
     enablePagination: PropTypes.bool,
     enableSorting: PropTypes.bool,
-    enableFiltering: PropTypes.bool,
-    enableSearch: PropTypes.bool,
     stripedRows: PropTypes.bool,
     pageSize: PropTypes.number,
     emptyMessage: PropTypes.string,
-    onRowClick: PropTypes.func
+    onRowClick: PropTypes.func,
+    searchFields: PropTypes.arrayOf(
+        PropTypes.shape({
+            fieldName: PropTypes.string.isRequired,
+            label: PropTypes.string.isRequired
+        })
+    ),
+    columnFilters: PropTypes.arrayOf(
+        PropTypes.shape({
+            fieldName: PropTypes.string.isRequired,
+            label: PropTypes.string.isRequired,
+            type: PropTypes.oneOf(['text', 'select', 'date', 'daterange']),
+            defaultValue: PropTypes.any,
+            exactMatch: PropTypes.bool,
+            options: PropTypes.arrayOf(
+                PropTypes.shape({
+                    value: PropTypes.any.isRequired,
+                    label: PropTypes.string.isRequired
+                })
+            )
+        })
+    )
 }
 
 export default Table

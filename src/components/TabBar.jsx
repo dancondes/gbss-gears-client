@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 function TabBar({ tabs, activeTab, onTabClick, onTabClose }) {
     return (
-        <div className="flex items-center overflow-x-auto">
+    <div className="flex items-center overflow-x-auto">
             {tabs.map((tab) => (
                 <div
                     key={tab.id}

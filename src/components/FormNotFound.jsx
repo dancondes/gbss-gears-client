@@ -1,7 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-function FormNotFound({ title, description }) {
+function FormNotFound({
+    title = 'Form Not Found',
+    description = 'This form is not found or does not exist. Contact administrator if you think this is an issue.',
+}) {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="flex flex-col items-center justify-center text-center py-8">
@@ -20,11 +23,6 @@ function FormNotFound({ title, description }) {
 FormNotFound.propTypes = {
     title: PropTypes.string,
     description: PropTypes.string,
-}
-
-FormNotFound.defaultProps = {
-    title: 'Form Not Found',
-    description: 'This form is not found or does not exist. Contact administrator if you think this is an issue.',
 }
 
 export default FormNotFound

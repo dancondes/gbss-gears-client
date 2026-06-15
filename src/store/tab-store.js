@@ -1,3 +1,4 @@
+import { DEFAULT_TAB } from '@/constants/menu'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -7,7 +8,7 @@ const useTabStore = create(
     persist(
         (set, get) => ({
             // State
-            tabs: [],
+            tabs: [...DEFAULT_TAB],
             activeTabId: null,
 
             // Actions
@@ -260,7 +261,7 @@ const useTabStore = create(
             },
         }),
         {
-            name: 'tab-storage',
+            name: 'gears-tab-storage',
             partialize: (state) => ({
                 tabs: state.tabs,
                 activeTabId: state.activeTabId

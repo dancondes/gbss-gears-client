@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import HorizontalScrollContainer from './HorizontalScrollContainer'
 import { useUIStore, useTabStore, useFormsMenuStore } from '@/store'
-import { BUTTON_IDS } from '@/constants/menu'
 import { toast } from 'react-toastify'
 
 const NavMenu = ({
@@ -25,12 +24,6 @@ const NavMenu = ({
     const [showSubmenuDropdown, setShowSubmenuDropdown] = useState(false)
     const submenuTimeoutRef = React.useRef(null)
 
-    const { checkPermissions } = useFormsMenuStore()
-    const [canAddStaff, canAddClient] = checkPermissions([
-        BUTTON_IDS.STAFF_BULLETIN_NEW,
-        BUTTON_IDS.CLIENT_BULLETIN_NEW,
-    ])
-
     function handleTabOpen(item) {
         // Don't open external links as tabs
         if (item.inNewTab) {
@@ -48,22 +41,6 @@ const NavMenu = ({
     const handleAction = useCallback((action, itemName, disabled) => {
         if (disabled) {
             return
-        }
-        if (action === 'openClientBulletinModal') {
-            if (!canAddClient) {
-                toast.error('You do not have permission to create a new client bulletin')
-                return
-            }
-            setClientBulletinModalOpen(true)
-        } else if (action === 'openStaffBulletinModal') {
-            if (!canAddStaff) {
-                toast.error('You do not have permission to create a new staff bulletin')
-                return
-            }
-            setStaffBulletinModalOpen(true)
-        } else if (action === 'reload') {
-            // perfrom reload and not trigger refresh
-            window.location.reload()
         }
     }, [setClientBulletinModalOpen, setStaffBulletinModalOpen])
 

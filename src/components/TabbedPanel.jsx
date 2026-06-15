@@ -19,7 +19,6 @@ const TabbedPanel = ({
     variant = 'primary',
     onTabChange,
     scrollable = true,
-    isEmployeeTabs = false, // New prop to indicate if these are employee tabs
 }) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id)
     const scrollRef = useRef(null)
@@ -106,14 +105,7 @@ const TabbedPanel = ({
 
             {/* Tab Content */}
             <div className='p-4'>
-                {
-
-                    (isEmployeeTabs && !tabs.map((tab) => tab.label)?.includes(activeTab)) ? (
-                        <AccessRestricted pageTitle={activeTab} />
-                    )
-
-                    :
-                
+                {                
                     tabs.map((tab) => (
                         activeTab === tab.id && (
                             <div key={tab.id}>
@@ -139,7 +131,6 @@ TabbedPanel.propTypes = {
     variant: PropTypes.oneOf(['primary', 'secondary']),
     onTabChange: PropTypes.func,
     scrollable: PropTypes.bool,
-    isEmployeeTabs: PropTypes.bool,
 }
 
 export default TabbedPanel

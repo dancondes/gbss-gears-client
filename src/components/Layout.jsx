@@ -1,18 +1,15 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import PropTypes from 'prop-types'
 import Navbar from './Navbar'
-import Sidebar from './Sidebar'
 import DevelopmentBanner from './DevelopmentBanner'
 import OpenTabsBar from './OpenTabsBar'
 import Spinner from './Spinner'
 import ErrorBoundary from './ErrorBoundary'
-import { useUIStore, useTabStore, useFormsMenuStore } from '@/store'
+import { useTabStore, useFormsMenuStore } from '@/store'
 import { getComponentForPath } from '@/constants/route-components'
 import { TabActiveContext, TabPathContext } from '@/hooks/use-is-tab-active'
 import AccessRestricted from './AccessRestricted'
-import StaffBulletinNew from '@/pages/bulletins/staff-bulletin/StaffBulletinNew'
-import ClientBulletinNew from '@/pages/bulletins/client-bulletin/ClientBulletinNew'
-import ClearanceFormModal from '@/pages/records/Employees/tabs/ClearanceFormModal'
+import MenuBar from './MenuBar'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -90,12 +87,6 @@ TabContent.propTypes = {
 const Layout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [visitedTabIds, setVisitedTabIds] = useState(new Set())
-    const clientBulletinModalOpen = useUIStore(state => state.clientBulletinModalOpen)
-    const setClientBulletinModalOpen = useUIStore(state => state.setClientBulletinModalOpen)
-    const staffBulletinModalOpen = useUIStore(state => state.staffBulletinModalOpen)
-    const setStaffBulletinModalOpen = useUIStore(state => state.setStaffBulletinModalOpen)
-    const employeeClearanceFormModalOpen = useUIStore(state => state.employeeClearanceFormModalOpen)
-    const setEmployeeClearanceFormModalOpen = useUIStore(state => state.setEmployeeClearanceFormModalOpen)
     const { tabs, activeTabId, switchTab, closeTab, closeOtherTabs, closeAllTabs, closeTabsToRight, pinTab, unpinTab } = useTabStore()
     const checkIfThereAreMenuItemsToShow = useFormsMenuStore((state) => state.checkIfThereAreMenuItemsToShow)
 
@@ -139,13 +130,6 @@ const Layout = () => {
         })
     }, [tabs])
 
-    function handleCloseClientBulletinModal() {
-        setClientBulletinModalOpen(false)
-    }
-
-    function handleCloseStaffBulletinModal() {
-        setStaffBulletinModalOpen(false)
-    }
 
     function handleTabClick(tabId) {
         switchTab(tabId)
@@ -175,30 +159,14 @@ const Layout = () => {
         unpinTab(tabId)
     }
 
-    // Commented out so users can use Ctrl+R the way they expect to refresh the entire page if needed.
-    // useEffect(() => {
-    //     function handleKeyDown(e) {
-    //         if (e.ctrlKey && e.key === 'r') {
-    //             e.preventDefault()
-    //             triggerRefresh()
-    //         }
-    //     }
-    //     window.addEventListener('keydown', handleKeyDown)
-    //     return function () {
-    //         window.removeEventListener('keydown', handleKeyDown)
-    //     }
-    // }, [triggerRefresh])
 
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <DevelopmentBanner />
-            {/* Navbar - Full Width at Top */}
-            <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+            <MenuBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
             {/* Container for Sidebar and Main Content */}
             <div className="flex flex-1 overflow-hidden min-h-0">
-                {/* Sidebar - Below Navbar on Left */}
-                <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
                 {/* Main Content Area with Tabs */}
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -239,7 +207,7 @@ const Layout = () => {
                                 )
                             })
                         ) : checkIfThereAreMenuItemsToShow() ? (
-                            <div className="flex items-center justify-center px-4 py-12 min-h-[280px]">
+                            <div className="flex items-center justify-center px-4 py-12 min-h-70">
                                 <div className="text-center max-w-[320px]">
                                     <div className="w-14 h-14 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto mb-5">
                                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -271,29 +239,6 @@ const Layout = () => {
                     </main>
                 </div>
             </div>
-
-            {clientBulletinModalOpen && (
-                <ClientBulletinNew
-                    isOpen={clientBulletinModalOpen}
-                    onClose={handleCloseClientBulletinModal}
-                    bulletinData={null}
-                />
-            )}
-
-            {staffBulletinModalOpen && (
-                <StaffBulletinNew
-                    isOpen={staffBulletinModalOpen}
-                    onClose={handleCloseStaffBulletinModal}
-                    bulletinData={null}
-                />
-            )}
-
-            {employeeClearanceFormModalOpen && (
-                <ClearanceFormModal
-                    isOpen={employeeClearanceFormModalOpen}
-                    onClose={() => { setEmployeeClearanceFormModalOpen(false) }}
-                />
-            )}
         </div>
     )
 }

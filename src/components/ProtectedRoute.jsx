@@ -76,6 +76,10 @@ function ProtectedRoute({ children }) {
 
     // Initialize authentication: validate token, fetch user data, and load forms menu
     const initializeAuth = useCallback(async () => {
+        // TODO: remove this
+        setFormsMenuData([])
+
+        
         try {
             // Guard: if no token, clear menu and mark as initialized
             if (!token) {
@@ -238,19 +242,21 @@ function ProtectedRoute({ children }) {
     }
 
     // Display session expired modal when token has expired
-    if (showSessionExpired) {
-        return (
-            <SessionExpiredModal
-                isOpen={showSessionExpired}
-                onConfirm={handleSessionExpiredConfirm}
-            />
-        )
-    }
+    // TODO: uncomment this once validations are implemented
+    // if (showSessionExpired) {
+    //     return (
+    //         <SessionExpiredModal
+    //             isOpen={showSessionExpired}
+    //             onConfirm={handleSessionExpiredConfirm}
+    //         />
+    //     )
+    // }
 
     // Redirect to login if not authenticated, no token, or redirect flag is set
-    if (shouldRedirect || !isAuthenticated || !token) {
-        return <Navigate to="/login" replace />
-    }
+    // TODO: uncomment this once validations are implemented
+    // if (shouldRedirect || !isAuthenticated || !token) {
+    //     return <Navigate to="/login" replace />
+    // }
 
     // Render protected content if all auth checks pass
     return children

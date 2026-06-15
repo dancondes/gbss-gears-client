@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-const NOTIFICATION_STORAGE_KEY = 'gbss.notifications.v1'
+const NOTIFICATION_STORAGE_KEY = 'gears_notifications'
 const NOTIFICATION_STORAGE_VERSION = 1
 const NOTIFICATION_TTL_MS = 1000 * 60 * 60 * 24 * 30
 const NOTIFICATION_MAX_ITEMS = 50

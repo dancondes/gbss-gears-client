@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import useFormsMenuStore from './forms-menu-store'
 import useTabStore from './tab-store';
-import useTipModalStore from './tip-modal-store';
 
 const useAuthStore = create(
     persist(
@@ -39,7 +38,6 @@ const useAuthStore = create(
                 get().setSessionExpired(false)
                 get().setTokens(user.token, user.refreshToken)
                 useTabStore.getState().closeAllTabs()
-                useTipModalStore.getState().openModal()
             },
 
             logout: () => {
@@ -67,7 +65,7 @@ const useAuthStore = create(
             setLoading: (isLoading) => { set({ isLoading }) },
         }),
         {
-            name: 'auth-storage',
+            name: 'gears-auth-storage',
             partialize: function(state) {
                 return { token: state.token, refreshToken: state.refreshToken }
             },

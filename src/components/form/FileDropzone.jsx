@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
+import { formatFileSize } from '@/utilities'
 
 const FileDropzone = ({
     files = [],
@@ -20,14 +21,6 @@ const FileDropzone = ({
     const dragCounterRef = useRef(0)
     const [isDragging, setIsDragging] = useState(false)
     const hasError = Boolean(error)
-
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes'
-        const k = 1024
-        const sizes = ['Bytes', 'KB', 'MB', 'GB']
-        const i = Math.floor(Math.log(bytes) / Math.log(k))
-        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-    }
 
     // Parse accepted extensions from accept prop
     const getAcceptedExtensions = useCallback(() => {
@@ -253,7 +246,7 @@ const FileDropzone = ({
                         {placeholder}
                     </p>
                     <p className="text-xs text-gray-400 text-center pointer-events-none">
-                        Max {maxFiles} files, up to {formatFileSize(maxFileSize)} each
+                        Max {maxFiles} {maxFiles > 1 ? 'files' : 'file'}, up to {formatFileSize(maxFileSize)} each
                     </p>
                 </div>
 

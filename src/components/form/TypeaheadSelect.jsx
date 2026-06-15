@@ -50,9 +50,19 @@ const TypeaheadSelect = ({
 
     // Filter options based on search term
     useEffect(() => {
-        const filtered = options.filter(option =>
-            option.label.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        const term = (searchTerm || '').trim().toLowerCase()
+
+        // If the trimmed search term is empty, show all options
+        if (!term) {
+            setFilteredOptions(options)
+            setHighlightedIndex(-1)
+            return
+        }
+
+        const filtered = options.filter(option => {
+            const label = (option && option.label) ? String(option.label).toLowerCase() : ''
+            return label.includes(term)
+        })
         setFilteredOptions(filtered)
         setHighlightedIndex(-1)
     }, [searchTerm, options])
@@ -227,9 +237,9 @@ const TypeaheadSelect = ({
                     placeholder={placeholder}
                     disabled={disabled}
                     autoComplete="off"
-                    className={`appearance-none rounded relative block w-full px-3 py-2 pr-20 border ${
+                    className={`appearance-none rounded relative block w-full px-2.5 py-1.5 pr-20 border ${
                         error ? 'border-red-500' : 'border-tertiary'
-                    } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                    } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] disabled:bg-gray-100 disabled:cursor-not-allowed`}
                 />
 
                 {/* Clear and Dropdown buttons */}
@@ -277,12 +287,12 @@ const TypeaheadSelect = ({
                         <ul ref={listRef} className="py-1">
                             {filteredOptions.map((option, index) => (
                                 <li
-                                    key={option.value}
+                                    key={option.value + '_' + option.label + '_' + index}
                                     onMouseDown={(e) => {
                                         e.preventDefault() // Prevent blur from firing
                                         handleSelectOption(option, fieldOnChange)
                                     }}
-                                    className={`px-3 py-2 cursor-pointer text-sm ${
+                                    className={`px-3 py-2 cursor-pointer text-[13px] ${
                                         highlightedIndex === index
                                             ? 'bg-primary text-white'
                                             : fieldValue === option.value
@@ -296,7 +306,7 @@ const TypeaheadSelect = ({
                             ))}
                         </ul>
                     ) : (
-                        <div className="px-3 py-2 text-sm text-gray-500">
+                        <div className="px-3 py-2 text-[13px] text-gray-500">
                             No options found
                         </div>
                     )}
@@ -310,7 +320,7 @@ const TypeaheadSelect = ({
             {label && (
                 <label
                     htmlFor={name}
-                    className="inline-block text-sm font-medium text-gray-700 mb-1"
+                    className="inline-block text-[13px] font-medium text-gray-700 mb-1"
                 >
                     {label}
                     {validation?.required && <span className="text-red-500 ml-1">*</span>}

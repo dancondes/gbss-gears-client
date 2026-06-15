@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
+import { formatFileSize } from '@/utilities'
 
 const FileInput = ({
     label,
@@ -39,14 +40,6 @@ const FileInput = ({
         if (!disabled && fileInputRef.current) {
             fileInputRef.current.click()
         }
-    }
-
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes'
-        const k = 1024
-        const sizes = ['Bytes', 'KB', 'MB', 'GB']
-        const i = Math.floor(Math.log(bytes) / Math.log(k))
-        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
     }
 
     return (

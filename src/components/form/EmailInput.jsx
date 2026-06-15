@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { GBSS_DOMAIN } from '../../constants'
+import { GBSS_DOMAIN } from '@/constants'
 
 const EmailInput = ({
     name,

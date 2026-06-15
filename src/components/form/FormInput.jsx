@@ -1,6 +1,66 @@
 import React, { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 
+function runCustomValidation(validateRule, value) {
+    if (!validateRule) return true
+
+    if (typeof validateRule === 'function') {
+        return validateRule(value)
+    }
+
+    if (typeof validateRule === 'object') {
+        for (const key in validateRule) {
+            if (Object.prototype.hasOwnProperty.call(validateRule, key)) {
+                const validator = validateRule[key]
+
+                if (typeof validator === 'function') {
+                    const result = validator(value)
+
+                    if (result !== true) {
+                        return result
+                    }
+                }
+            }
+        }
+    }
+
+    return true
+}
+
+function validateStrictDateInput(value) {
+    if (value === null || value === undefined || String(value).trim() === '') {
+        return true
+    }
+
+    const stringValue = String(value).trim()
+    const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/
+    const dateMatch = datePattern.exec(stringValue)
+
+    if (!dateMatch) {
+        return 'Please enter a valid date (year must be 1900 or later).'
+    }
+
+    const year = Number(dateMatch[1])
+    const month = Number(dateMatch[2])
+    const day = Number(dateMatch[3])
+
+    if (year < 1900) {
+        return 'Please enter a valid date (year must be 1900 or later).'
+    }
+
+    const parsedDate = new Date(year, month - 1, day)
+
+    if (
+        parsedDate.getFullYear() !== year ||
+        parsedDate.getMonth() !== month - 1 ||
+        parsedDate.getDate() !== day
+    ) {
+        return 'Please enter a valid date (year must be 1900 or later).'
+    }
+
+    return true
+}
+
 const FormInput = ({
     name,
     type = 'text',
@@ -26,8 +86,9 @@ const FormInput = ({
     const isPassword = type === 'password'
     const isCheckbox = type === 'checkbox'
     const isEmail = type === 'email'
+    const isDate = type === 'date'
 
-    const inputType = isPassword ? (showPassword ? 'text' : 'password') : type
+    const inputType = isPassword ? 'text' : type
 
     const hasError = Boolean(error)
 
@@ -42,17 +103,32 @@ const FormInput = ({
         }
         : validation
 
+    const composedValidationRules = isDate
+        ? {
+            ...validationRules,
+            validate: function (value) {
+                const customValidationResult = runCustomValidation(validationRules?.validate, value)
+
+                if (customValidationResult !== true) {
+                    return customValidationResult
+                }
+
+                return validateStrictDateInput(value)
+            }
+        }
+        : validationRules
+
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
     const inputProps = register 
-        ? register(name, validationRules)
+        ? register(name, composedValidationRules)
         : {
             value,
             onChange
         }
     
     // Check if field is required from validation rules or props
-    const isRequired = validationRules?.required || required
+    const isRequired = composedValidationRules?.required || required
 
     return (
         <div className={`mb-2 ${className}`}>
@@ -76,7 +152,7 @@ const FormInput = ({
             ) : (
                 <>
                     {label && (
-                        <label htmlFor={name} className="inline-block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
                             {label} {isRequired && <span className="text-red-500">*</span>}
                         </label>
                     )}
@@ -89,7 +165,11 @@ const FormInput = ({
                             step={step}
                             autoComplete={autoComplete}
                             placeholder={placeholder}
-                            className={`appearance-none rounded relative block placeholder:text-gray-400 w-full px-3 py-2 ${isPassword ? 'pr-12' : ''} border ${hasError ? 'border-red-500' : 'border-tertiary'} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm`}
+                            className={`appearance-none rounded relative block placeholder:text-gray-400 w-full px-2.5 py-1.5 ${isPassword ? 'pr-12' : ''} border ${hasError ? 'border-red-500' : 'border-tertiary'} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px]`}
+                            style={isPassword && !showPassword ? {
+                                WebkitTextSecurity: 'disc',
+                                MozTextSecurity: 'disc'
+                            } : undefined}
                             {...inputProps}
                         />
 

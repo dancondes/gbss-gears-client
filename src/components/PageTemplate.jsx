@@ -16,7 +16,7 @@ function PageTemplate({
     }
 
     return (
-        <div>
+        <div className="container mx-auto p-2 sm:px-4 lg:px-6">
             <div className="flex flex-col sm:flex-row items-start sm:justify-between sm:items-center mb-2">
                 <div className="">
                     <div className="flex items-center gap-1">
@@ -42,11 +42,7 @@ function PageTemplate({
                     )}
                 </div>
 
-                {
-                    rightSide && (
-                        <rightSide />
-                    )
-                }
+                {rightSide && <>{rightSide}</>}
             </div>
             <div className={hasBorder ? 'rounded-2xl border border-slate-200 bg-white p-2' : ''}>
                 {children || (

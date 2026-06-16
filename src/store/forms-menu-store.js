@@ -23,7 +23,6 @@ const useFormsMenuStore = create((set, get) => {
         menuItems: [],
         buttonPermissions: [],
         setFormsMenuData: function (buttonPermissions) {
-            console.log(filterNavItemsByAccess(buttonPermissions))
             set({
                 buttonPermissions,
                 menuItems: filterNavItemsByAccess(buttonPermissions),

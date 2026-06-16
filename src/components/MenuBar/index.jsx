@@ -5,9 +5,6 @@ import NavbarNotifications from '../NavbarNotifications'
 import NavbarUserProfile from '../NavbarUserProfile'
 import MenuBarItem from './components/MenuBarItem'
 
-
-
-
 // ---------------------------------------------------------------------------
 // MenuBar – the full horizontal menu bar
 // ---------------------------------------------------------------------------
@@ -37,14 +34,14 @@ function MenuBar() {
                 <div className="flex justify-between items-center">
                     {/* Left side - Hamburger menu and Logo */}
                     <div className="flex items-center gap-4">
-                        <button
+                        {/* <button
                             onClick={null}
                             className="lg:hidden p-1 rounded text-white hover:bg-white/20 focus:outline-none"
                         >
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
-                        </button>
+                        </button> */}
                         <img
                             src={gbss_logo_white}
                             alt="GBSS Logo"

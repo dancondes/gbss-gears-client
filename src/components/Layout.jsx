@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import PropTypes from 'prop-types'
-import Navbar from './Navbar'
 import DevelopmentBanner from './DevelopmentBanner'
 import OpenTabsBar from './OpenTabsBar'
 import Spinner from './Spinner'
@@ -10,7 +9,6 @@ import { getComponentForPath } from '@/constants/route-components'
 import { TabActiveContext, TabPathContext } from '@/hooks/use-is-tab-active'
 import AccessRestricted from './AccessRestricted'
 import MenuBar from './MenuBar'
-import { DEFAULT_TABS } from '@/constants/menu'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)

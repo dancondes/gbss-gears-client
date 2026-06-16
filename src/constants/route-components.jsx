@@ -44,7 +44,7 @@ const componentCache = new Map()
 
 function RouteFormNotFound() {
     return (
-        <PageTemplate>
+        <PageTemplate hasBorder={false}>
             <FormNotFound />
         </PageTemplate>
     )

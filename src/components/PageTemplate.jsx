@@ -5,7 +5,7 @@ function PageTemplate({
     title,
     subtitle,
     children,
-    hasBorder = false,
+    hasBorder = true,
     mutate,
     rightSide
 }) {
@@ -20,7 +20,7 @@ function PageTemplate({
             <div className="flex flex-col sm:flex-row items-start sm:justify-between sm:items-center mb-2">
                 <div className="">
                     <div className="flex items-center gap-1">
-                        <h1 className="text-xl font-bold text-primary">{title}</h1>
+                        <h1 className="text-xl font-bold text-primary">{title?.toUpperCase()}</h1>
                         {mutate && (
                             <button
                                 type="button"

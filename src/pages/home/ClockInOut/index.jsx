@@ -60,7 +60,6 @@ function ClockInOut() {
     return (
         <PageTemplate
             title="Clock In/Out"
-            hasBorder
             rightSide={(
                 <RunningTime />
             )}

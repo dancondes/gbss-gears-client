@@ -1,5 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import Table from '../../../components/Table'
+import PageTemplate from '@/components/PageTemplate'
+import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
+import { getCurrentDate } from '@/utilities/date-utilities'
 
 function MyRequests() {
     const [requests] = useState([
@@ -111,57 +114,38 @@ function MyRequests() {
         []
     )
 
-    const searchFields = useMemo(
-        () => [
-            { fieldName: 'comment', label: 'Comment' },
-            { fieldName: 'status', label: 'Status' }
-        ],
-        []
-    )
-
-    const columnFilters = useMemo(
-        () => [
-            {
-                fieldName: 'workDate',
-                label: 'Work Date',
-                type: 'daterange',
-                defaultValue: {
-                    from: '2026-02-05',
-                    to: '2026-02-05'
-                }
-            },
-            {
-                fieldName: 'status',
-                label: 'Status',
-                type: 'select',
-                defaultValue: 'For Approval',
-                exactMatch: true,
-                options: [
-                    { value: 'For Approval', label: 'For Approval' },
-                    { value: 'Approved', label: 'Approved' },
-                    { value: 'Rejected', label: 'Rejected' },
-                    { value: 'Cancelled', label: 'Cancelled' }
-                ]
-            }
-        ],
-        []
-    )
-
     return (
-        <main className="container-width px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-3xl font-bold text-primary mb-6">MY REQUESTS</h1>
-
-            <Table
-                columns={columns}
-                data={requests}
-                enablePagination={true}
-                enableSorting={true}
-                pageSize={10}
-                emptyMessage="No requests found"
-                searchFields={searchFields}
-                columnFilters={columnFilters}
-            />
-        </main>
+        <PageTemplate
+            title="My Requests"
+            subtitle="View and manage your requests"
+        >
+            <div className="p-1 sm:p-3">
+                <Table
+                    columns={columns}
+                    data={requests}
+                    enablePagination={true}
+                    enableSorting={true}
+                    pageSize={10}
+                    noDataLabel="No requests found"
+                    globalFilterColumns={['comment']}
+                    dateRange={{
+                        column: 'workDate',
+                        start: getCurrentDate(-7),
+                        end: getCurrentDate(),
+                    }}
+                    columnFilters={{
+                        // workDate: {
+                        //     label: 'Work Date',
+                        //     type: 'date',
+                        // },
+                        status: {
+                            label: 'Status',
+                            options: formatArrayOfStringsAsSelectOptions(['For Approval', 'Approved', 'Rejected', 'Cancelled'])
+                        }
+                    }}
+                />
+            </div>
+        </PageTemplate>
     )
 }
 

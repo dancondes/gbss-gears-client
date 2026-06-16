@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Toggle from './form/Toggle'
 
 function PageTemplate({
     title,
@@ -8,7 +7,7 @@ function PageTemplate({
     children,
     hasBorder = false,
     mutate,
-    showToggle: { toggleState, onToggleChange, toggleLabel, toggleDescription } = {}
+    rightSide
 }) {
     function handleRefreshClick() {
         if (mutate) {
@@ -44,17 +43,8 @@ function PageTemplate({
                 </div>
 
                 {
-                    onToggleChange && (
-                        <Toggle
-                            id="showSubmenuOnHover"
-                            checked={toggleState} F
-                            onChange={onToggleChange}
-                            label={toggleLabel || 'Toggle Option'}
-                            description={toggleDescription}
-                            className="mt-2.5"
-                            popoverDescription
-                            textOnLeft
-                        />
+                    rightSide && (
+                        <rightSide />
                     )
                 }
             </div>
@@ -81,12 +71,7 @@ PageTemplate.propTypes = {
     children: PropTypes.node,
     hasBorder: PropTypes.bool,
     mutate: PropTypes.func,
-    showToggle: PropTypes.shape({
-        toggleState: PropTypes.bool.isRequired,
-        onToggleChange: PropTypes.func.isRequired,
-        toggleLabel: PropTypes.string,
-        toggleDescription: PropTypes.string
-    })
+    rightSide: PropTypes.elementType
 }
 
 export default PageTemplate

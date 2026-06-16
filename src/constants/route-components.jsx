@@ -4,6 +4,11 @@ import FormNotFound from '@/components/FormNotFound'
 
 const IMPORT_MAP = {
     '/clock-in-out': { main: () => import('@/pages/home/ClockInOut') },
+
+    // user
+    '/user/personal-details': { main: () => import('@/pages/user/PersonalDetails') },
+    '/user/daily-records': { main: () => import('@/pages/user/DailyRecords') },
+    '/user/my-requests': { main: () => import('@/pages/user/MyRequests') },
 }
 
 function buildRouteComponents() {

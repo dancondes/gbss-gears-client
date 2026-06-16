@@ -4,7 +4,7 @@ import Table from '../../../components/Table'
 function DailyRecords() {
     const [fromDate, setFromDate] = useState('2026-02-01')
     const [toDate, setToDate] = useState('2026-02-05')
-    
+
     const [timeLogs] = useState([
         { id: 1, workDate: '2026-02-05', time: '05:50', logType: 'Check-in' },
         { id: 2, workDate: '2026-02-04', time: '15:23', logType: 'Check-out' },

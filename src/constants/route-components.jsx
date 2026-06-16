@@ -3,12 +3,27 @@ import PageTemplate from '@/components/PageTemplate'
 import FormNotFound from '@/components/FormNotFound'
 
 const IMPORT_MAP = {
+    // home
     '/clock-in-out': { main: () => import('@/pages/home/ClockInOut') },
+    // '/user/staff-news': { main: () => import('@/pages/home/HARDCODED') },
+    // '/user/staff-bulletins': { main: () => import('@/pages/home/HARDCODED') },
+    // '/user/change-password': { main: () => import('@/pages/home/HARDCODED') },
+    // '/user/change-pin': { main: () => import('@/pages/home/HARDCODED') },
 
     // user
     '/user/personal-details': { main: () => import('@/pages/user/PersonalDetails') },
     '/user/daily-records': { main: () => import('@/pages/user/DailyRecords') },
     '/user/my-requests': { main: () => import('@/pages/user/MyRequests') },
+    // '/user/overtime': { main: () => import('@/pages/user/HARDCODED') },
+    // '/user/leaves': { main: () => import('@/pages/user/HARDCODED') },
+    // '/user/coe': { main: () => import('@/pages/user/HARDCODED') },
+    // '/user/payslip': { main: () => import('@/pages/user/HARDCODED') },
+    // '/user/documents': { main: () => import('@/pages/user/HARDCODED') },
+
+    // help
+    // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
+    // '/help/about': { main: () => import('@/pages/help/HARDCODED') },
+    // '/help/comms': { main: () => import('@/pages/help/HARDCODED') },
 }
 
 function buildRouteComponents() {

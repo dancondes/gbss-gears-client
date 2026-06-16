@@ -84,12 +84,13 @@ function OpenTabsBar({ tabs, activeTab, onTabClick, onTabClose, onCloseOthers, o
         }
     }, [dropdownOpen])
 
-    function handleContextMenu(e, tabId) {
+    function handleContextMenu(e, tabId, canBePinned = true) {
         e.preventDefault()
         setContextTabId(tabId)
         setContextMenu({
             x: e.clientX,
-            y: e.clientY
+            y: e.clientY,
+            canBePinned
         })
     }
 
@@ -185,7 +186,7 @@ function OpenTabsBar({ tabs, activeTab, onTabClick, onTabClose, onCloseOthers, o
     const tab = tabs.find(t => t.id === contextTabId)
     const tabIndex = tabs.findIndex(t => t.id === contextTabId)
     const isTabPinned = tab?.pinned
-    const isTabCloseable = !isTabPinned
+    const isTabCloseable = !isTabPinned || tab.isDefault
     const hasCloseableTabsToRight = tabIndex >= 0 && tabs.slice(tabIndex + 1).some(t => !t.pinned)
     const hasCloseableTabs = tabs.some(t => !t.pinned)
     const hasOtherCloseableTabs = tabs.filter(t => !t.pinned && t.id !== contextTabId).length > 0
@@ -231,7 +232,7 @@ function OpenTabsBar({ tabs, activeTab, onTabClick, onTabClose, onCloseOthers, o
                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
                                 }`}
                                 onClick={() => { onTabClick(t.id) }}
-                                onContextMenu={(e) => { handleContextMenu(e, t.id) }}
+                                onContextMenu={(e) => { handleContextMenu(e, t.id, !t.isDefault) }}
                             >
                                 <span
                                     className={`absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-200 ease-in-out ${
@@ -244,7 +245,7 @@ function OpenTabsBar({ tabs, activeTab, onTabClick, onTabClose, onCloseOthers, o
                                     </svg>
                                 )}
                                 <span className="text-sm whitespace-nowrap">{truncateLabel(displayLabels[t.id])}</span>
-                                {!t.pinned && (
+                                {(!t.pinned && !t.isDefault) && (
                                     <button
                                         onClick={function (e) {
                                             e.stopPropagation()
@@ -311,7 +312,7 @@ function OpenTabsBar({ tabs, activeTab, onTabClick, onTabClose, onCloseOthers, o
                                             </svg>
                                         )}
                                         <span className="truncate flex-1 min-w-0">{displayLabels[t.id]}</span>
-                                        {!t.pinned && (
+                                        {(!t.pinned && !t.isDefault) && (
                                             <button
                                                 onClick={function (e) {
                                                     e.stopPropagation()

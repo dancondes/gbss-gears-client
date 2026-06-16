@@ -1,12 +1,11 @@
-export const DEFAULT_TAB = [{
+export const DEFAULT_TABS = [{
     id: "Clock-In-Out",
     label: "Clock In/Out",
     path: "/clock-in-out",
     state: null,
     rowId: null,
     pinned: false,
-    closeable: false,
-    
+    isDefault: true
 }]
 
 export const MENU_ITEMS = [

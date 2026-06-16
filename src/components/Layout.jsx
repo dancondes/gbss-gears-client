@@ -10,6 +10,7 @@ import { getComponentForPath } from '@/constants/route-components'
 import { TabActiveContext, TabPathContext } from '@/hooks/use-is-tab-active'
 import AccessRestricted from './AccessRestricted'
 import MenuBar from './MenuBar'
+import { DEFAULT_TABS } from '@/constants/menu'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)

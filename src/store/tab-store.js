@@ -1,15 +1,26 @@
-import { DEFAULT_TAB } from '@/constants/menu'
+import { DEFAULT_TABS } from '@/constants/menu'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 let autoCloseInterval = null  // lives outside the store
 
+function withDefaultTabs(tabs) {
+    const merged = [...tabs]
+    DEFAULT_TABS.forEach(function (defaultTab) {
+        const alreadyExists = merged.some(function (t) {
+            return t.id === defaultTab.id || t.path === defaultTab.path
+        })
+        if (!alreadyExists) merged.unshift(defaultTab)
+    })
+    return merged
+}
+
 const useTabStore = create(
     persist(
         (set, get) => ({
             // State
-            tabs: [...DEFAULT_TAB],
-            activeTabId: null,
+            tabs: withDefaultTabs([]),
+            activeTabId: DEFAULT_TABS[0]?.id ?? null,
 
             // Actions
             openTab: (tab) => {
@@ -53,11 +64,13 @@ const useTabStore = create(
 
             closeTab: (tabId) => {
                 const { tabs, activeTabId } = get()
+                const tab = tabs.find(t => t.id === tabId)
+
+                if (!tab) return
+                if (tab.pinned) return
+                if (tab.isDefault) return
+
                 const tabIndex = tabs.findIndex(t => t.id === tabId)
-
-                if (tabIndex === -1) return
-                if (tabs[tabIndex].pinned) return
-
                 const newTabs = tabs.filter(t => t.id !== tabId)
 
                 if (newTabs.length === 0) {
@@ -99,23 +112,16 @@ const useTabStore = create(
 
             closeAllTabs: () => {
                 const { tabs } = get()
-                const pinnedTabs = tabs.filter(t => t.pinned)
-
-                if (pinnedTabs.length > 0) {
-                    set({ tabs: pinnedTabs, activeTabId: pinnedTabs[0].id })
-                } else {
-                    set({ tabs: [], activeTabId: null })
-                }
+                const survivingTabs = withDefaultTabs(tabs.filter(t => t.pinned))
+                set({ tabs: survivingTabs, activeTabId: survivingTabs[0]?.id ?? null })
             },
 
             closeOtherTabs: (keepTabId) => {
                 const { tabs } = get()
-                const filteredTabs = tabs.filter(t => t.id === keepTabId || t.pinned)
-
-                set({
-                    tabs: filteredTabs,
-                    activeTabId: keepTabId
-                })
+                const filteredTabs = withDefaultTabs(
+                    tabs.filter(t => t.id === keepTabId || t.pinned)
+                )
+                set({ tabs: filteredTabs, activeTabId: keepTabId })
             },
 
             closeTabsToRight: (tabId) => {
@@ -124,11 +130,11 @@ const useTabStore = create(
 
                 if (tabIndex === -1) return
 
-                const newTabs = tabs.filter((t, index) => {
-                    if (index <= tabIndex) return true
-                    if (t.pinned) return true
-                    return false
-                })
+                const newTabs = withDefaultTabs(
+                    tabs.filter(function (t, index) {
+                        return index <= tabIndex || t.pinned
+                    })
+                )
 
                 const activeTabStillExists = newTabs.some(t => t.id === activeTabId)
                 const newActiveTabId = activeTabStillExists ? activeTabId : tabId
@@ -147,14 +153,18 @@ const useTabStore = create(
                 const updatedTab = { ...tabs[tabIndex], pinned: true }
                 const remaining = tabs.filter((_, i) => i !== tabIndex)
 
-                const lastPinnedIndex = remaining.reduce(function (acc, t, i) {
+                const defaultTabs = remaining.filter(t => t.isDefault)
+                const nonDefaultRemaining = remaining.filter(t => !t.isDefault)
+
+                const lastPinnedIndex = nonDefaultRemaining.reduce(function (acc, t, i) {
                     return t.pinned ? i : acc
                 }, -1)
 
                 const newTabs = [
-                    ...remaining.slice(0, lastPinnedIndex + 1),
-                    updatedTab,
-                    ...remaining.slice(lastPinnedIndex + 1)
+                    ...defaultTabs,                                          // defaults always first
+                    ...nonDefaultRemaining.slice(0, lastPinnedIndex + 1),   // existing pinned
+                    updatedTab,                                              // newly pinned
+                    ...nonDefaultRemaining.slice(lastPinnedIndex + 1)       // unpinned rest
                 ]
 
                 set({ tabs: newTabs })
@@ -168,14 +178,18 @@ const useTabStore = create(
                 const unpinnedTab = { ...tabs[tabIndex], pinned: false }
                 const remaining = tabs.filter((_, i) => i !== tabIndex)
 
-                const lastPinnedIndex = remaining.reduce(function (acc, t, i) {
+                const defaultTabs = remaining.filter(t => t.isDefault)
+                const nonDefaultRemaining = remaining.filter(t => !t.isDefault)
+
+                const lastPinnedIndex = nonDefaultRemaining.reduce(function (acc, t, i) {
                     return t.pinned ? i : acc
                 }, -1)
 
                 const newTabs = [
-                    ...remaining.slice(0, lastPinnedIndex + 1),
-                    unpinnedTab,
-                    ...remaining.slice(lastPinnedIndex + 1)
+                    ...defaultTabs,                                          // defaults always first
+                    ...nonDefaultRemaining.slice(0, lastPinnedIndex + 1),   // remaining pinned
+                    unpinnedTab,                                             // newly unpinned goes after pinned
+                    ...nonDefaultRemaining.slice(lastPinnedIndex + 1)       // rest of unpinned
                 ]
 
                 set({ tabs: newTabs })
@@ -245,6 +259,7 @@ const useTabStore = create(
                     tabs.forEach(t => {
                         if (t.id === activeTabId) return
                         if (t.pinned) return
+                        if (t.isDefault) return
                         if (!t.lastFocusedAt) return
                         if (now - new Date(t.lastFocusedAt).getTime() >= TWO_HOURS) {
                             closeTab(t.id)
@@ -265,7 +280,16 @@ const useTabStore = create(
             partialize: (state) => ({
                 tabs: state.tabs,
                 activeTabId: state.activeTabId
-            })
+            }),
+            onRehydrateStorage: () => (state) => {
+                if (!state) return
+                const fixed = withDefaultTabs(state.tabs ?? [])
+                const activeStillExists = fixed.some(t => t.id === state.activeTabId)
+                state.tabs = fixed
+                state.activeTabId = activeStillExists
+                    ? state.activeTabId
+                    : fixed[0]?.id ?? null
+            },
         }
     )
 )

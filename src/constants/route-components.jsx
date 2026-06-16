@@ -3,7 +3,7 @@ import PageTemplate from '@/components/PageTemplate'
 import FormNotFound from '@/components/FormNotFound'
 
 const IMPORT_MAP = {
-    '/clock-in-out': { main: () => import('@/pages/home/ClockInOut/index - DRAFT') },
+    '/clock-in-out': { main: () => import('@/pages/home/ClockInOut') },
 }
 
 function buildRouteComponents() {

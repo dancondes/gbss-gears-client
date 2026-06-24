@@ -25,6 +25,9 @@ const MultiSelectTypeahead = ({
     const inputRef = useRef(null)
     const listRef = useRef(null)
 
+    // Check if field is required from validation rules or props
+    const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
+
     // Calculate dropdown position based on available space
     useEffect(() => {
         if (isOpen && wrapperRef.current) {
@@ -328,7 +331,7 @@ const MultiSelectTypeahead = ({
                     className="inline-block text-[13px] font-medium text-gray-700 mb-1"
                 >
                     {label}
-                    {validation?.required && <span className="text-red-500 ml-1">*</span>}
+                    {isRequired && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
 

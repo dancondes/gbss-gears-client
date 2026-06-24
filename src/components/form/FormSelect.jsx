@@ -29,7 +29,7 @@ const FormSelect = ({
         }
 
     // Check if field is required from validation rules or props
-    const isRequired = validation?.required !== undefined || required
+    const isRequired = (typeof validation?.required === 'object' ? validation.required.value : validation?.required) || required
 
     return (
         <div className={className || 'mb-2'}>

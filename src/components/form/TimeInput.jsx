@@ -8,18 +8,19 @@ function TimeInput({
     error,
     validation = {},
     disabled = false,
-    interval = 15,
+    // interval = 15, // no longer working as expected, so removed for now
     className = ''
 }) {
-    const isRequired = validation?.required
-    const inputClassName = `appearance-none rounded relative block w-full px-3 py-2 border ${error ? 'border-red-500' : 'border-tertiary'
+    // Check if field is required from validation rules or props
+    const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
+    const inputClassName = `appearance-none rounded relative block w-full px-2.5 py-1.5 border ${error ? 'border-red-500' : 'border-tertiary'
         } ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
-        } text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer`
+        } text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] cursor-pointer`
 
     return (
         <div className={className}>
             {label && (
-                <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
                     {label}
                     {isRequired && <span className="text-red-500 ml-1">*</span>}
                 </label>
@@ -27,7 +28,7 @@ function TimeInput({
             <input
                 id={name}
                 type="time"
-                step={interval * 60}
+                // step={interval * 60}
                 {...register(name, validation)}
                 disabled={disabled}
                 className={inputClassName}

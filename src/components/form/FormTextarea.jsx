@@ -21,15 +21,15 @@ const FormTextarea = ({
 
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
-    const textareaProps = register 
+    const textareaProps = register
         ? register(name, validation)
         : {
             value,
             onChange
         }
-    
+
     // Check if field is required from validation rules or props
-    const isRequired = validation?.required !== undefined || required
+    const isRequired = (typeof validation?.required === 'object' ? validation.required.value : validation?.required) || required
 
     return (
         <div className={className || 'mb-2'}>

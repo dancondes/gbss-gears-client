@@ -73,6 +73,7 @@ const FormInput = ({
     validation = {},
     value,
     onChange,
+    onKeyDown,
     required = false,
     step,
     disabled = false,
@@ -128,7 +129,7 @@ const FormInput = ({
         }
     
     // Check if field is required from validation rules or props
-    const isRequired = composedValidationRules?.required || required
+    const isRequired = (typeof composedValidationRules?.required === 'object' ? composedValidationRules.required.value : composedValidationRules?.required) || required
 
     return (
         <div className={`mb-2 ${className}`}>
@@ -164,6 +165,7 @@ const FormInput = ({
                             type={inputType}
                             step={step}
                             autoComplete={autoComplete}
+                            onKeyDown={onKeyDown}
                             placeholder={placeholder}
                             className={`appearance-none rounded relative block placeholder:text-gray-400 w-full px-2.5 py-1.5 ${isPassword ? 'pr-12' : ''} border ${hasError ? 'border-red-500' : 'border-tertiary'} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px]`}
                             style={isPassword && !showPassword ? {
@@ -217,6 +219,7 @@ FormInput.propTypes = {
     validation: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]), // For controlled component
     onChange: PropTypes.func, // For controlled component
+    onKeyDown: PropTypes.func, // For handling key down events
     required: PropTypes.bool, // For required indicator when not using validation
     step: PropTypes.string, // For number input step attribute
     disabled: PropTypes.bool, // For disabling the input,

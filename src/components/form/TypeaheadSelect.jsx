@@ -26,6 +26,9 @@ const TypeaheadSelect = ({
     const listRef = useRef(null)
     const [controlledValue, setControlledValue] = useState(value)
 
+    // Check if field is required from validation rules or props
+    const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
+
     const handleDropdownToggle = useCallback(() => {
         if (!disabled) {
             setIsOpen(prev => !prev)
@@ -323,7 +326,7 @@ const TypeaheadSelect = ({
                     className="inline-block text-[13px] font-medium text-gray-700 mb-1"
                 >
                     {label}
-                    {validation?.required && <span className="text-red-500 ml-1">*</span>}
+                    {isRequired && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
 

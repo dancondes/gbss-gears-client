@@ -151,7 +151,7 @@ const MultiSelectTypeahead = ({
             <>
                 {/* Input area with pills */}
                 <div
-                    className={`flex flex-wrap items-center gap-1 min-h-[34px] px-2 py-1.5 pr-10 rounded border ${
+                    className={`flex flex-wrap items-center gap-1 min-h-8.5 px-2 py-1.5 pr-10 rounded border ${
                         error ? 'border-red-500' : isOpen ? 'border-secondary' : 'border-tertiary'
                     } bg-white cursor-text ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     onClick={() => {

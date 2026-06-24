@@ -9,6 +9,7 @@ import { getComponentForPath } from '@/constants/route-components'
 import { TabActiveContext, TabPathContext } from '@/hooks/use-is-tab-active'
 import AccessRestricted from './AccessRestricted'
 import MenuBar from './MenuBar'
+import StatusBar from './StatusBar'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -57,6 +58,16 @@ const TabContent = React.memo(function TabContent({ tab, isActive }) {
     const Component = getComponentForPath(tab.path)
     const checkIfUserHavAccessToTab = useFormsMenuStore((state) => state.checkIfUserHavAccessToTab)
     const hasAccess = checkIfUserHavAccessToTab(tab)
+    // Status bar mock data
+    const statusBar = {
+        mac: 'XX:XX:XX:XX:XX:XX',
+        ip: '192.168.1.1',
+        loc: 'HOME',
+        shift: 'FLEXI 6:00am-8:00am',
+        gRole: 'User',
+        company: 'GBSS',
+    }
+
 
     if (!Component) return null
 
@@ -68,7 +79,14 @@ const TabContent = React.memo(function TabContent({ tab, isActive }) {
         <TabActiveContext.Provider value={isActive}>
             <TabPathContext.Provider value={tab.path}>
                 <Suspense fallback={<Spinner />}>
-                    <Component />
+                    <div className='flex flex-col h-full'>
+                        <div className='flex-1'>
+                            <Component />
+                        </div>
+                        <div>
+                            <StatusBar statusBar={statusBar} />
+                        </div>
+                    </div>
                 </Suspense>
             </TabPathContext.Provider>
         </TabActiveContext.Provider>
@@ -183,7 +201,7 @@ const Layout = () => {
                         />
                     )}
 
-                    <main className="flex-1 bg-white overflow-y-auto w-full px-3 py-4">
+                    <main className="flex-1 bg-white overflow-y-auto w-full px-3 py-4 pb-0">
                         {hasTabs ? (
                             tabs.map(function (tab) {
                                 const isActive = tab.id === activeTabId
@@ -193,7 +211,7 @@ const Layout = () => {
                                 if (!shouldRender) return null
 
                                 return (
-                                    <div key={tab.id} style={{ display: isActive ? 'block' : 'none' }}>
+                                    <div key={tab.id} style={{ display: isActive ? 'block' : 'none' , height: '100%' }}>
                                         <ErrorBoundary
                                             fallback={function (error, _errorInfo, resetError) { return <TabErrorFallback error={error} onClose={function () { resetError(); closeTab(tab.id) }} /> }}
                                         >

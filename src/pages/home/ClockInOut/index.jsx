@@ -32,17 +32,7 @@ function ClockInOut() {
     const [checkOutTime, setCheckOutTime] = useState(null)
 
     function stamp() { return new Date() }
-
-    // Status bar mock data
-    const statusBar = {
-        mac: 'XX:XX:XX:XX:XX:XX',
-        ip: '192.168.1.1',
-        loc: 'HOME',
-        shift: 'FLEXI 6:00am-8:00am',
-        gRole: 'User',
-        company: 'GBSS',
-    }
-
+    
     // show confirmation modal on click
     function handleButtonClick(action, type = 'info') {
         showConfirmationModal({
@@ -197,16 +187,6 @@ function ClockInOut() {
                             />
                         </div>
                     </div>
-                </div>
-
-                {/* ── STATUS BAR ────────────────────────────────────── */}
-                <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 border-t border-gray-300 bg-gray-50 px-3 py-1.5 text-xs text-gray-500">
-                    <span>MAC: {statusBar.mac}</span>
-                    <span>IP: {statusBar.ip}</span>
-                    <span>Loc: {statusBar.loc}</span>
-                    <span>Shift: {statusBar.shift}</span>
-                    <span>G-Role: {statusBar.gRole}</span>
-                    <span>Company: {statusBar.company}</span>
                 </div>
             </div>
         </PageTemplate>

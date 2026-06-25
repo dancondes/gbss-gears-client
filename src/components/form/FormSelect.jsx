@@ -46,7 +46,7 @@ const FormSelect = ({
                     disabled={disabled}
                     className={`appearance-none rounded relative block w-full min-w-19 px-2.5 py-1.5 pr-10 border disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${
                         hasError ? 'border-red-500' : 'border-tertiary'
-                    } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] ${className}`}
+                    } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px]`}
                     {...selectProps}
                 >
                     

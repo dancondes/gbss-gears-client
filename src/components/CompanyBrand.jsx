@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { gbss_logo } from '../assets/images'
+import { gbss_logo } from '@/assets/images'
 
 const CompanyBrand = ({ title, description }) => {
 	return (

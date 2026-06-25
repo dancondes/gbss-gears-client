@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { GBSS_DOMAIN } from '../../constants'
+import { GBSS_DOMAIN } from '@/constants'
 
 const EmailInput = ({
     name,
@@ -19,8 +19,8 @@ const EmailInput = ({
     // register function from react-hook-form handles everything including ref
     const inputProps = register(name, validation)
     
-    // Check if field is required from validation rules
-    const isRequired = validation?.required !== undefined
+    // Check if field is required from validation rules or props
+    const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
 
     return (
         <div className="mb-2">

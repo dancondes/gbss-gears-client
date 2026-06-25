@@ -21,20 +21,20 @@ const FormTextarea = ({
 
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
-    const textareaProps = register 
+    const textareaProps = register
         ? register(name, validation)
         : {
             value,
             onChange
         }
-    
+
     // Check if field is required from validation rules or props
-    const isRequired = validation?.required !== undefined || required
+    const isRequired = (typeof validation?.required === 'object' ? validation.required.value : validation?.required) || required
 
     return (
         <div className={className || 'mb-2'}>
             {label && (
-                <label htmlFor={name} className="inline-block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
                     {label} {isRequired && <span className="text-red-500">*</span>}
                 </label>
             )}
@@ -46,7 +46,7 @@ const FormTextarea = ({
                 rows={rows}
                 disabled={disabled}
                 readOnly={readonly}
-                className={`appearance-none rounded relative block w-full px-3 py-2 placeholder:text-gray-400 border ${hasError ? 'border-red-500' : 'border-tertiary'} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm resize-vertical ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                className={`appearance-none rounded relative block w-full px-2.5 py-1.5 placeholder:text-gray-400 border ${hasError ? 'border-red-500' : 'border-tertiary'} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] resize-vertical ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                 {...textareaProps}
             />
 

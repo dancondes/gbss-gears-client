@@ -1,29 +1,42 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from "@eslint/js";
+import globals from "globals";
+import pluginReact from "eslint-plugin-react";
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default [
+  js.configs.recommended,
+  pluginReact.configs.flat.recommended,
   {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
+    files: ["**/*.{js,mjs,cjs,jsx}"],
     languageOptions: {
-      ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: "detect",
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Detect unused variables
+      "no-unused-vars": ["warn", { 
+        vars: "all", 
+        args: "after-used", 
+        ignoreRestSiblings: true 
+      }],
+      
+      // Detect undefined variables
+      "no-undef": "error",
+      
+      // React specific rules
+      "react/react-in-jsx-scope": "off", // Not needed in React 17+
+      "react/prop-types": "warn",
+      
+      // General code quality
+      "no-console": ["error", { allow: ["error"] }], // Disallow console, but allow console.error
     },
   },
-])
+];

@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import useTabNavigation from '@/hooks/use-tab-navigation'
+import { useUIStore } from '@/store'
 
 // ---------------------------------------------------------------------------
 // SubmenuPanel – the dropdown panel that appears below a top-level menu item
@@ -8,11 +9,16 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 
 function SubmenuPanel({ items, isOpen, onClose }) {
     const { navigate } = useTabNavigation()
+    const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
 
     if (!isOpen || !items || items.length === 0) return null
 
     function handleItemClick(item) {
         onClose()
+
+        if (item.action === 'coe-request') {
+            setCOERequestModalOpen(true)
+        }
 
         if (item.url) {
             window.open(item.url, '_blank', 'noopener,noreferrer')

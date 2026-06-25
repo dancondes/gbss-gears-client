@@ -32,6 +32,7 @@ const useUIStore = create((set, get) => {
     return {
         // State
         sidebarMinimized: initialSettings.sidebarMinimized ?? false,
+        coeRequestModalOpen: false,
         
         // UI Settings (persisted to localStorage)
         showSubmenuOnHover: initialSettings.showSubmenuOnHover ?? false,
@@ -52,6 +53,10 @@ const useUIStore = create((set, get) => {
             set({ showSubmenuOnHover: value });
             const { showSubmenuOnHover } = get();
             saveUISettings({ ...loadUISettings(), showSubmenuOnHover });
+        },
+
+        setCOERequestModalOpen: (isOpen) => {
+            set({ coeRequestModalOpen: isOpen });
         }
     };
 });

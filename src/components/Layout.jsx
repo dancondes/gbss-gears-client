@@ -4,12 +4,13 @@ import DevelopmentBanner from './DevelopmentBanner'
 import OpenTabsBar from './OpenTabsBar'
 import Spinner from './Spinner'
 import ErrorBoundary from './ErrorBoundary'
-import { useTabStore, useFormsMenuStore } from '@/store'
+import { useTabStore, useFormsMenuStore, useUIStore } from '@/store'
 import { getComponentForPath } from '@/constants/route-components'
 import { TabActiveContext, TabPathContext } from '@/hooks/use-is-tab-active'
 import AccessRestricted from './AccessRestricted'
 import MenuBar from './MenuBar'
 import StatusBar from './StatusBar'
+import COERequests from '@/pages/user/COERequest'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -106,6 +107,8 @@ const Layout = () => {
     const [visitedTabIds, setVisitedTabIds] = useState(new Set())
     const { tabs, activeTabId, switchTab, closeTab, closeOtherTabs, closeAllTabs, closeTabsToRight, pinTab, unpinTab } = useTabStore()
     const checkIfThereAreMenuItemsToShow = useFormsMenuStore((state) => state.checkIfThereAreMenuItemsToShow)
+    const coeRequestModalOpen = useUIStore((state) => state.coeRequestModalOpen)
+    const setCOERequestModalOpen = useUIStore((state) => state.setCOERequestModalOpen)
 
     const hasTabs = tabs.length > 0
 
@@ -182,7 +185,7 @@ const Layout = () => {
             <DevelopmentBanner />
             <MenuBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-            {/* Container for Sidebar and Main Content */}
+            {/* Container for Main Content */}
             <div className="flex flex-1 overflow-hidden min-h-0">
 
                 {/* Main Content Area with Tabs */}
@@ -211,7 +214,7 @@ const Layout = () => {
                                 if (!shouldRender) return null
 
                                 return (
-                                    <div key={tab.id} style={{ display: isActive ? 'block' : 'none' , height: '100%' }}>
+                                    <div key={tab.id} style={{ display: isActive ? 'block' : 'none', height: '100%' }}>
                                         <ErrorBoundary
                                             fallback={function (error, _errorInfo, resetError) { return <TabErrorFallback error={error} onClose={function () { resetError(); closeTab(tab.id) }} /> }}
                                         >
@@ -256,6 +259,11 @@ const Layout = () => {
                     </main>
                 </div>
             </div>
+
+            <COERequests
+                isOpen={coeRequestModalOpen}
+                setIsOpen={setCOERequestModalOpen}
+            />
         </div>
     )
 }

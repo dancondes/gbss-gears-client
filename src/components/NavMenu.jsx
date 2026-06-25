@@ -2,8 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import HorizontalScrollContainer from './HorizontalScrollContainer'
-import { useUIStore, useTabStore, useFormsMenuStore } from '@/store'
-import { toast } from 'react-toastify'
+import { useTabStore } from '@/store'
 
 const NavMenu = ({
     menuItems,
@@ -16,8 +15,6 @@ const NavMenu = ({
     defaultActive
 }) => {
     const location = useLocation()
-    const setClientBulletinModalOpen = useUIStore(state => state.setClientBulletinModalOpen)
-    const setStaffBulletinModalOpen = useUIStore(state => state.setStaffBulletinModalOpen)
     const { openTab, activeTabId } = useTabStore()
     const [activeMenu, setActiveMenu] = useState(defaultActive || menuItems[0]?.name || '')
     const [hoveredMenu, setHoveredMenu] = useState(null)
@@ -42,7 +39,7 @@ const NavMenu = ({
         if (disabled) {
             return
         }
-    }, [setClientBulletinModalOpen, setStaffBulletinModalOpen])
+    }, [])
 
     // Determine active menu based on current pathname
     useEffect(() => {

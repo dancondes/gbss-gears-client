@@ -192,7 +192,7 @@ export default function Leaves() {
             </div>
 
             {/* 2nd Row */}
-            <div>
+            <div className="border-t border-gray-200 pt-4 mt-4">
                 <h2 className="text-md text-center font-bold text-primary uppercase trakcking-widest mb-2">
                     History
                 </h2>

@@ -11,6 +11,7 @@ import AccessRestricted from './AccessRestricted'
 import MenuBar from './MenuBar'
 import StatusBar from './StatusBar'
 import COERequests from '@/pages/user/COERequest'
+import PayslipPinInputModal from '@/pages/user/Payslip/PayslipPinInputModal'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -109,6 +110,8 @@ const Layout = () => {
     const checkIfThereAreMenuItemsToShow = useFormsMenuStore((state) => state.checkIfThereAreMenuItemsToShow)
     const coeRequestModalOpen = useUIStore((state) => state.coeRequestModalOpen)
     const setCOERequestModalOpen = useUIStore((state) => state.setCOERequestModalOpen)
+    const payslipPinModalOpen = useUIStore((state) => state.payslipPinModalOpen)
+    const setPayslipPinModalOpen = useUIStore((state) => state.setPayslipPinModalOpen)
 
     const hasTabs = tabs.length > 0
 
@@ -264,6 +267,13 @@ const Layout = () => {
                 <COERequests
                     isOpen={coeRequestModalOpen}
                     setIsOpen={setCOERequestModalOpen}
+                />
+            )}
+            
+            {payslipPinModalOpen && (
+                <PayslipPinInputModal
+                    isOpen={payslipPinModalOpen}
+                    setIsOpen={setPayslipPinModalOpen}
                 />
             )}
         </div>

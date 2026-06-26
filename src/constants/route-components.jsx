@@ -17,7 +17,7 @@ const IMPORT_MAP = {
     '/user/overtime': { main: () => import('@/pages/user/Overtime') },
     '/user/leaves': { main: () => import('@/pages/user/Leaves') },
     // '/user/coe': { main: () => import('@/pages/user/HARDCODED') },
-    // '/user/payslip': { main: () => import('@/pages/user/HARDCODED') },
+    '/user/payslip': { main: () => import('@/pages/user/Payslip') },
     '/user/documents': { main: () => import('@/pages/user/Documents') },
 
     // help

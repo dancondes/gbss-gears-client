@@ -10,14 +10,20 @@ import { useUIStore } from '@/store'
 function SubmenuPanel({ items, isOpen, onClose }) {
     const { navigate } = useTabNavigation()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
+    const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
 
     if (!isOpen || !items || items.length === 0) return null
 
     function handleItemClick(item) {
         onClose()
 
-        if (item.action === 'coe-request') {
-            setCOERequestModalOpen(true)
+        switch (item.action) {
+            case 'coe-request':
+                setCOERequestModalOpen(true)
+                return
+            case 'payslip-request':
+                setPayslipPinModalOpen(true)
+                return
         }
 
         if (item.url) {

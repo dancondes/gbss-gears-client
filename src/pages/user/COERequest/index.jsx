@@ -7,6 +7,7 @@ import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'react-toastify'
 import { requestCOE } from '@/services/reports-service'
 import { downloadFile } from '@/utilities/file-utilities'
+import { useAuthStore } from '@/store'
 
 const FORMAT_OPTIONS = [
     { value: 1, label: 'Regular' },
@@ -19,6 +20,7 @@ function COERequests({
 }) {
 
     const { showConfirmationModal } = useConfirmationModal()
+    const user = useAuthStore((state) => state.user)
 
     const {
         register,
@@ -40,18 +42,29 @@ function COERequests({
         })
     }
 
+    function generateNameForFilename(employee, capitalize = true) {
+        const { id, firstname, lastname } = employee || {}
+        const namePart = (
+            ((capitalize ? firstname?.toUpperCase() : firstname) || '') +
+            ' ' +
+            ((capitalize ? lastname?.toUpperCase() : lastname) || '')
+        ).trim()
+        return namePart || id || 'Unknown_Employee'
+    }
+
     async function handleSave(data) {
         try {
             const params = {
                 type: data.format,
-                personId: 1710
+                personId: user?.id
             }
 
             // create a filename when we have the logged in user details
-            toast.success('Processing your COE request. Please do not refresh the page. The document will be downloaded automatically once complete.')
             setIsOpen(false)
+            toast.success('Processing your COE request. Please do not refresh the page. The document will be downloaded automatically once complete.')
             const response = await requestCOE(params)
-            downloadFile(response, 'COE.pdf')
+            const filename = `Certificate of Employment${data.format == 1 ? '' : ' with Compensation'} - ${generateNameForFilename(user)}.pdf`
+            downloadFile(response, filename)
             toast.success('COE request successful. The file has been downloaded.')
 
         } catch (error) {

@@ -260,10 +260,12 @@ const Layout = () => {
                 </div>
             </div>
 
-            <COERequests
-                isOpen={coeRequestModalOpen}
-                setIsOpen={setCOERequestModalOpen}
-            />
+            {coeRequestModalOpen && (
+                <COERequests
+                    isOpen={coeRequestModalOpen}
+                    setIsOpen={setCOERequestModalOpen}
+                />
+            )}
         </div>
     )
 }

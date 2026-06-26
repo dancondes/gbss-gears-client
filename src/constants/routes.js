@@ -5,6 +5,9 @@ export const ROUTES = {
         UPLOAD: '/File/upload',
         GET_BY_FOLDER_PATH: (folderPath) => `/File/${encodeURIComponent(folderPath)}`,
     },
+    EMPLOYEE: {
+        GET_DOCUMENTS: (id) => `/Employee/${id}/documents`,
+    },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',
     }

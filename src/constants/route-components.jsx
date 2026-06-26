@@ -18,7 +18,7 @@ const IMPORT_MAP = {
     '/user/leaves': { main: () => import('@/pages/user/Leaves') },
     // '/user/coe': { main: () => import('@/pages/user/HARDCODED') },
     // '/user/payslip': { main: () => import('@/pages/user/HARDCODED') },
-    // '/user/documents': { main: () => import('@/pages/user/HARDCODED') },
+    '/user/documents': { main: () => import('@/pages/user/Documents') },
 
     // help
     // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },

@@ -37,7 +37,7 @@ const EmailInput = ({
                     autoComplete={autoComplete}
                     placeholder={placeholder}
                     className={`appearance-none rounded relative block w-full px-3 py-2 border ${hasError ? 'border-red-500' : 'border-tertiary'
-                        } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm ${showDomain ? 'flex-1' : ''
+                        } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm ${showDomain ? 'flex-1' : ''
                         } ${className}`}
                     {...inputProps}
                 />

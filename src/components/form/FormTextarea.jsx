@@ -8,6 +8,8 @@ const FormTextarea = ({
     error,
     label,
     className = '',
+    labelClassName = '',
+    inputClassName = '',
     register,
     validation = {},
     rows = 4,
@@ -34,7 +36,7 @@ const FormTextarea = ({
     return (
         <div className={className || 'mb-2'}>
             {label && (
-                <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
+                <label htmlFor={name} className={`inline-block text-[13px] font-medium text-gray-700 mb-1 ${labelClassName}`}>
                     {label} {isRequired && <span className="text-red-500">*</span>}
                 </label>
             )}
@@ -46,7 +48,7 @@ const FormTextarea = ({
                 rows={rows}
                 disabled={disabled}
                 readOnly={readonly}
-                className={`appearance-none rounded relative block w-full px-2.5 py-1.5 placeholder:text-gray-400 border ${hasError ? 'border-red-500' : 'border-tertiary'} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] resize-vertical ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                className={`appearance-none rounded relative block w-full px-2.5 py-1.5 placeholder:text-gray-400 border ${hasError ? 'border-red-500' : 'border-tertiary'} placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] resize-vertical ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${inputClassName}`}
                 {...textareaProps}
             />
 
@@ -63,6 +65,8 @@ FormTextarea.propTypes = {
     error: PropTypes.string,
     label: PropTypes.string,
     className: PropTypes.string,
+    labelClassName: PropTypes.string,
+    inputClassName: PropTypes.string,
     validation: PropTypes.object,
     rows: PropTypes.number,
     value: PropTypes.string, // For controlled component

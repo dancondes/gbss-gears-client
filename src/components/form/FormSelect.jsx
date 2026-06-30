@@ -9,6 +9,8 @@ const FormSelect = ({
     label,
     subLabel,
     className = '',
+    labelClassName = '',
+    inputClassName = '',
     register,
     validation = {},
     value,
@@ -34,19 +36,19 @@ const FormSelect = ({
     return (
         <div className={className || 'mb-2'}>
             {(label || subLabel) && (
-                <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
+                <label htmlFor={name} className={`inline-block text-[13px] font-medium text-gray-700 mb-1 ${labelClassName}`}>
                     {label} {isRequired && <span className="text-red-500">*</span>}
                     {subLabel && <span className="block text-xs text-gray-500">{subLabel}</span>}
                 </label>
             )}
-            <div className="relative">
+            <div className="relative flex-1">
                 <select
                     id={name}
                     name={name}
                     disabled={disabled}
-                    className={`appearance-none rounded relative block w-full min-w-19 px-2.5 py-1.5 pr-10 border disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${
+                    className={`appearance-none rounded relative block w-full min-w-[76px] px-2.5 py-1.5 pr-10 border disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${
                         hasError ? 'border-red-500' : 'border-tertiary'
-                    } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px]`}
+                    } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] ${inputClassName}`}
                     {...selectProps}
                 >
                     
@@ -94,6 +96,8 @@ FormSelect.propTypes = {
     label: PropTypes.string,
     subLabel: PropTypes.string,
     className: PropTypes.string,
+    labelClassName: PropTypes.string,
+    inputClassName: PropTypes.string,
     validation: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // For controlled component
     onChange: PropTypes.func, // For controlled component

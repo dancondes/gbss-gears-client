@@ -69,6 +69,8 @@ const FormInput = ({
     error,
     label,
     className = '',
+    labelClassName = '',
+    inputClassName = '',
     register,
     validation = {},
     value,
@@ -141,7 +143,7 @@ const FormInput = ({
                         disabled={disabled}
                         readOnly={readonly}
                         type="checkbox"
-                        className="h-4 w-4 text-primary focus:ring-secondary border-tertiary rounded cursor-pointer"
+                        className={`h-4 w-4 text-primary focus:ring-secondary border-tertiary rounded cursor-pointer ${inputClassName}`}
                         {...inputProps}
                     />
                     {label && (
@@ -153,11 +155,11 @@ const FormInput = ({
             ) : (
                 <>
                     {label && (
-                        <label htmlFor={name} className="inline-block text-[13px] font-medium text-gray-700 mb-1">
+                        <label htmlFor={name} className={`inline-block text-[13px] font-medium text-gray-700 mb-1 ${labelClassName}`}>
                             {label} {isRequired && <span className="text-red-500">*</span>}
                         </label>
                     )}
-                    <div className="relative">
+                    <div className="relative flex-1">
                         <input
                             id={name}
                             name={name}
@@ -167,7 +169,7 @@ const FormInput = ({
                             autoComplete={autoComplete}
                             onKeyDown={onKeyDown}
                             placeholder={placeholder}
-                            className={`appearance-none rounded relative block placeholder:text-gray-400 w-full px-2.5 py-1.5 ${isPassword ? 'pr-12' : ''} border ${hasError ? 'border-red-500' : 'border-tertiary'} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px]`}
+                            className={`appearance-none rounded relative block placeholder:text-gray-400 w-full px-2.5 py-1.5 ${isPassword ? 'pr-12' : ''} border ${hasError ? 'border-red-500' : 'border-tertiary'} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] ${inputClassName}`}
                             style={isPassword && !showPassword ? {
                                 WebkitTextSecurity: 'disc',
                                 MozTextSecurity: 'disc'
@@ -216,6 +218,8 @@ FormInput.propTypes = {
     error: PropTypes.string,
     label: PropTypes.string,
     className: PropTypes.string,
+    labelClassName: PropTypes.string,
+    inputClassName: PropTypes.string,
     validation: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]), // For controlled component
     onChange: PropTypes.func, // For controlled component

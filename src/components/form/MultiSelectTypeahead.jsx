@@ -333,34 +333,43 @@ const MultiSelectTypeahead = ({
                 </label>
             )}
 
-            <div className="relative flex-1">
-                {control ? (
-                    <Controller
-                        name={name}
-                        control={control}
-                        rules={validation}
-                        defaultValue={[]}
-                        render={({ field }) =>
-                            renderContent(field.value, field.onChange)
-                        }
-                    />
-                ) : (
-                    <>
-                        {register && (
-                            <input
-                                type="hidden"
-                                {...register(name, validation)}
-                                value={JSON.stringify(value || [])}
-                            />
-                        )}
-                        {renderContent(value, onChange)}
-                    </>
+            {/*
+                flex-col wrapper keeps the field control (pills/input + dropdown)
+                and its error message stacked vertically and isolated from the
+                parent's layout. Without this, a parent using `flex items-center`
+                (common in horizontal label+field rows) pulls the error message
+                onto the same row as the field instead of letting it wrap below.
+            */}
+            <div className="flex flex-col flex-1 min-w-0">
+                <div className="relative flex-1">
+                    {control ? (
+                        <Controller
+                            name={name}
+                            control={control}
+                            rules={validation}
+                            defaultValue={[]}
+                            render={({ field }) =>
+                                renderContent(field.value, field.onChange)
+                            }
+                        />
+                    ) : (
+                        <>
+                            {register && (
+                                <input
+                                    type="hidden"
+                                    {...register(name, validation)}
+                                    value={JSON.stringify(value || [])}
+                                />
+                            )}
+                            {renderContent(value, onChange)}
+                        </>
+                    )}
+                </div>
+
+                {error && (
+                    <p className="mt-1 text-xs text-red-500">{error}</p>
                 )}
             </div>
-
-            {error && (
-                <p className="mt-1 text-xs text-red-500">{error}</p>
-            )}
         </div>
     )
 }

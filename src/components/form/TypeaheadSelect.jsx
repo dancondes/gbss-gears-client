@@ -44,7 +44,7 @@ const TypeaheadSelect = ({
             const spaceBelow = window.innerHeight - rect.bottom
             const spaceAbove = rect.top
             const dropdownHeight = 240 // max-h-60 = 240px
-            
+
             if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
                 setDropdownPosition('top')
             } else {
@@ -110,7 +110,7 @@ const TypeaheadSelect = ({
         const newValue = e.target.value
         setSearchTerm(newValue)
         setIsOpen(true)
-        
+
         // Clear selection if input is cleared
         if (!newValue) {
             if (fieldOnChange) {
@@ -130,7 +130,7 @@ const TypeaheadSelect = ({
         // Small delay to allow button clicks to register
         setTimeout(() => {
             setIsOpen(false)
-            
+
             // If searchTerm doesn't match any option, restore the previous value or clear
             const matchingOption = options.find(opt => opt.label === searchTerm)
             if (!matchingOption) {
@@ -332,37 +332,46 @@ const TypeaheadSelect = ({
                 </label>
             )}
 
-            {control ? (
-                <Controller
-                    name={name}
-                    control={control}
-                    rules={validation}
-                    render={({ field }) => {
-                        // Update controlled value when field value changes
-                        useEffect(() => {
-                            setControlledValue(field.value)
-                        }, [field.value])
-                        
-                        return renderContent(field.value, field.onChange, field.onBlur)
-                    }}
-                />
-            ) : (
-                <>
-                    {register && (
-                        <input
-                            type="hidden"
-                            {...register(name, validation)}
-                            value={value || ''}
-                        />
-                    )}
-                    {renderContent(value, onChange)}
-                </>
-            )}
+            {/*
+                flex-col wrapper keeps the field control (input + dropdown) and
+                its error message stacked vertically and isolated from the
+                parent's layout. Without this, a parent using `flex items-center`
+                (common in horizontal label+field rows) pulls the error message
+                onto the same row as the field instead of letting it wrap below.
+            */}
+            <div className="flex flex-col flex-1 min-w-0">
+                {control ? (
+                    <Controller
+                        name={name}
+                        control={control}
+                        rules={validation}
+                        render={({ field }) => {
+                            // Update controlled value when field value changes
+                            useEffect(() => {
+                                setControlledValue(field.value)
+                            }, [field.value])
 
-            {/* Error message */}
-            {error && (
-                <p className="mt-1 text-xs text-red-500">{error}</p>
-            )}
+                            return renderContent(field.value, field.onChange, field.onBlur)
+                        }}
+                    />
+                ) : (
+                    <>
+                        {register && (
+                            <input
+                                type="hidden"
+                                {...register(name, validation)}
+                                value={value || ''}
+                            />
+                        )}
+                        {renderContent(value, onChange)}
+                    </>
+                )}
+
+                {/* Error message */}
+                {error && (
+                    <p className="mt-1 text-xs text-red-500">{error}</p>
+                )}
+            </div>
         </div>
     )
 }

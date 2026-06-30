@@ -27,15 +27,23 @@ function TimeInput({
                     {isRequired && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
-            <input
-                id={name}
-                type="time"
-                // step={interval * 60}
-                {...register(name, validation)}
-                disabled={disabled}
-                className={inputClass}
-            />
-            {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+            {/*
+                flex-col wrapper keeps the input and its error message stacked
+                vertically and isolated from the parent's layout (e.g. a parent
+                using `flex items-center` would otherwise pull the error message
+                onto the same row as the input).
+            */}
+            <div className="flex flex-col flex-1 min-w-0">
+                <input
+                    id={name}
+                    type="time"
+                    // step={interval * 60}
+                    {...register(name, validation)}
+                    disabled={disabled}
+                    className={inputClass}
+                />
+                {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+            </div>
         </div>
     )
 }

@@ -261,7 +261,7 @@ const Table = ({
     initialColumnVisibility = {},
     minHeight,
     maxHeight,
-    isCollapsible = true,
+    isCollapsible = false,
     defaultOpen = false,
     isLoading = false,
     showTableHeader = true,

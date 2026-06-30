@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import { useUIStore } from '@/store'
+import useMessageModal from '@/hooks/use-message-modal'
 
 // ---------------------------------------------------------------------------
 // SubmenuPanel – the dropdown panel that appears below a top-level menu item
@@ -9,6 +10,7 @@ import { useUIStore } from '@/store'
 
 function SubmenuPanel({ items, isOpen, onClose }) {
     const { navigate } = useTabNavigation()
+    const { showMessageModal } = useMessageModal()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
     const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
 
@@ -23,6 +25,15 @@ function SubmenuPanel({ items, isOpen, onClose }) {
                 return
             case 'payslip-request':
                 setPayslipPinModalOpen(true)
+                return
+            case 'user-guide':
+                showMessageModal('This feature is not yet ready.', {
+                    type: 'info',
+                    title: 'User Guide',
+                })
+                return
+            case 'about':
+                window.open('https://www.gbss.com.sg/about-us/', '_blank', 'noopener,noreferrer')
                 return
         }
 

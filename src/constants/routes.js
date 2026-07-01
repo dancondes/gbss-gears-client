@@ -1,4 +1,7 @@
 export const ROUTES = {
+    BULLETIN:{
+        STAFF_BULLETINS: '/Email/bulletin/Staff'
+    },
     FILE: {
         DOWNLOAD: (path) => `/File/download?blobName=${encodeURIComponent(path)}`,
         DELETE: (path) => `/File/${encodeURIComponent(path)}`,

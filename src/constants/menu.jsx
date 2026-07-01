@@ -30,6 +30,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Staff-Bulletins',
                 name: 'Staff Bulletins',
+                tabName: 'Staff Bulletin',
                 path: '/user/staff-bulletins',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">

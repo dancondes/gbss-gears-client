@@ -10,5 +10,8 @@ export const ROUTES = {
     },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',
+    },
+    TICKETING: {
+        CREATE: '/Ticketing',
     }
 }

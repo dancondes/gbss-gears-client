@@ -23,7 +23,7 @@ const IMPORT_MAP = {
     // help
     // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
     // '/help/about': { main: () => import('@/pages/help/HARDCODED') },
-    // '/help/comms': { main: () => import('@/pages/help/HARDCODED') },
+    '/help/comms': { main: () => import('@/pages/help/Ticketing') },
 }
 
 function buildRouteComponents() {

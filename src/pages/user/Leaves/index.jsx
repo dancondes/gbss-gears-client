@@ -4,10 +4,13 @@ import LeaveCredits from './components/LeaveCredits'
 import ApplicationLeaveFrom from './components/ApplicationLeaveForm'
 import VacationLeaveList from './components/VacationLeaveList'
 import SickLeaveList from './components/SickLeaveList'
+import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
+import OpenTicketModal from './components/OpenTicketModal'
 
 export default function Leaves() {
-
+    // States
     const [selectedLeave, setSelectedLeave] = useState(null)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const leaveCreditsData = [
         {
@@ -169,7 +172,7 @@ export default function Leaves() {
     return (
         <PageTemplate
             title="Leaves"
-            rightSide="" // TODO: update this
+            rightSide={<OpenTicketModal setIsOpen={setIsModalOpen} />}
         >
             {/* 1st Row */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4">
@@ -213,6 +216,16 @@ export default function Leaves() {
                     </div>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <TicketingModal
+                    defaultValues={{
+                        ticketType: 'Leave',
+                    }}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </PageTemplate>
     )
 }

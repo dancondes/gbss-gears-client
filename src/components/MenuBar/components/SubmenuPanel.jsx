@@ -45,7 +45,7 @@ function SubmenuPanel({ items, isOpen, onClose }) {
         if (item.path) {
             navigate(item.path, {
                 id: item.id,
-                label: item.name,
+                label: item.tabName || item.name,
             })
         }
 

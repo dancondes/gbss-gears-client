@@ -231,6 +231,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Comms',
                 name: 'Comms',
+                tabName: 'Ticketing',
                 path: '/help/comms',
                 shortcut: 'F1',
                 icon: (

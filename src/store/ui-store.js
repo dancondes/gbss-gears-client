@@ -34,6 +34,8 @@ const useUIStore = create((set, get) => {
         sidebarMinimized: initialSettings.sidebarMinimized ?? false,
         coeRequestModalOpen: false,
         payslipPinModalOpen: false,
+        changePasswordModalOpen: false,
+        changePinModalOpen: false,
         
         // UI Settings (persisted to localStorage)
         showSubmenuOnHover: initialSettings.showSubmenuOnHover ?? false,
@@ -62,6 +64,14 @@ const useUIStore = create((set, get) => {
 
         setPayslipPinModalOpen: (isOpen) => {
             set({ payslipPinModalOpen: isOpen });
+        },
+
+        setChangePasswordModalOpen: (isOpen) => {
+            set({ changePasswordModalOpen: isOpen });
+        },
+
+        setChangePinModalOpen: (isOpen) => {
+            set({ changePinModalOpen: isOpen });
         }
     };
 });

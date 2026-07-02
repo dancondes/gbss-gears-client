@@ -13,6 +13,8 @@ function SubmenuPanel({ items, isOpen, onClose }) {
     const { showMessageModal } = useMessageModal()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
     const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
+    const setChangePasswordModalOpen = useUIStore(state => state.setChangePasswordModalOpen)
+    const setChangePinModalOpen = useUIStore(state => state.setChangePinModalOpen)
 
     if (!isOpen || !items || items.length === 0) return null
 
@@ -34,6 +36,12 @@ function SubmenuPanel({ items, isOpen, onClose }) {
                 return
             case 'about':
                 window.open('https://www.gbss.com.sg/about-us/', '_blank', 'noopener,noreferrer')
+                return
+            case 'change-password':
+                setChangePasswordModalOpen(true)
+                return
+            case 'change-pin':
+                setChangePinModalOpen(true)
                 return
         }
 

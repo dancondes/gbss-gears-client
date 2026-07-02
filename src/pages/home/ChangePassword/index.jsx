@@ -1,7 +1,7 @@
 import FormInput from '@/components/form/FormInput'
+import Modal from '@/components/modals/Modal'
 import PageTemplate from '@/components/PageTemplate'
-import useTabNavigation from '@/hooks/use-tab-navigation'
-import { useTabStore } from '@/store'
+import PropTypes from 'prop-types'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -36,144 +36,146 @@ function CheckIcon({ className }) {
     )
 }
 
-export default function ChangePassword() {
+CheckIcon.propTypes = {
+    className: PropTypes.string,
+}
+
+export default function ChangePassword({
+    isOpen,
+    setIsOpen
+}) {
     const {
         register,
         handleSubmit,
         watch,
-        reset,
         formState: { errors, isSubmitting },
     } = useForm({ mode: 'onSubmit' })
-    const { navigate } = useTabNavigation()
 
     const newPassword = watch('newPassword', '')
 
     async function onSubmit(formValues) {
-        // close and navigate to clock-in-out page after successful password change
-        navigate('/clock-in-out', {
-            id: 'Clock-In-Out',
-            label: 'Clock In/Out',
-        }, true)
     }
 
-    function handleCancel() {
-        reset()
+    function handleClose() {
+        setIsOpen(false)
     }
 
     return (
-        <PageTemplate title="Change Password">
-            <div className="p-1 sm:p-3">
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-4">
-                        {/* Left: password fields */}
-                        <div className="space-y-4">
-                            <div className="rounded border border-primary overflow-hidden">
-                                <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
-                                    <h4 className="text-sm font-semibold text-gray-800">Current Password</h4>
-                                </div>
-                                <div className="px-4 py-3">
-                                    <FormInput
-                                        type="password"
-                                        label="Type your old password:"
-                                        name="currentPassword"
-                                        placeholder=""
-                                        register={register}
-                                        validation={{
-                                            required: 'Current password is required',
-                                        }}
-                                        error={errors.currentPassword?.message}
-                                    />
-                                </div>
+        <Modal
+            title="Change Password"
+            isOpen={isOpen}
+            onClose={handleClose}
+            size="3xl"
+        >
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-4">
+                    {/* Left: password fields */}
+                    <div className="space-y-4">
+                        <div className="rounded border border-primary overflow-hidden">
+                            <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                                <h4 className="text-sm font-semibold text-gray-800">Current Password</h4>
                             </div>
-
-                            <div className="rounded border border-primary overflow-hidden">
-                                <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
-                                    <h4 className="text-sm font-semibold text-gray-800">New Password</h4>
-                                </div>
-                                <div className="px-4 py-3 space-y-3">
-                                    <FormInput
-                                        type="password"
-                                        label="Type a new password:"
-                                        name="newPassword"
-                                        placeholder=""
-                                        register={register}
-                                        validation={{
-                                            required: 'New password is required',
-                                            validate: (value) => {
-                                                const failed = PASSWORD_REQUIREMENTS.find(r => !r.test(value))
-                                                return failed ? `Password must ${failed.label}` : true
-                                            },
-                                        }}
-                                        error={errors.newPassword?.message}
-                                    />
-                                    <FormInput
-                                        type="password"
-                                        label="Type the password again to confirm:"
-                                        name="confirmNewPassword"
-                                        placeholder=""
-                                        register={register}
-                                        validation={{
-                                            required: 'Please confirm your new password',
-                                            validate: (value) =>
-                                                value === newPassword || 'Passwords do not match',
-                                        }}
-                                        error={errors.confirmNewPassword?.message}
-                                    />
-                                </div>
+                            <div className="px-4 py-3">
+                                <FormInput
+                                    type="password"
+                                    label="Type your old password:"
+                                    name="currentPassword"
+                                    placeholder=""
+                                    register={register}
+                                    validation={{
+                                        required: 'Current password is required',
+                                    }}
+                                    error={errors.currentPassword?.message}
+                                />
                             </div>
                         </div>
 
-                        {/* Right: requirements panel */}
-                        <div className="rounded border border-gray-200 px-4 py-3 h-fit">
-                            <h4 className="text-sm font-semibold text-dark mb-2 pb-2 border-b border-dashed border-gray-300">
-                                Requirements - Password must :
-                            </h4>
-                            <ul className="space-y-1.5">
-                                {PASSWORD_REQUIREMENTS.map((req) => {
-                                    const met = newPassword.length > 0 && req.test(newPassword)
-                                    return (
-                                        <li
-                                            key={req.label}
-                                            className={`flex items-start gap-1.5 text-sm ${met ? 'text-green-600' : 'text-dark'}`}
-                                        >
-                                            {met ? (
-                                                <CheckIcon className="h-4 w-4 mt-0.5 shrink-0" />
-                                            ) : (
-                                                <span className="mt-0.5 shrink-0">-</span>
-                                            )}
-                                            <span>{req.label}</span>
-                                        </li>
-                                    )
-                                })}
-                            </ul>
+                        <div className="rounded border border-primary overflow-hidden">
+                            <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                                <h4 className="text-sm font-semibold text-gray-800">New Password</h4>
+                            </div>
+                            <div className="px-4 py-3 space-y-3">
+                                <FormInput
+                                    type="password"
+                                    label="Type a new password:"
+                                    name="newPassword"
+                                    placeholder=""
+                                    register={register}
+                                    validation={{
+                                        required: 'New password is required',
+                                        validate: (value) => {
+                                            const failed = PASSWORD_REQUIREMENTS.find(r => !r.test(value))
+                                            return failed ? `Password must ${failed.label}` : true
+                                        },
+                                    }}
+                                    error={errors.newPassword?.message}
+                                />
+                                <FormInput
+                                    type="password"
+                                    label="Type the password again to confirm:"
+                                    name="confirmNewPassword"
+                                    placeholder=""
+                                    register={register}
+                                    validation={{
+                                        required: 'Please confirm your new password',
+                                        validate: (value) =>
+                                            value === newPassword || 'Passwords do not match',
+                                    }}
+                                    error={errors.confirmNewPassword?.message}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Footer: error + actions */}
-                    <div className="flex items-center justify-between mt-4">
-                        <p className="text-sm text-red-500">
-                            {Object.keys(errors).length > 0 && 'Invalid form submission. Please check the fields above.'}
-                        </p>
-
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={handleCancel}
-                                className="btn-white"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="btn-primary"
-                            >
-                                Change
-                            </button>
-                        </div>
+                    {/* Right: requirements panel */}
+                    <div className="rounded border border-gray-200 px-4 py-3 h-fit">
+                        <h4 className="text-sm font-semibold text-dark mb-2 pb-2 border-b border-dashed border-gray-300">
+                            Requirements - Password must :
+                        </h4>
+                        <ul className="space-y-1.5">
+                            {PASSWORD_REQUIREMENTS.map((req) => {
+                                const met = newPassword.length > 0 && req.test(newPassword)
+                                return (
+                                    <li
+                                        key={req.label}
+                                        className={`flex items-start gap-1.5 text-sm ${met ? 'text-green-600' : 'text-dark'}`}
+                                    >
+                                        {met ? (
+                                            <CheckIcon className="h-4 w-4 mt-0.5 shrink-0" />
+                                        ) : (
+                                            <span className="mt-0.5 shrink-0">-</span>
+                                        )}
+                                        <span>{req.label}</span>
+                                    </li>
+                                )
+                            })}
+                        </ul>
                     </div>
-                </form>
-            </div>
-        </PageTemplate>
+                </div>
+
+                {/* Footer: error + actions */}
+                <div className="flex items-center justify-end gap-3 mt-4 border-t border-gray-200 pt-4">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="btn-white"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="btn-primary"
+                    >
+                        Change
+                    </button>
+                </div>
+            </form>
+        </Modal>
     )
+}
+
+ChangePassword.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    setIsOpen: PropTypes.func.isRequired,
 }

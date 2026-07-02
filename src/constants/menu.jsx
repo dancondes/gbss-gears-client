@@ -152,6 +152,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Team-Records',
                 name: 'Records',
+                tabName: 'Time Logs',
                 path: '/team/records',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">
@@ -162,7 +163,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Team-Leaves',
                 name: 'Leaves',
-                tabName: 'Leaves (Team)',
+                tabName: 'Team Leaves',
                 path: '/team/leaves',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">
@@ -173,6 +174,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Team-Status',
                 name: 'Status',
+                tabName: 'Team Status',
                 path: '/team/status',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">
@@ -182,7 +184,7 @@ export const MENU_ITEMS = [
             },
             {
                 id: 'Team-Requests',
-                name: 'Requests',
+                name: 'Team Requests',
                 path: '/team/requests',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">

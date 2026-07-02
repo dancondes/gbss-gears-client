@@ -4,7 +4,7 @@ import React from 'react'
 export default function Leaves() {
     return (
         <PageTemplate
-            title="Leaves"
+            title="Team Leaves"
         >
             <div className="p-1 sm:p-3">
 

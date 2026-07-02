@@ -20,6 +20,15 @@ const IMPORT_MAP = {
     '/user/payslip': { main: () => import('@/pages/user/Payslip') },
     '/user/documents': { main: () => import('@/pages/user/Documents') },
 
+    // team
+    '/team/records': { main: () => import('@/pages/team/Records') },
+    '/team/leaves': { main: () => import('@/pages/team/Leaves') },
+    '/team/status': { main: () => import('@/pages/team/Status') },
+    '/team/requests': { main: () => import('@/pages/team/Requests') },
+    
+    // IT
+    '/it/manage-users': { main: () => import('@/pages/it/ManageUsers') },
+
     // help
     // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
     // '/help/about': { main: () => import('@/pages/help/HARDCODED') },

@@ -162,6 +162,7 @@ export const MENU_ITEMS = [
             {
                 id: 'Team-Leaves',
                 name: 'Leaves',
+                tabName: 'Leaves (Team)',
                 path: '/team/leaves',
                 icon: (
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#0d416e">

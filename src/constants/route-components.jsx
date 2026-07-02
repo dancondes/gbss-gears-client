@@ -7,7 +7,7 @@ const IMPORT_MAP = {
     '/clock-in-out': { main: () => import('@/pages/home/ClockInOut') },
     '/user/staff-news': { main: () => import('@/pages/home/StaffNews') },
     '/user/staff-bulletins': { main: () => import('@/pages/home/StaffBulletins') },
-    // '/user/change-password': { main: () => import('@/pages/home/HARDCODED') },
+    '/user/change-password': { main: () => import('@/pages/home/ChangePassword') },
     // '/user/change-pin': { main: () => import('@/pages/home/HARDCODED') },
 
     // user

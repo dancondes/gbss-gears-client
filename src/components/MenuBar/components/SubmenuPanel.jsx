@@ -34,9 +34,6 @@ function SubmenuPanel({ items, isOpen, onClose }) {
                     title: 'User Guide',
                 })
                 return
-            case 'about':
-                window.open('https://www.gbss.com.sg/about-us/', '_blank', 'noopener,noreferrer')
-                return
             case 'change-password':
                 setChangePasswordModalOpen(true)
                 return

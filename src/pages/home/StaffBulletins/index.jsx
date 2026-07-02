@@ -32,21 +32,23 @@ export default function StaffBulletins() {
             title="Staff Bulletin"
             mutate={mutate}
         >
-            <Table
-                data={data}
-                isLoading={isValidating}
-                columns={columns}
-                onRowClick={handleRowClick}
-                enablePagination={false}
-            />
-
-            {isModalOpen && (
-                <ViewBodyModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    bulletin={selectedBulletin}
+            <div className="p-1 sm:p-3">
+                <Table
+                    data={data}
+                    isLoading={isValidating}
+                    columns={columns}
+                    onRowClick={handleRowClick}
+                    enablePagination={false}
                 />
-            )}
+
+                {isModalOpen && (
+                    <ViewBodyModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        bulletin={selectedBulletin}
+                    />
+                )}
+            </div>
         </PageTemplate>
     )
 }

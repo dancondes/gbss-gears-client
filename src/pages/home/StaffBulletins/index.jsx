@@ -34,11 +34,12 @@ export default function StaffBulletins() {
         >
             <div className="p-1 sm:p-3">
                 <Table
-                    data={data}
+                    data={data || []}
                     isLoading={isValidating}
                     columns={columns}
                     onRowClick={handleRowClick}
                     enablePagination={false}
+                    noDataLabel="No staff bulletins found"
                 />
 
                 {isModalOpen && (

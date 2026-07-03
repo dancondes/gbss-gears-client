@@ -1,5 +1,9 @@
 export const ROUTES = {
-    BULLETIN:{
+    ATTENDANCE: {
+        APPROVE_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/approve/${id}`,
+        REJECT_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/reject/${id}`,
+    },
+    BULLETIN: {
         STAFF_BULLETINS: '/Email/bulletin/Staff'
     },
     FILE: {

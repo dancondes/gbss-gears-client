@@ -2,7 +2,7 @@ import React from 'react';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
 
-const ExportToExcel = ({ data, fileName }) => {
+const ExportToExcel = ({ data, fileName, buttonLabel = 'Excel' }) => {
     const exportToExcel = () => {
         if (!data || !data.headers || !data.rows) {
             return;
@@ -48,9 +48,11 @@ const ExportToExcel = ({ data, fileName }) => {
             className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium cursor-pointer transition-colors"
         >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth={1.5} />
+                <path strokeLinecap="round" strokeWidth={1.5} d="M3 9h18M9 3v18M15 3v18" />
+                <path strokeLinecap="round" strokeWidth={1.5} d="M3 15h18" />
             </svg>
-            Excel
+            {buttonLabel}
         </button>
     );
 }
@@ -66,6 +68,7 @@ ExportToExcel.propTypes = {
         rows: PropTypes.array.isRequired
     }).isRequired,
     fileName: PropTypes.string.isRequired,
+    buttonLabel: PropTypes.string
 }
 
 export default ExportToExcel;

@@ -4,14 +4,16 @@ import Table from '@/components/Table'
 import FiledLeaves from './FiledLeaves'
 
 function LeaveCredits({
-    data = [],
-    filedLeavesData = [],
+    leavesCreditsData,
+    isLeaveCreditsLoading,
+    filedLeavesData,
+    isFiledLeavesLoading,
     handeLeaveSelect
 }) {
 
     const columns = useMemo(() => ([
         {
-            accessorKey: 'year',
+            accessorKey: 'fiscalYear',
             header: 'Year',
         },
         {
@@ -21,22 +23,27 @@ function LeaveCredits({
         {
             accessorKey: 'earned',
             header: 'Earned',
+            type: 'decimal'
         },
         {
             accessorKey: 'additional',
             header: 'Additional',
+            type: 'decimal'
         },
         {
             accessorKey: 'prevBalance',
             header: 'Prev. Balance',
+            type: 'decimal'
         },
         {
             accessorKey: 'used',
             header: 'Used',
+            type: 'decimal'
         },
         {
             accessorKey: 'remaining',
             header: 'Remaining',
+            type: 'decimal'
         }
     ]), [])
 
@@ -48,14 +55,16 @@ function LeaveCredits({
 
             <Table
                 columns={columns}
-                data={data}
+                data={leavesCreditsData}
                 enablePagination={false}
                 maxHeight={150}
                 defaultSorting={[{ id: 'year', desc: true }]}
+                isLoading={isLeaveCreditsLoading}
             />
 
             <FiledLeaves
                 data={filedLeavesData}
+                isLoading={isFiledLeavesLoading}
                 handeLeaveSelect={handeLeaveSelect}
             />
         </div>
@@ -63,8 +72,10 @@ function LeaveCredits({
 }
 
 LeaveCredits.propTypes = {
-    data: PropTypes.array.isRequired,
+    leavesCreditsData: PropTypes.array.isRequired,
+    isLeaveCreditsLoading: PropTypes.bool.isRequired,
     filedLeavesData: PropTypes.array.isRequired,
+    isFiledLeavesLoading: PropTypes.bool.isRequired,
     handeLeaveSelect: PropTypes.func.isRequired
 }
 

@@ -15,6 +15,8 @@ const MultiSelectTypeahead = ({
     onChange,
     disabled = false,
     className = '',
+    labelClassName = '',
+    inputClassName = ''
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
@@ -151,9 +153,8 @@ const MultiSelectTypeahead = ({
             <>
                 {/* Input area with pills */}
                 <div
-                    className={`flex flex-wrap items-center gap-1 min-h-8.5 px-2 py-1.5 pr-10 rounded border ${
-                        error ? 'border-red-500' : isOpen ? 'border-secondary' : 'border-tertiary'
-                    } bg-white cursor-text ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`flex flex-wrap items-center gap-1 min-h-[34px] px-2 py-1.5 pr-10 rounded border ${error ? 'border-red-500' : isOpen ? 'border-secondary' : 'border-tertiary'
+                        } bg-white cursor-text ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     onClick={() => {
                         if (!disabled) {
                             setIsOpen(true)
@@ -198,7 +199,7 @@ const MultiSelectTypeahead = ({
                             onKeyDown={(e) => handleKeyDown(e, selectedValues, fieldOnChange)}
                             placeholder={selectedOptions.length === 0 ? placeholder : ''}
                             autoComplete="off"
-                            className="flex-1 min-w-20 outline-none text-[13px] text-primary placeholder-gray-400 bg-transparent"
+                            className={`flex-1 min-w-20 outline-none text-[13px] text-primary placeholder-gray-400 bg-transparent ${inputClassName}`}
                         />
                     )}
                 </div>
@@ -226,9 +227,8 @@ const MultiSelectTypeahead = ({
 
                 {/* Dropdown */}
                 {isOpen && !disabled && (
-                    <div className={`absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg ${
-                        dropdownPosition === 'top' ? 'bottom-full mb-1' : 'mt-1'
-                    }`}>
+                    <div className={`absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg ${dropdownPosition === 'top' ? 'bottom-full mb-1' : 'mt-1'
+                        }`}>
                         {/* Filter input inside dropdown */}
                         <div className="p-2 border-b border-gray-100">
                             <div className="relative">
@@ -261,21 +261,19 @@ const MultiSelectTypeahead = ({
                                                 toggleOption(option.value, selectedValues, fieldOnChange)
                                             }}
                                             onMouseEnter={() => setHighlightedIndex(index)}
-                                            className={`flex items-center gap-3 px-3 py-2 cursor-pointer select-none text-[13px] transition-colors ${
-                                                isHighlighted
+                                            className={`flex items-center gap-3 px-3 py-2 cursor-pointer select-none text-[13px] transition-colors ${isHighlighted
                                                     ? 'bg-gray-100'
                                                     : isChecked
-                                                    ? 'bg-primary/5'
-                                                    : 'hover:bg-gray-50'
-                                            }`}
+                                                        ? 'bg-primary/5'
+                                                        : 'hover:bg-gray-50'
+                                                }`}
                                         >
                                             {/* Checkbox */}
                                             <span
-                                                className={`shrink-0 flex items-center justify-center w-4 h-4 rounded border transition-colors ${
-                                                    isChecked
+                                                className={`shrink-0 flex items-center justify-center w-4 h-4 rounded border transition-colors ${isChecked
                                                         ? 'bg-primary border-primary'
                                                         : 'border-gray-300 bg-white'
-                                                }`}
+                                                    }`}
                                             >
                                                 {isChecked && (
                                                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -328,41 +326,50 @@ const MultiSelectTypeahead = ({
             {label && (
                 <label
                     htmlFor={name}
-                    className="inline-block text-[13px] font-medium text-gray-700 mb-1"
+                    className={`inline-block text-[13px] font-medium text-gray-700 mb-1 ${labelClassName}`}
                 >
                     {label}
                     {isRequired && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
 
-            <div className="relative">
-                {control ? (
-                    <Controller
-                        name={name}
-                        control={control}
-                        rules={validation}
-                        defaultValue={[]}
-                        render={({ field }) =>
-                            renderContent(field.value, field.onChange)
-                        }
-                    />
-                ) : (
-                    <>
-                        {register && (
-                            <input
-                                type="hidden"
-                                {...register(name, validation)}
-                                value={JSON.stringify(value || [])}
-                            />
-                        )}
-                        {renderContent(value, onChange)}
-                    </>
+            {/*
+                flex-col wrapper keeps the field control (pills/input + dropdown)
+                and its error message stacked vertically and isolated from the
+                parent's layout. Without this, a parent using `flex items-center`
+                (common in horizontal label+field rows) pulls the error message
+                onto the same row as the field instead of letting it wrap below.
+            */}
+            <div className="flex flex-col flex-1 min-w-0">
+                <div className="relative flex-1">
+                    {control ? (
+                        <Controller
+                            name={name}
+                            control={control}
+                            rules={validation}
+                            defaultValue={[]}
+                            render={({ field }) =>
+                                renderContent(field.value, field.onChange)
+                            }
+                        />
+                    ) : (
+                        <>
+                            {register && (
+                                <input
+                                    type="hidden"
+                                    {...register(name, validation)}
+                                    value={JSON.stringify(value || [])}
+                                />
+                            )}
+                            {renderContent(value, onChange)}
+                        </>
+                    )}
+                </div>
+
+                {error && (
+                    <p className="mt-1 text-xs text-red-500">{error}</p>
                 )}
             </div>
-
-            {error && (
-                <p className="mt-1 text-xs text-red-500">{error}</p>
-            )}
         </div>
     )
 }
@@ -385,6 +392,8 @@ MultiSelectTypeahead.propTypes = {
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
     className: PropTypes.string,
+    labelClassName: PropTypes.string,
+    inputClassName: PropTypes.string
 }
 
 export default MultiSelectTypeahead

@@ -4,127 +4,21 @@ import LeaveCredits from './components/LeaveCredits'
 import ApplicationLeaveFrom from './components/ApplicationLeaveForm'
 import VacationLeaveList from './components/VacationLeaveList'
 import SickLeaveList from './components/SickLeaveList'
+import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
+import OpenTicketModal from './components/OpenTicketModal'
+import useSWR from 'swr'
+import { getFiledLeaves, getLeaveCredits } from '@/services/leaves-service'
+import { useAuthStore } from '@/store'
+import { spliceDateFromTime } from '@/utilities/date-utilities'
 
 export default function Leaves() {
+    const user = useAuthStore((state) => state.user)
+    const { data: leaveCreditsData, isValidating: isLeaveCreditsLoading, mutate: mutateLeaveCredits } = useSWR('/api/leave-credits', () => getLeaveCredits(user?.id))
+    const { data: filedLeavesData, isValidating: isFiledLeavesLoading, mutate: mutateFiledLeaves } = useSWR('/api/filed-leaves', () => getFiledLeaves(user?.id))
 
+    // States
     const [selectedLeave, setSelectedLeave] = useState(null)
-
-    const leaveCreditsData = [
-        {
-            year: 2025,
-            leaveType: 'Annual-Paid',
-            earned: 11.670,
-            additional: 0.000,
-            prevBalance: 0.000,
-            used: 0.000,
-            remaining: 11.670
-        },
-        {
-            year: 2025,
-            leaveType: 'Illness-Paid',
-            earned: 4.080,
-            additional: 0.000,
-            prevBalance: 0.000,
-            used: 0.000,
-            remaining: 4.080
-        },
-        {
-            year: 2026,
-            leaveType: 'Freeday',
-            earned: 1.080,
-            additional: 0.000,
-            prevBalance: 0.000,
-            used: 0.000,
-            remaining: 1.080
-        },
-    ]
-
-    const filedLeavesData = [
-        {
-            startDate: '2025-01-01',
-            endDate: '2025-01-01',
-            approvedBy: 'John Doe',
-            leaveType: 'Holiday-Paid',
-            description: 'New Year'
-        },
-        {
-            startDate: '2024-02-01',
-            endDate: '2024-02-01',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Annual-Paid',
-            description: 'Vacation Leave'
-        },
-        {
-            startDate: '2024-03-08',
-            endDate: '2024-03-08',
-            approvedBy: 'John Doe',
-            leaveType: 'Annual-Paid',
-            description: 'Vacation Leave'
-        },
-        {
-            startDate: '2024-04-09',
-            endDate: '2024-04-10',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Holiday-Paid',
-            description: 'Holy Week'
-        },
-        {
-            startDate: '2024-05-15',
-            endDate: '2024-05-15',
-            approvedBy: 'John Doe',
-            leaveType: 'Sick-Paid',
-            description: 'Not feeling well'
-        },
-        {
-            startDate: '2024-06-03',
-            endDate: '2024-06-03',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Annual-Paid',
-            description: 'Personal errand'
-        },
-        {
-            startDate: '2024-07-22',
-            endDate: '2024-07-22',
-            approvedBy: 'John Doe',
-            leaveType: 'Sick-Paid',
-            description: 'Medical appointment'
-        },
-        {
-            startDate: '2024-08-26',
-            endDate: '2024-08-26',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Holiday-Paid',
-            description: 'National Heroes Day'
-        },
-        {
-            startDate: '2024-09-10',
-            endDate: '2024-09-11',
-            approvedBy: 'John Doe',
-            leaveType: 'Annual-Paid',
-            description: 'Family trip'
-        },
-        {
-            startDate: '2024-11-01',
-            endDate: '2024-11-02',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Holiday-Paid',
-            description: 'All Saints Day'
-        },
-        {
-            startDate: '2024-12-24',
-            endDate: '2024-12-26',
-            approvedBy: 'John Doe',
-            leaveType: 'Holiday-Paid',
-            description: 'Christmas Holiday'
-        },
-        {
-            startDate: '2024-12-31',
-            endDate: '2024-12-31',
-            approvedBy: 'Jane Smith',
-            leaveType: 'Annual-Paid',
-            description: 'New Year Eve'
-        },
-    ]
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const vacationLeaveData = [
         { id: 1, order: 1, workDate: '2024-01-01', description: 'Accrue VL Credit', value: 1.67, balance: 1.67 },
@@ -163,21 +57,35 @@ export default function Leaves() {
     ]
 
     function handeLeaveSelect(leave) {
-        setSelectedLeave(leave)
+        setSelectedLeave({
+            id: leave.leaveId,
+            startDate: spliceDateFromTime(leave.startDate),
+            endDate: spliceDateFromTime(leave.endDate),
+            leaveType: leave.leaveType,
+            approvedBy: leave.approvedBy
+        })
+    }
+
+    function handleMutate() {
+        mutateLeaveCredits()
+        mutateFiledLeaves()
     }
 
     return (
         <PageTemplate
             title="Leaves"
-            rightSide="" // TODO: update this
+            rightSide={<OpenTicketModal setIsOpen={setIsModalOpen} />}
+            mutate={handleMutate}
         >
             {/* 1st Row */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4">
                 {/* Leave Credits */}
                 <div className="col-span-1 sm:col-span-3">
                     <LeaveCredits
-                        data={leaveCreditsData}
+                        leavesCreditsData={leaveCreditsData}
+                        isLeaveCreditsLoading={isLeaveCreditsLoading}
                         filedLeavesData={filedLeavesData}
+                        isFiledLeavesLoading={isFiledLeavesLoading}
                         handeLeaveSelect={handeLeaveSelect}
                     />
                 </div>
@@ -186,7 +94,9 @@ export default function Leaves() {
                 <div className="col-span-1 sm:col-span-2">
                     <ApplicationLeaveFrom
                         selectedLeave={selectedLeave}
+                        isLoading={isFiledLeavesLoading}
                         setSelectedLeave={setSelectedLeave}
+                        onSuccess={handleMutate}
                     />
                 </div>
             </div>
@@ -213,6 +123,16 @@ export default function Leaves() {
                     </div>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <TicketingModal
+                    defaultValues={{
+                        ticketType: 'Leave',
+                    }}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </PageTemplate>
     )
 }

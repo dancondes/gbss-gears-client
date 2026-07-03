@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import useTabNavigation from '@/hooks/use-tab-navigation'
+import { useUIStore } from '@/store'
+import useMessageModal from '@/hooks/use-message-modal'
 
 // ---------------------------------------------------------------------------
 // SubmenuPanel – the dropdown panel that appears below a top-level menu item
@@ -8,11 +10,37 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 
 function SubmenuPanel({ items, isOpen, onClose }) {
     const { navigate } = useTabNavigation()
+    const { showMessageModal } = useMessageModal()
+    const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
+    const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
+    const setChangePasswordModalOpen = useUIStore(state => state.setChangePasswordModalOpen)
+    const setChangePinModalOpen = useUIStore(state => state.setChangePinModalOpen)
 
     if (!isOpen || !items || items.length === 0) return null
 
     function handleItemClick(item) {
         onClose()
+
+        switch (item.action) {
+            case 'coe-request':
+                setCOERequestModalOpen(true)
+                return
+            case 'payslip-request':
+                setPayslipPinModalOpen(true)
+                return
+            case 'user-guide':
+                showMessageModal('This feature is not yet ready.', {
+                    type: 'info',
+                    title: 'User Guide',
+                })
+                return
+            case 'change-password':
+                setChangePasswordModalOpen(true)
+                return
+            case 'change-pin':
+                setChangePinModalOpen(true)
+                return
+        }
 
         if (item.url) {
             window.open(item.url, '_blank', 'noopener,noreferrer')
@@ -22,7 +50,7 @@ function SubmenuPanel({ items, isOpen, onClose }) {
         if (item.path) {
             navigate(item.path, {
                 id: item.id,
-                label: item.name,
+                label: item.tabName || item.name,
             })
         }
 

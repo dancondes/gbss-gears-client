@@ -4,6 +4,7 @@ import Table from '@/components/Table'
 
 function FiledLeaves({
     data = [],
+    isLoading = false,
     handeLeaveSelect
 }) {
 
@@ -19,12 +20,13 @@ function FiledLeaves({
             type: 'date',
         },
         {
-            accessorKey: 'approvedBy',
+            accessorKey: 'comment',
             header: 'Approved By',
         },
         {
             accessorKey: 'description',
             header: 'Description',
+            cell: () => ('HARDCODED. NO AVAILABLE DATA')
         }
     ]), [])
 
@@ -41,6 +43,7 @@ function FiledLeaves({
                 enablePagination={false}
                 maxHeight={200}
                 defaultSorting={[{ id: 'startDate', desc: true }]}
+                isLoading={isLoading}
             />
         </div>
     )
@@ -48,6 +51,7 @@ function FiledLeaves({
 
 FiledLeaves.propTypes = {
     data: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool,
     handeLeaveSelect: PropTypes.func.isRequired
 }
 

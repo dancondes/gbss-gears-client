@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
 	/* Legacy logo color variables - kept for backward compatibility */
@@ -139,4 +140,24 @@ button {
 
 button:disabled {
     cursor: not-allowed;
+}
+
+/* Success */
+.Toastify__progress-bar--success,
+.Toastify__progress-bar--bg.Toastify__progress-bar--success {
+    background: var(--primary) !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon svg {
+    fill: var(--primary);
+}
+
+/* Error */
+.Toastify__progress-bar--error,
+.Toastify__progress-bar--bg.Toastify__progress-bar--error {
+    background: var(--danger);
+}
+
+.Toastify__toast--error .Toastify__toast-icon svg {
+    fill: var(--danger);
 }

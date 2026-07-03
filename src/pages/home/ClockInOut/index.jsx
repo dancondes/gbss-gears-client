@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import PageTemplate from '@/components/PageTemplate'
 import SectionHeader from './components/SectionHeader'
 import ClockButton from './components/ClockButton'
@@ -9,6 +9,8 @@ import LunchColumn from './components/LunchColumn'
 import CombinedCheckoutButton from './components/CombinedCheckoutButton'
 import RunningTime from './components/RunningTime'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
+import { LunchOverSound } from '@/assets/audio'
+import logger from '@/utilities/logger'
 
 function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
@@ -31,8 +33,122 @@ function ClockInOut() {
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
 
+    const isFieldDisabled = useCallback((field) => {
+        // Any pair where "out" has been logged but "in" hasn't yet —
+        // meaning the person is still out on that section
+        const hasOpenPair = [
+            [break1Out, break1In],
+            [break2Out, break2In],
+            [combinedOut, combinedIn],
+            [lunchOut, lunchIn],
+        ].some(([out, inTime]) => Boolean(out) && !inTime)
+
+        // disable all fields if user has already checked out
+        if (checkOutTime) {
+            return true
+        }
+
+        // disable all fields except checkInTime if checkInTime is not set yet
+        if (field !== 'checkInTime' && !checkInTime) {
+            return true
+        }
+
+        // disable fields if there's an open pair (out without in) — except for the "in" field of that pair
+        if (hasOpenPair) {
+            return true
+        }
+
+        switch (field) {
+            case 'checkInTime':
+                return !!checkInTime
+
+            case 'break1Out':
+                return combinedOut || lunchOut // no Break 1 if user already took the combined break or lunch
+
+            case 'lunchOut':
+                return false // no more validations for Lunch — user can take lunch anytime after check-in
+
+            case 'break2Out':
+                return combinedOut || !lunchOut // no Break 2 if user has already taken the combined break or hasn't taken lunch yet
+
+            case 'combinedOut':
+                return break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
+
+            case 'checkOutTime':
+                return !checkInTime
+
+            case 'checkOut15':
+                return break1Out && break2Out
+
+            case 'checkOut30':
+                return break1Out || break2Out || combinedOut
+
+            case 'checkOut60':
+                return lunchOut
+
+            case 'checkOut75':
+                return (break1Out && break2Out) || lunchOut
+
+            case 'checkOut90':
+                return break1Out || break2Out || combinedOut || lunchOut
+
+            default:
+                return false
+        }
+    }, [checkInTime, checkOutTime, break1Out, break1In, break2Out, break2In, combinedOut, combinedIn, lunchOut, lunchIn])
+
+    useEffect(() => {
+        if (!lunchOut || lunchIn) return // only run while lunch is "open"
+
+        const LUNCH_LIMIT_MINUTES = 55; // 55 minutes instead of 60 to give a 5-minute warning before the hour is up
+        const elapsedMs = Date.now() - new Date(lunchOut).getTime()
+        const remainingMs = LUNCH_LIMIT_MINUTES * 60 * 1000 - elapsedMs
+
+        if (remainingMs <= 0) {
+            playAlertSound()
+            return
+        }
+
+        const timerId = setTimeout(() => {
+            playAlertSound()
+        }, remainingMs)
+
+        return () => clearTimeout(timerId) // cancels if lunchIn is set before time's up, or on unmount
+    }, [lunchOut, lunchIn])
+
+    const alertAudioRef = useRef(null)
+
+    function playAlertSound() {
+        const audio = new Audio(LunchOverSound)
+        alertAudioRef.current = audio
+        audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+
+        function stopAlertSound() {
+            if (alertAudioRef.current) {
+                alertAudioRef.current.pause()
+                alertAudioRef.current.currentTime = 0
+                alertAudioRef.current = null
+            }
+        }
+
+        showConfirmationModal({
+            title: 'Lunch Break Ending',
+            message: 'Your lunch is almost over. Do you want to lunch in now?',
+            confirmText: 'Yes',
+            cancelText: 'No',
+            variant: 'info',
+            onConfirm: function () {
+                stopAlertSound()
+                setLunchIn(new Date())
+            },
+            onCancel: function () {
+                stopAlertSound()
+            },
+        })
+    }
+
     function stamp() { return new Date() }
-    
+
     // show confirmation modal on click
     function handleButtonClick(action, type = 'info') {
         showConfirmationModal({
@@ -64,7 +180,7 @@ function ClockInOut() {
                         <ClockButton
                             label="Check In"
                             onClick={() => handleButtonClick(setCheckInTime)}
-                            disabled={!!checkInTime}
+                            disabled={isFieldDisabled('checkInTime')}
                         />
                         <TimeDisplay time={formatTime(checkInTime)} large />
                     </div>
@@ -100,6 +216,7 @@ function ClockInOut() {
                                 inTime={break1In}
                                 onOut={() => handleButtonClick(setBreak1Out)}
                                 onIn={() => handleButtonClick(setBreak1In)}
+                                disabled={isFieldDisabled('break1Out')}
                             />
                             <BreakRow
                                 label="2nd (15mins)"
@@ -107,6 +224,7 @@ function ClockInOut() {
                                 inTime={break2In}
                                 onOut={() => handleButtonClick(setBreak2Out)}
                                 onIn={() => handleButtonClick(setBreak2In)}
+                                disabled={isFieldDisabled('break2Out')}
                             />
                             <BreakRow
                                 label="Combined (30mins)"
@@ -114,6 +232,7 @@ function ClockInOut() {
                                 inTime={combinedIn}
                                 onOut={() => handleButtonClick(setCombinedOut)}
                                 onIn={() => handleButtonClick(setCombinedIn)}
+                                disabled={isFieldDisabled('combinedOut')}
                             />
                         </div>
 
@@ -124,7 +243,7 @@ function ClockInOut() {
                                 inTime={lunchIn}
                                 onOut={() => handleButtonClick(setLunchOut)}
                                 onIn={() => handleButtonClick(setLunchIn)}
-
+                                disabled={isFieldDisabled('lunchOut')}
                             />
                         </div>
                     </div>
@@ -139,7 +258,7 @@ function ClockInOut() {
                         <ClockButton
                             label="Check Out"
                             onClick={() => handleButtonClick(setCheckOutTime)}
-                            disabled={!!checkOutTime}
+                            disabled={isFieldDisabled('checkOutTime')}
                         />
                         <TimeDisplay time={formatTime(checkOutTime)} large />
                     </div>
@@ -157,7 +276,7 @@ function ClockInOut() {
                                         setCheckOutTime(stamp())
                                     }, 100)
                                 }}
-                                disabled={!!checkOutTime}
+                                disabled={isFieldDisabled('checkOut15')}
                             />
                             <CombinedCheckoutButton
                                 label={'30mins Break\n+ Check Out'}
@@ -168,22 +287,22 @@ function ClockInOut() {
                                         setCheckOutTime(stamp())
                                     }, 100)
                                 }}
-                                disabled={!!checkOutTime}
+                                disabled={isFieldDisabled('checkOut30')}
                             />
                             <CombinedCheckoutButton
                                 label={'1hr Break\n+ Check Out'}
                                 onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={!!checkOutTime}
+                                disabled={isFieldDisabled('checkOut60')}
                             />
                             <CombinedCheckoutButton
                                 label={'1hr 15 Break\n+ Check Out'}
                                 onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={!!checkOutTime}
+                                disabled={isFieldDisabled('checkOut75')}
                             />
                             <CombinedCheckoutButton
                                 label={'1hr 30 Break\n+ Check Out'}
                                 onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={!!checkOutTime}
+                                disabled={isFieldDisabled('checkOut90')}
                             />
                         </div>
                     </div>

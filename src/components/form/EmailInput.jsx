@@ -18,7 +18,7 @@ const EmailInput = ({
 
     // register function from react-hook-form handles everything including ref
     const inputProps = register(name, validation)
-    
+
     // Check if field is required from validation rules or props
     const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
 
@@ -29,25 +29,33 @@ const EmailInput = ({
                     {label} {isRequired && <span className="text-red-500">*</span>}
                 </label>
             )}
-            <div className={showDomain ? 'flex items-center gap-2' : ''}>
-                <input
-                    id={name}
-                    name={name}
-                    type={showDomain ? 'text' : 'email'}
-                    autoComplete={autoComplete}
-                    placeholder={placeholder}
-                    className={`appearance-none rounded relative block w-full px-3 py-2 border ${hasError ? 'border-red-500' : 'border-tertiary'
-                        } placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm ${showDomain ? 'flex-1' : ''
-                        } ${className}`}
-                    {...inputProps}
-                />
-                {showDomain && (
-                    <span className="text-sm text-tertiary whitespace-nowrap">{domain}</span>
+            {/*
+                flex-col wrapper keeps the input row (input + domain suffix) and
+                its error message stacked vertically and isolated from the
+                parent's layout (e.g. a parent using `flex items-center` would
+                otherwise pull the error message onto the same row as the input).
+            */}
+            <div className="flex flex-col">
+                <div className={showDomain ? 'flex items-center gap-2' : ''}>
+                    <input
+                        id={name}
+                        name={name}
+                        type={showDomain ? 'text' : 'email'}
+                        autoComplete={autoComplete}
+                        placeholder={placeholder}
+                        className={`appearance-none rounded relative block w-full px-3 py-2 border ${hasError ? 'border-red-500' : 'border-tertiary'
+                            } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm ${showDomain ? 'flex-1' : ''
+                            } ${className}`}
+                        {...inputProps}
+                    />
+                    {showDomain && (
+                        <span className="text-sm text-tertiary whitespace-nowrap">{domain}</span>
+                    )}
+                </div>
+                {hasError && (
+                    <p className="mt-1 text-xs text-red-500">{error}</p>
                 )}
             </div>
-            {hasError && (
-                <p className="mt-1 text-xs text-red-500">{error}</p>
-            )}
         </div>
     )
 }

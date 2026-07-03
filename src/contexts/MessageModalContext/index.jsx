@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import Modal from '@/components/modals/Modal'
 import ConfirmationModal from '@/components/modals/ConfirmationModal'
 import BlobViewerModal from '@/components/modals/BlobViewerModal'
+import { getFile } from '@/services/file-service'
+import { encodePaths } from '@/utilities/blob-path-encoder'
 
 export const MessageModalContext = createContext(null)
 
@@ -50,21 +52,20 @@ function getFilenameFromPath(path) {
 function normalizeAttachment(attachment) {
     if (!attachment) return null
 
-    if (attachment.filename && attachment.blobPath) {
-        return {
-            filename: attachment.filename,
-            blobPath: attachment.blobPath,
-        }
-    }
+    const blobPath =
+        attachment.blobPath ||
+        attachment.path ||
+        attachment.filePath
 
-    if (attachment.path) {
-        return {
-            filename: attachment.name || attachment.filename || getFilenameFromPath(attachment.path),
-            blobPath: attachment.path,
-        }
-    }
+    if (!blobPath) return null
 
-    return null
+    const filename =
+        attachment.filename ||
+        attachment.name ||
+        attachment.fileName ||
+        getFilenameFromPath(blobPath)
+
+    return { filename, blobPath }
 }
 
 function normalizeAttachments(attachments) {
@@ -197,14 +198,16 @@ export function MessageModalProvider({ children }) {
         hideConfirmationModal()
     }
 
+    // not being used as of 2026/06/18 - we are now using showBlobViewerInNewWindow instead for better UX and as requested by users
     function showBlobViewerModal(attachments) {
-        setBlobViewerState({
-            isOpen: true,
-            attachments: normalizeAttachments(attachments),
-        })
+        showBlobViewerInNewWindow(normalizeAttachments(attachments))
     }
 
-    function showBlobViewerFromDocument(document) {
+    /**
+     * @deprecated Use showBlobViewerInNewWindow instead.
+     */
+    // eslint-disable-next-line no-unused-vars
+    function showBlobViewerFromDocument_v1(document) {
         if (!document) return
 
         showBlobViewerModal([
@@ -213,6 +216,69 @@ export function MessageModalProvider({ children }) {
                 blobPath: document.path,
             },
         ])
+    }
+
+    /**
+     * @deprecated Use showBlobViewerInNewWindow instead.
+     */
+    // eslint-disable-next-line no-unused-vars
+    function showBlobViewerFromDocument_v2(document) {
+        if (!document) return
+
+        const blobPath = document.path
+        if (!blobPath) return
+
+        getFile(blobPath)
+            .then(function (result) {
+                const fileExt = blobPath.split('.').pop().toLowerCase()
+                const blobToUse = fileExt === 'pdf'
+                    ? new Blob([result], { type: 'application/pdf' })
+                    : result
+
+                const url = window.URL.createObjectURL(blobToUse)
+                const tab = window.open(url, '_blank', 'noopener,noreferrer')
+
+                // Revoke the object URL after the tab has had time to load it
+                if (tab) {
+                    tab.addEventListener('load', function () {
+                        window.URL.revokeObjectURL(url)
+                    })
+                }
+            })
+            .catch(function () {
+                showMessageModal('Failed to load the file. Please try again.', { type: 'error' })
+            })
+    }
+
+    /**
+     * 
+     * @param {*} documents - an object of name and path
+     */
+    function showBlobViewerInNewWindow(documents) {
+        if (!document) return
+
+        if (Array.isArray(document) && document.length === 0) return
+
+        // for opening in new tab
+        // const encoded = encodePaths(document.path)
+        // window.open(`/view-document/${encoded}`, '_blank', 'noopener,noreferrer')
+
+        // for opening in new window
+        const normalized = Array.isArray(documents) ? documents.map(normalizeAttachment) : [normalizeAttachment(documents)]
+
+        if (normalized.length === 0 || normalized.every((d) => !d.blobPath)) return
+
+        const encoded = encodePaths(normalized)
+        const width = 1100
+        const height = 850
+        const left = Math.round(window.screenX + (window.outerWidth - width) / 2)
+        const top = Math.round(window.screenY + (window.outerHeight - height) / 2)
+
+        window.open(
+            `/view-document/${encoded}`,
+            '_blank',
+            `noopener,noreferrer,width=${width},height=${height},left=${left},top=${top}`
+        )
     }
 
     function hideBlobViewerModal() {
@@ -226,7 +292,7 @@ export function MessageModalProvider({ children }) {
         hideConfirmationModal,
         confirmationModal: confirmationState,
         showBlobViewerModal,
-        showBlobViewerFromDocument,
+        showBlobViewerInNewWindow,
         hideBlobViewerModal,
         blobViewerModal: blobViewerState,
     }

@@ -261,7 +261,7 @@ const TableFilters = ({
                 </div>
             )}
 
-            <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex flex-wrap gap-3 gap-y-0.5 items-end">
                 {/* Global Search Input */}
                 {globalFilterColumns.length > 0 && (
                     <div className="flex-1 min-w-64">
@@ -279,7 +279,7 @@ const TableFilters = ({
                             onKeyPress={(e) => e.key === 'Enter' && onSearchSubmit()}
                             placeholder={`Search by ${formatLabel(globalFilterColumns)}...`}
                             title={`Searchable columns: ${formatLabel(globalFilterColumns)}`}
-                            className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm"
+                            className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm"
                         />
                     </div>
                 )}
@@ -300,7 +300,7 @@ const TableFilters = ({
                                     id="date-range-start"
                                     value={dateRangeFilter.start}
                                     onChange={(e) => onDateRangeChange('start', e.target.value)}
-                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
+                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
                                 />
                             </div>
                         )}
@@ -317,7 +317,7 @@ const TableFilters = ({
                                     id="date-range-end"
                                     value={dateRangeFilter.end}
                                     onChange={(e) => onDateRangeChange('end', e.target.value)}
-                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
+                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
                                 />
                             </div>
                         )}
@@ -354,7 +354,7 @@ const TableFilters = ({
                                     onChange={(e) =>
                                         onColumnFilterChange(columnId, e.target.value || 'all')
                                     }
-                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm cursor-pointer"
+                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm cursor-pointer"
                                 />
                             )}
 
@@ -374,7 +374,7 @@ const TableFilters = ({
                                             onKeyDown={(e) => handleTypeaheadKeyDown(e, columnId, filterConfig)}
                                             placeholder={filterConfig.placeholder || 'Type to search...'}
                                             autoComplete="off"
-                                            className="appearance-none rounded relative block w-full px-2 py-1 pr-14 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm"
+                                            className="appearance-none rounded relative block w-full px-2 py-1 pr-14 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm"
                                         />
 
                                         <div className="absolute inset-y-0 right-0 flex items-center z-20">
@@ -460,7 +460,7 @@ const TableFilters = ({
                                     id={`filter-${columnId}`}
                                     value={filterValue}
                                     onChange={(e) => onColumnFilterChange(columnId, e.target.value)}
-                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-500 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
+                                    className="appearance-none rounded relative block w-full px-2 py-1 border border-tertiary placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm cursor-pointer"
                                 >
                                     {!filterConfig.noAll && (
                                         <option value="all">{filterConfig.allLabel || `All ${filterConfig.label}`}</option>
@@ -484,30 +484,41 @@ const TableFilters = ({
                         </div>
                     )
                 })}
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 sm:justify-end">
-                <button
-                    type="button"
-                    onClick={onReset}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 cursor-pointer transition-all duration-200 shadow-sm"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span>Clear Filters</span>
-                </button>
-                <button
-                    type="button"
-                    onClick={onSearchSubmit}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-dark-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <span>Search</span>
-                </button>
+                {/*
+                    Action Buttons — inline, compact icon buttons instead of a full
+                    width row of large pill buttons. They sit at the end of the
+                    filter row (same baseline, thanks to items-end on the parent)
+                    so they cost zero extra vertical space in the common case and
+                    only wrap below when the row is already full.
+                    flex-none + ml-auto keeps them pinned right and never lets them
+                    stretch like the filter fields do.
+                */}
+                <div className="flex-none flex gap-1.5 ml-auto">
+                    <button
+                        type="button"
+                        onClick={onReset}
+                        title="Clear all filters"
+                        aria-label="Clear all filters"
+                        className="group flex items-center justify-center h-[30px] w-[30px] text-gray-500 bg-white rounded-md border border-gray-300 hover:bg-gray-50 hover:text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1 cursor-pointer transition-colors"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onSearchSubmit}
+                        title="Search"
+                        aria-label="Search"
+                        className="flex items-center justify-center gap-1.5 h-[30px] px-3 bg-primary text-white text-sm font-medium rounded-md hover:bg-dark-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 cursor-pointer transition-colors"
+                    >
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <span>Search</span>
+                    </button>
+                </div>
             </div>
         </div>
     )

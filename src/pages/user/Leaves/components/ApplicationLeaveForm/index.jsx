@@ -5,6 +5,11 @@ import FormInput from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
 import TypeaheadSelect from '@/components/form/TypeaheadSelect'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
+import { toast } from 'react-toastify'
+import logger from '@/utilities/logger'
+import { fileLeave, updateLeave } from '@/services/leaves-service'
+import { useAuthStore } from '@/store'
+import { isResultSuccessful } from '@/utilities'
 
 const DEFAULT_FORM_VALUES = {
     dateFrom: '',
@@ -15,9 +20,10 @@ const DEFAULT_FORM_VALUES = {
 
 function ApplicationLeaveFrom({
     selectedLeave = null,
-    setSelectedLeave
+    setSelectedLeave,
+    onSuccess = () => {}
 }) {
-
+    const user = useAuthStore((state) => state.user)
     const { showConfirmationModal } = useConfirmationModal()
 
     const {
@@ -59,11 +65,33 @@ function ApplicationLeaveFrom({
     }
 
     async function handleSave(formData) {
-        console.log('Form Data:', formData)
+        try {
+            const params = {
+                startDate: formData.dateFrom,
+                endDate: formData.dateTo,
+                leaveTypeId: 1, // TODO: update this to use the correct value once endpoint is available
+                comment: formData.approvedBy
+            }
+            const personId = user?.id
+            const result = await (selectedLeave ? updateLeave(personId, selectedLeave.id, params) : fileLeave(personId, params))
+            if (isResultSuccessful(result)) {
+                toast.success(selectedLeave ? 'Leave updated successfully.' : 'Leave filed successfully.')
+                setSelectedLeave(null)
+                reset(DEFAULT_FORM_VALUES)
+                onSuccess()
+            }
+        } catch (error) {
+            toast.error('Failed to save leave. Please try again.')
+            logger.error('Failed to save leave:', error)
+        }
     }
 
     function handleCancel() {
         setSelectedLeave(null)
+    }
+
+    function handleReset() {
+        reset(DEFAULT_FORM_VALUES)
     }
 
     const leaveTypeOptions = [
@@ -141,26 +169,25 @@ function ApplicationLeaveFrom({
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-end gap-2 mt-4">
+                    <button
+                        type="button"
+                        onClick={selectedLeave ? handleCancel : handleReset}
+                        className="btn-white py-1.5! px-4!"
+                    >
+                        {selectedLeave ? 'Cancel' : 'Reset'}
+                    </button>
                     {selectedLeave && (
                         <button
                             type="button"
-                            onClick={handleCancel}
-                            className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
-                        >
-                            Cancel
-                        </button>
-                    )}
-                    {selectedLeave && (
-                        <button
-                            type="button"
-                            className="px-4 py-2 text-sm text-white bg-danger rounded hover:opacity-90"
+                            // onClick=
+                            className="btn-danger py-1.5! px-4!"
                         >
                             Delete
                         </button>
                     )}
                     <button
                         type="submit"
-                        className="px-4 py-2 text-sm text-white bg-primary rounded hover:opacity-90"
+                        className="btn-primary py-1.5! px-4!"
                     >
                         Save
                     </button>
@@ -172,7 +199,8 @@ function ApplicationLeaveFrom({
 
 ApplicationLeaveFrom.propTypes = {
     selectedLeave: PropTypes.object,
-    setSelectedLeave: PropTypes.func.isRequired
+    setSelectedLeave: PropTypes.func.isRequired,
+    onSuccess: PropTypes.func.isRequired
 }
 
 export default ApplicationLeaveFrom

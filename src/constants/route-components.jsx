@@ -5,10 +5,10 @@ import FormNotFound from '@/components/FormNotFound'
 const IMPORT_MAP = {
     // home
     '/clock-in-out': { main: () => import('@/pages/home/ClockInOut') },
-    // '/user/staff-news': { main: () => import('@/pages/home/HARDCODED') },
-    // '/user/staff-bulletins': { main: () => import('@/pages/home/HARDCODED') },
-    // '/user/change-password': { main: () => import('@/pages/home/HARDCODED') },
-    // '/user/change-pin': { main: () => import('@/pages/home/HARDCODED') },
+    '/user/staff-news': { main: () => import('@/pages/home/StaffNews') },
+    '/user/staff-bulletins': { main: () => import('@/pages/home/StaffBulletins') },
+    // '/user/change-password': { main: () => import('@/pages/home/ChangePassword') },
+    // '/user/change-pin': { main: () => import('@/pages/home/ChangePin') },
 
     // user
     '/user/personal-details': { main: () => import('@/pages/user/PersonalDetails') },
@@ -17,13 +17,22 @@ const IMPORT_MAP = {
     '/user/overtime': { main: () => import('@/pages/user/Overtime') },
     '/user/leaves': { main: () => import('@/pages/user/Leaves') },
     // '/user/coe': { main: () => import('@/pages/user/HARDCODED') },
-    // '/user/payslip': { main: () => import('@/pages/user/HARDCODED') },
-    // '/user/documents': { main: () => import('@/pages/user/HARDCODED') },
+    '/user/payslip': { main: () => import('@/pages/user/Payslip') },
+    '/user/documents': { main: () => import('@/pages/user/Documents') },
+
+    // team
+    '/team/records': { main: () => import('@/pages/team/Records') },
+    '/team/leaves': { main: () => import('@/pages/team/Leaves') },
+    '/team/status': { main: () => import('@/pages/team/Status') },
+    '/team/requests': { main: () => import('@/pages/team/Requests') },
+    
+    // IT
+    '/it/manage-users': { main: () => import('@/pages/it/ManageUsers') },
 
     // help
     // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
     // '/help/about': { main: () => import('@/pages/help/HARDCODED') },
-    // '/help/comms': { main: () => import('@/pages/help/HARDCODED') },
+    '/help/comms': { main: () => import('@/pages/help/Ticketing') },
 }
 
 function buildRouteComponents() {

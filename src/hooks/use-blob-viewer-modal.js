@@ -4,7 +4,7 @@ function useBlobViewerModal() {
     const {
         blobViewerModal,
         showBlobViewerModal,
-        showBlobViewerFromDocument,
+        showBlobViewerInNewWindow,
         hideBlobViewerModal,
     } = useMessageModal()
 
@@ -13,7 +13,7 @@ function useBlobViewerModal() {
         isOpen: blobViewerModal.isOpen,
         attachments: blobViewerModal.attachments,
         openViewer: showBlobViewerModal,
-        openViewerFromDocument: showBlobViewerFromDocument,
+        openBlobViewerInNewWindow: showBlobViewerInNewWindow,
         closeViewer: hideBlobViewerModal,
     }
 }

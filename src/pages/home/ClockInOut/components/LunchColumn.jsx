@@ -5,7 +5,7 @@ import TimeDisplay from './TimeDisplay'
 import ClockButton from './ClockButton'
 import BreakRow from './BreakRow'
 
-function LunchColumn({ outTime, inTime, onOut, onIn }) {
+function LunchColumn({ outTime, inTime, onOut, onIn, disabled }) {
     const duration = calcDuration(outTime, inTime)
 
     return (
@@ -15,7 +15,7 @@ function LunchColumn({ outTime, inTime, onOut, onIn }) {
                     LUNCH <span className="text-primary/80">[ {duration} min(s) ]</span>
                 </span>
                 <div className="flex flex-col gap-1.5 items-start">
-                    <ClockButton label="Out" onClick={onOut} disabled={!!outTime} />
+                    <ClockButton label="Out" onClick={onOut} disabled={!!outTime || disabled} />
                     <TimeDisplay time={formatTime(outTime)} />
                 </div>
                 <div className="flex flex-col gap-1.5 items-start">
@@ -34,6 +34,7 @@ function LunchColumn({ outTime, inTime, onOut, onIn }) {
                     inTime={inTime}
                     onOut={onOut}
                     onIn={onIn}
+                    disabled={disabled}
                 />
             </div>
         </>
@@ -45,6 +46,7 @@ LunchColumn.propTypes = {
     inTime: PropTypes.string,
     onOut: PropTypes.func.isRequired,
     onIn: PropTypes.func.isRequired,
+    disabled: PropTypes.bool,
 }
 
 export default LunchColumn

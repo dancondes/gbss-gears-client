@@ -113,7 +113,8 @@ function ProtectedRoute({ children }) {
             }
 
             // Fetch user data from server and validate active status
-            const userData = await getUserById(userId)
+            // const userData = await getUserById(userId) // TODO: uncomment this once backend is ready
+            const userData = [{ id: 1710, firstname: 'John', lastname: 'Doe', name: 'John Doe', isActive: true, access: [{ buttonId: 'dashboard' }, { buttonId: 'reports' }] }] // Mocked user data for testing
 
             // Check if user exists, is active, then store and load menu
             if (userData && userData[0] && userData[0].isActive) {

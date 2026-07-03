@@ -15,6 +15,7 @@ import TableFilters from './TableFilters'
 import TablePagination from './TablePagination'
 import { useTableFilters, useTableColumns, useRowClick } from './hooks'
 import { LOADING_MESSAGE_DELAY } from '@/constants'
+import ReactDOMServer from 'react-dom/server'
 
 // ============================================================================
 // SORTING ICONS
@@ -261,13 +262,13 @@ const Table = ({
     initialColumnVisibility = {},
     minHeight,
     maxHeight,
-    isCollapsible = true,
+    isCollapsible = false,
     defaultOpen = false,
     isLoading = false,
     showTableHeader = true,
 
     // Export
-    excelFileName,
+    exportToExcel = null,
 
     // State persistence
     storageKey,
@@ -432,13 +433,57 @@ const Table = ({
         return filteredRows.slice(startIdx, endIdx)
     }, [enablePagination, filteredRows, pageIndex, currentPageSize])
 
-    const exportData = useMemo(
-        () => (excelFileName ? transformRowsForExport(filteredRows, columns) : []),
-        [excelFileName, filteredRows, columns]
-    )
+    // ============================================================================
+    // EXPORT HELPERS
+    // ============================================================================
+
+    const getCellDisplayValue = (cell) => {
+        const rendered = flexRender(cell.column.columnDef.cell, cell.getContext())
+
+        if (rendered === null || rendered === undefined) return ''
+        if (typeof rendered === 'string' || typeof rendered === 'number') return String(rendered)
+
+        // JSX cell (e.g. wrapped in a <span>, badge, icon+text, etc.) — render to
+        // static HTML and strip tags to get the same text the user sees on screen
+        try {
+            const html = ReactDOMServer.renderToStaticMarkup(rendered)
+            return html
+                .replace(/<[^>]*>/g, ' ')   // strip tags
+                .replace(/&nbsp;/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+        } catch {
+            // Fallback to raw underlying value if the cell can't be stringified
+            return String(cell.getValue() ?? '')
+        }
+    }
+
+    const exportData = useMemo(() => {
+        if (!exportToExcel) return { headers: [], rows: [] }
+
+        const headers = table.getVisibleFlatColumns().map((col) => ({
+            key: col.id,
+            label: typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id,
+        }))
+
+        const rows = filteredRows.map((row) => {
+            const rowData = {}
+            row.getVisibleCells().forEach((cell) => {
+                rowData[cell.column.id] = getCellDisplayValue(cell)
+            })
+            return rowData
+        })
+
+        return { headers, rows }
+    }, [exportToExcel, filteredRows, table])
 
     // ========== RENDER ==========
     const isClickable = Boolean(onRowClick || onDoubleClick)
+
+    const exportPosition = exportToExcel?.position || 'top-right'
+    const isTopExport = exportPosition.startsWith('top')
+    const isBottomExport = exportPosition.startsWith('bottom')
+    const exportJustifyClass = exportPosition.endsWith('left') ? 'justify-start' : 'justify-end'
 
     return (
         <div className={`w-full ${minHeight ? `min-h-[${minHeight}]!` : ''}`}>
@@ -464,9 +509,9 @@ const Table = ({
                                     onColumnFilterChange={memoizedHandleColumnFilterChange}
                                     showToggle={showToggle}
                                 />
-                                {excelFileName && (
-                                    <div className="flex justify-end pt-3 border-t border-gray-200">
-                                        <ExportToExcel data={exportData} fileName={excelFileName} />
+                                {exportToExcel?.fileName && isTopExport && (
+                                    <div className={`flex ${exportJustifyClass} pt-3 border-t border-gray-200`}>
+                                        <ExportToExcel data={exportData} fileName={exportToExcel.fileName} buttonLabel={exportToExcel?.buttonLabel} />
                                     </div>
                                 )}
                             </div>
@@ -489,9 +534,9 @@ const Table = ({
                                 onColumnFilterChange={memoizedHandleColumnFilterChange}
                                 showToggle={showToggle}
                             />
-                            {excelFileName && (
-                                <div className="flex justify-end pt-3 border-t border-gray-200">
-                                    <ExportToExcel data={exportData} fileName={excelFileName} />
+                            {exportToExcel?.fileName && isTopExport && (
+                                <div className={`flex ${exportJustifyClass} pt-3 border-t border-gray-200`}>
+                                    <ExportToExcel data={exportData} fileName={exportToExcel.fileName} buttonLabel={exportToExcel?.buttonLabel} />
                                 </div>
                             )}
                         </div>
@@ -499,10 +544,10 @@ const Table = ({
                 </div>
             )}
 
-            {/* Standalone Export (when no filters) */}
-            {excelFileName && !hasFilters && (
-                <div className="flex justify-end mb-3 pb-3 border-b border-gray-200">
-                    <ExportToExcel data={exportData} fileName={excelFileName} />
+            {/* Standalone Export (when no filters, top position) */}
+            {exportToExcel?.fileName && isTopExport && !hasFilters && (
+                <div className={`flex ${exportJustifyClass} mb-3 pb-3 border-b border-gray-200`}>
+                    <ExportToExcel data={exportData} fileName={exportToExcel.fileName} buttonLabel={exportToExcel?.buttonLabel} />
                 </div>
             )}
 
@@ -548,6 +593,13 @@ const Table = ({
                     }
                     onPageChange={(page) => table.setPageIndex(page)}
                 />
+            )}
+
+            {/* Bottom Export */}
+            {exportToExcel?.fileName && isBottomExport && (
+                <div className={`flex ${exportJustifyClass} mt-3 pt-3 border-t border-gray-200`}>
+                    <ExportToExcel data={exportData} fileName={exportToExcel.fileName} buttonLabel={exportToExcel?.buttonLabel} />
+                </div>
             )}
         </div>
     )
@@ -669,7 +721,11 @@ Table.propTypes = {
     defaultOpen: PropTypes.bool,
 
     /** Filename for Excel export (enables export button) */
-    excelFileName: PropTypes.string,
+    exportToExcel: PropTypes.shape({
+        fileName: PropTypes.string.isRequired,
+        buttonLabel: PropTypes.string,
+        position: PropTypes.oneOf(['top-right', 'top-left', 'bottom-right', 'bottom-left']),
+    }),
 
     /** Unique key for persisting table state in sessionStorage */
     storageKey: PropTypes.string,

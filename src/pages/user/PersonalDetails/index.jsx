@@ -112,7 +112,7 @@ function PersonalDetails() {
                             columns={columns}
                             data={tableData}
                             enablePagination={false}
-                            enableSorting={false}
+                            enableSorting={true}
                             enableFiltering={false}
                             enableSearch={false}
                             onRowClick={handleRowClick}

@@ -48,7 +48,7 @@ function LeaveCredits({
                 columns={columns}
                 data={data}
                 enablePagination={false}
-                enableSorting={false}
+                enableSorting={true}
                 exportToExcel={{
                     fileName: 'Team Leave Credits',
                     position: 'bottom-right',

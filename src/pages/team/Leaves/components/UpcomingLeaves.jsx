@@ -37,7 +37,7 @@ function UpcomingLeaves({
                 columns={columns}
                 data={data}
                 enablePagination={false}
-                enableSorting={false}
+                enableSorting={true}
                 exportToExcel={{
                     fileName: 'Team\'s Upcoming Leaves',
                     position: 'bottom-right',

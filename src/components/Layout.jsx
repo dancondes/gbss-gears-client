@@ -62,16 +62,6 @@ const TabContent = React.memo(function TabContent({ tab, isActive }) {
     const Component = getComponentForPath(tab.path)
     const checkIfUserHavAccessToTab = useFormsMenuStore((state) => state.checkIfUserHavAccessToTab)
     const hasAccess = checkIfUserHavAccessToTab(tab)
-    // Status bar mock data
-    const statusBar = {
-        mac: 'XX:XX:XX:XX:XX:XX',
-        ip: '192.168.1.1',
-        loc: 'HOME',
-        shift: 'FLEXI 6:00am-8:00am',
-        gRole: 'User',
-        company: 'GBSS',
-    }
-
 
     if (!Component) return null
 
@@ -88,7 +78,7 @@ const TabContent = React.memo(function TabContent({ tab, isActive }) {
                             <Component />
                         </div>
                         <div>
-                            <StatusBar statusBar={statusBar} />
+                            <StatusBar />
                         </div>
                     </div>
                 </Suspense>

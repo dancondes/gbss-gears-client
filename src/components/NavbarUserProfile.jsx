@@ -1,12 +1,8 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
 function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onUserMenuClose, onLogoutClick }) {
-
-    const rolesToDisplay = useMemo(() => {
-        return user?.role?.filter(role => role?.description != 'All Staff').map(role => role.description)
-    }, [user])
 
     if (!user) {
         return (
@@ -26,7 +22,7 @@ function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onU
                 className="flex items-center gap-1.5 px-2 py-0.5 rounded text-white hover:bg-white/20 focus:outline-none cursor-pointer"
             >
                 <div className="h-6 w-6 rounded-full bg-white flex items-center justify-center text-primary font-medium text-xs">
-                    {user.firstName?.charAt(0)?.toUpperCase()}{user.lastName?.charAt(0)?.toUpperCase()}
+                    {user.firstname?.charAt(0)?.toUpperCase()}{user.lastname?.charAt(0)?.toUpperCase()}
                 </div>
                 <span className="text-xs hidden sm:inline">{fullName}</span>
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,23 +41,7 @@ function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onU
                         <div className="py-1">
                             <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
                                 <div className="font-medium text-primary">{fullName}</div>
-                                <div className="text-xs text-gray-500">{user?.email}</div>
-                                <div className="flex flex-wrap gap-1 mt-1.5 items-center">
-                                    <span
-                                        className="text-xs text-gray-500"
-                                    >
-                                        {rolesToDisplay.length > 1 ? 'Roles:' : 'Role:'}
-                                    </span>
-
-                                    {rolesToDisplay?.map((role, index) => (
-                                        <span
-                                            key={index}
-                                            className="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600"
-                                        >
-                                            {role}
-                                        </span>
-                                    ))}
-                                </div>
+                                <div className="text-xs text-gray-500">Employee Number: {user?.empNo}</div>
                             </div>
                             <Link
                                 to="/profile"
@@ -86,12 +66,13 @@ function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onU
 
 NavbarUserProfile.propTypes = {
     user: PropTypes.shape({
-        firstName: PropTypes.string,
-        lastName: PropTypes.string,
-        email: PropTypes.string,
-        role: PropTypes.arrayOf(PropTypes.shape({
-            description: PropTypes.string,
-        })),
+        firstname: PropTypes.string,
+        lastname: PropTypes.string,
+        empNo: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        // email: PropTypes.string,
+        // role: PropTypes.arrayOf(PropTypes.shape({
+        //     description: PropTypes.string,
+        // })),
     }),
     fullName: PropTypes.string.isRequired,
     userMenuOpen: PropTypes.bool.isRequired,

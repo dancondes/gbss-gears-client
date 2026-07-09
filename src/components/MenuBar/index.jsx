@@ -1,9 +1,11 @@
-import React, { useState, useCallback } from 'react'
-import { useFormsMenuStore } from '@/store'
+import React, { useState, useCallback, useContext } from 'react'
+import { useAuthStore, useFormsMenuStore } from '@/store'
 import { gbss_logo_white } from '@/assets/images'
 import NavbarNotifications from '../NavbarNotifications'
 import NavbarUserProfile from '../NavbarUserProfile'
 import MenuBarItem from './components/MenuBarItem'
+import { MessageModalContext } from '@/contexts/MessageModalContext'
+import { useNavigate } from 'react-router-dom'
 
 // ---------------------------------------------------------------------------
 // MenuBar – the full horizontal menu bar
@@ -12,6 +14,12 @@ import MenuBarItem from './components/MenuBarItem'
 function MenuBar() {
     const menuItems = useFormsMenuStore(function (state) { return state.menuItems })
     const [openIndex, setOpenIndex] = useState(null)
+    const [userMenuOpen, setUserMenuOpen] = useState(false)
+    const messageModalContext = useContext(MessageModalContext)
+    const user = useAuthStore((state) => state.user)
+    const fullName = user?.employeeInfo ? `${user.employeeInfo.firstname} ${user.employeeInfo.lastname}` : ''
+    const logout = useAuthStore((state) => state.logout)
+    const navigate = useNavigate()
 
     const handleToggle = useCallback(function (index) {
         setOpenIndex(function (prev) {
@@ -24,6 +32,39 @@ function MenuBar() {
             return prev === index ? null : prev
         })
     }, [])
+
+    function handleLogoutConfirm() {
+        logout()
+        navigate('/login')
+    }
+
+    function handleLogoutClick() {
+        setUserMenuOpen(false)
+        if (messageModalContext && typeof messageModalContext.showConfirmationModal === 'function') {
+            messageModalContext.showConfirmationModal({
+                title: 'Sign Out',
+                message: 'Are you sure you want to sign out?',
+                confirmText: 'Yes, Sign Out',
+                cancelText: 'Cancel',
+                variant: 'danger',
+                onConfirm: handleLogoutConfirm,
+            })
+            return
+        }
+
+        if (window.confirm('Are you sure you want to sign out?')) {
+            handleLogoutConfirm()
+        }
+    }
+
+    function handleUserMenuToggle() {
+        // setNotificationOpen(false)
+        setUserMenuOpen((prev) => !prev)
+    }
+
+    function handleUserMenuClose() {
+        setUserMenuOpen(false)
+    }
 
     if (!menuItems || menuItems.length === 0) return null
 
@@ -71,25 +112,25 @@ function MenuBar() {
                                 </button> */}
 
                         <NavbarNotifications
-                            // notificationOpen={notificationOpen}
-                            // onNotificationToggle={handleNotificationToggle}
-                            // onNotificationClose={handleNotificationClose}
-                            // isBellShaking={isBellShaking}
-                            // unreadCount={unreadCount}
-                            // notifications={notifications}
-                            // onClearNotifications={handleClearNotifications}
-                            // justOpenedNotificationIds={justOpenedNotificationIds}
-                            // getNotificationAccentClass={getNotificationAccentClass}
-                            // formatNotificationTimestamp={formatNotificationTimestamp}
+                        // notificationOpen={notificationOpen}
+                        // onNotificationToggle={handleNotificationToggle}
+                        // onNotificationClose={handleNotificationClose}
+                        // isBellShaking={isBellShaking}
+                        // unreadCount={unreadCount}
+                        // notifications={notifications}
+                        // onClearNotifications={handleClearNotifications}
+                        // justOpenedNotificationIds={justOpenedNotificationIds}
+                        // getNotificationAccentClass={getNotificationAccentClass}
+                        // formatNotificationTimestamp={formatNotificationTimestamp}
                         />
 
                         <NavbarUserProfile
-                            // user={user}
-                            // fullName={fullName}
-                            // userMenuOpen={userMenuOpen}
-                            // onUserMenuToggle={handleUserMenuToggle}
-                            // onUserMenuClose={handleUserMenuClose}
-                            // onLogoutClick={handleLogoutClick}
+                            user={user?.employeeInfo}
+                            fullName={fullName}
+                            userMenuOpen={userMenuOpen}
+                            onUserMenuToggle={handleUserMenuToggle}
+                            onUserMenuClose={handleUserMenuClose}
+                            onLogoutClick={handleLogoutClick}
                         />
                     </div>
                 </div>

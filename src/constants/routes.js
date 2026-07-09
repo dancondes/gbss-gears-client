@@ -1,4 +1,7 @@
 export const ROUTES = {
+    AUTH: {
+        LOGIN: '/Auth/login',
+    },
     ATTENDANCE: {
         APPROVE_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/approve/${id}`,
         REJECT_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/reject/${id}`,
@@ -29,5 +32,8 @@ export const ROUTES = {
     },
     TICKETING: {
         CREATE: '/Ticketing',
+    },
+    USERS: {
+        GET_BY_ID: (id) => `/User/${id}`,
     }
 }

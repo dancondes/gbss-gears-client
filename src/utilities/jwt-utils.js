@@ -59,8 +59,6 @@ export function isTokenExpired(token) {
     if (!expirationTime) return true
     const currentTime = Date.now()
 
-    return false // TODO: remove this once we have a proper token to test with
-
     return currentTime > expirationTime
 }
 

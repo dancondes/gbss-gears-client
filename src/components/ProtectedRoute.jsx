@@ -113,17 +113,16 @@ function ProtectedRoute({ children }) {
             }
 
             // Fetch user data from server and validate active status
-            // const userData = await getUserById(userId) // TODO: uncomment this once backend is ready
-            const userData = [{ id: 1710, firstname: 'John', lastname: 'Doe', name: 'John Doe', isActive: true, access: [{ buttonId: 'dashboard' }, { buttonId: 'reports' }] }] // Mocked user data for testing
+            const fetchedUser = await getUserById(userId)
 
-            // Check if user exists, is active, then store and load menu
-            if (userData && userData[0] && userData[0].isActive) {
-                setUser(userData[0])
+            // Check if fetchedUser exists, is active, then store and load menu
+            if (fetchedUser && fetchedUser.data[0]) {
+                setUser(fetchedUser.data[0])
 
                 try {
                     // Fetch forms menu data for authenticated user
-                    const buttonPermissions = getSystemFunctions(userData[0])
-                    setFormsMenuData(buttonPermissions)
+                    // const buttonPermissions = getSystemFunctions(userData[0])
+                    // setFormsMenuData(buttonPermissions)
                 } catch (menuError) {
                     // Log menu fetch failure but continue (non-critical)
                     logger.error('Forms menu initialization error:', menuError)
@@ -244,20 +243,20 @@ function ProtectedRoute({ children }) {
 
     // Display session expired modal when token has expired
     // TODO: uncomment this once validations are implemented
-    // if (showSessionExpired) {
-    //     return (
-    //         <SessionExpiredModal
-    //             isOpen={showSessionExpired}
-    //             onConfirm={handleSessionExpiredConfirm}
-    //         />
-    //     )
-    // }
+    if (showSessionExpired) {
+        return (
+            <SessionExpiredModal
+                isOpen={showSessionExpired}
+                onConfirm={handleSessionExpiredConfirm}
+            />
+        )
+    }
 
     // Redirect to login if not authenticated, no token, or redirect flag is set
     // TODO: uncomment this once validations are implemented
-    // if (shouldRedirect || !isAuthenticated || !token) {
-    //     return <Navigate to="/login" replace />
-    // }
+    if (shouldRedirect || !isAuthenticated || !token) {
+        return <Navigate to="/login" replace />
+    }
 
     // Render protected content if all auth checks pass
     return children

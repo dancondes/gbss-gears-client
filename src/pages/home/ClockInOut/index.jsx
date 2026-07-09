@@ -11,9 +11,19 @@ import RunningTime from './components/RunningTime'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { LunchOverSound } from '@/assets/audio'
 import logger from '@/utilities/logger'
+import { useAuthStore } from '@/store'
 
 function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
+    const user = useAuthStore((state) => state.user)
+    const {
+        earlyCheckOut15,
+        earlyCheckOut: earlyCheckOut30,
+        earlyCheckOut60,
+        earlyCheckOut75,
+        earlyCheckOut90,
+        combinedBreak,
+    } = user?.schedule?.[0] || {}
 
     // Start
     const [checkInTime, setCheckInTime] = useState(null)
@@ -226,14 +236,16 @@ function ClockInOut() {
                                 onIn={() => handleButtonClick(setBreak2In)}
                                 disabled={isFieldDisabled('break2Out')}
                             />
-                            <BreakRow
-                                label="Combined (30mins)"
-                                outTime={combinedOut}
-                                inTime={combinedIn}
-                                onOut={() => handleButtonClick(setCombinedOut)}
-                                onIn={() => handleButtonClick(setCombinedIn)}
-                                disabled={isFieldDisabled('combinedOut')}
-                            />
+                            {combinedBreak && (
+                                <BreakRow
+                                    label="Combined (30mins)"
+                                    outTime={combinedOut}
+                                    inTime={combinedIn}
+                                    onOut={() => handleButtonClick(setCombinedOut)}
+                                    onIn={() => handleButtonClick(setCombinedIn)}
+                                    disabled={isFieldDisabled('combinedOut')}
+                                />
+                            )}
                         </div>
 
                         {/* Right column: Lunch */}
@@ -264,48 +276,66 @@ function ClockInOut() {
                     </div>
 
                     {/* Combined checkout buttons */}
-                    <div>
-                        <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                            <CombinedCheckoutButton
-                                label={'15mins Break\n+ Check Out'}
-                                onClick={function () {
-                                    setBreak1Out(stamp())
-                                    setTimeout(function () {
-                                        setBreak1In(stamp())
-                                        setCheckOutTime(stamp())
-                                    }, 100)
-                                }}
-                                disabled={isFieldDisabled('checkOut15')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'30mins Break\n+ Check Out'}
-                                onClick={function () {
-                                    setCombinedOut(stamp())
-                                    setTimeout(function () {
-                                        setCombinedIn(stamp())
-                                        setCheckOutTime(stamp())
-                                    }, 100)
-                                }}
-                                disabled={isFieldDisabled('checkOut30')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut60')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr 15 Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut75')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr 30 Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut90')}
-                            />
-                        </div>
-                    </div>
+                    {
+                        (earlyCheckOut15 || earlyCheckOut30 || earlyCheckOut60 || earlyCheckOut75 || earlyCheckOut90 || combinedBreak) && (
+                            <div>
+                                <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
+                                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+
+                                    {earlyCheckOut15 && (
+                                        <CombinedCheckoutButton
+                                            label={'15mins Break\n+ Check Out'}
+                                            onClick={function () {
+                                                setBreak1Out(stamp())
+                                                setTimeout(function () {
+                                                    setBreak1In(stamp())
+                                                    setCheckOutTime(stamp())
+                                                }, 100)
+                                            }}
+                                            disabled={isFieldDisabled('checkOut15')}
+                                        />
+                                    )}
+
+                                    {earlyCheckOut30 && (
+                                        <CombinedCheckoutButton
+                                            label={'30mins Break\n+ Check Out'}
+                                            onClick={function () {
+                                                setCombinedOut(stamp())
+                                                setTimeout(function () {
+                                                    setCombinedIn(stamp())
+                                                    setCheckOutTime(stamp())
+                                                }, 100)
+                                            }}
+                                            disabled={isFieldDisabled('checkOut30')}
+                                        />
+                                    )}
+
+                                    {earlyCheckOut60 && (
+                                        <CombinedCheckoutButton
+                                            label={'1hr Break\n+ Check Out'}
+                                            onClick={function () { setCheckOutTime(stamp()) }}
+                                            disabled={isFieldDisabled('checkOut60')}
+                                        />
+                                    )}
+
+                                    {earlyCheckOut75 && (
+                                        <CombinedCheckoutButton
+                                            label={'1hr 15 Break\n+ Check Out'}
+                                            onClick={function () { setCheckOutTime(stamp()) }}
+                                            disabled={isFieldDisabled('checkOut75')}
+                                        />
+                                    )}
+
+                                    {earlyCheckOut90 && (
+                                        <CombinedCheckoutButton
+                                            label={'1hr 30 Break\n+ Check Out'}
+                                            onClick={function () { setCheckOutTime(stamp()) }}
+                                            disabled={isFieldDisabled('checkOut90')}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
                 </div>
             </div>
         </PageTemplate>

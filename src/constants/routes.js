@@ -12,6 +12,13 @@ export const ROUTES = {
     EMPLOYEE: {
         GET_DOCUMENTS: (id) => `/Employee/${id}/documents`,
     },
+    EVENT: {
+        CREATE_TIME_ENTRY: (type) => `/Event/time-entry/create/${type}`,
+        UPDATE_TIME_ENTRY: (id) => `/Event/time-entry/${id}/update`,
+        DELETE_TIME_ENTRY: (id) => `/Event/time-entry/${id}/delete`,
+        GET_TIME_ENTRIES: `/Event/time-entry/get`,
+        GET_TIME_ENTRIES_BY_ID: (id) => `/Event/time-entry/get/${id}`,
+    },
     FILE: {
         DOWNLOAD: (path) => `/File/download?blobName=${encodeURIComponent(path)}`,
         DELETE: (path) => `/File/${encodeURIComponent(path)}`,

@@ -11,7 +11,7 @@ export function formatTimeShort(date) {
 
 export function calcDuration(outTime, inTime) {
     if (!outTime || !inTime) return '0.00'
-    const diffMs = inTime - outTime
+    const diffMs = parseCustomDateTime(inTime) - parseCustomDateTime(outTime)
     if (diffMs <= 0) return '0.00'
     return (diffMs / 1000 / 60).toFixed(2)
 }

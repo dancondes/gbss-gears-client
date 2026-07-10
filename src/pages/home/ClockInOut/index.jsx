@@ -31,6 +31,7 @@ function ClockInOut() {
     } = user?.schedule?.[0] || {}
 
     const [locationModalOpen, setLocationModalOpen] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(null)
 
     // Start
     const [checkInTime, setCheckInTime] = useState(null)
@@ -51,15 +52,6 @@ function ClockInOut() {
     const [checkOutTime, setCheckOutTime] = useState(null)
 
     const isFieldDisabled = useCallback((field) => {
-        // Any pair where "out" has been logged but "in" hasn't yet —
-        // meaning the person is still out on that section
-        const hasOpenPair = [
-            [break1Out, break1In],
-            [break2Out, break2In],
-            [combinedOut, combinedIn],
-            [lunchOut, lunchIn],
-        ].some(([out, inTime]) => Boolean(out) && !inTime)
-
         // disable all fields if user has already checked out
         if (checkOutTime) {
             return true
@@ -69,6 +61,15 @@ function ClockInOut() {
         if (field !== 'checkInTime' && !checkInTime) {
             return true
         }
+
+        // Any pair where "out" has been logged but "in" hasn't yet —
+        // meaning the person is still out on that section
+        const hasOpenPair = [
+            [break1Out, break1In],
+            [break2Out, break2In],
+            [combinedOut, combinedIn],
+            [lunchOut, lunchIn],
+        ].some(([out, inTime]) => Boolean(out) && !inTime)
 
         // disable fields if there's an open pair (out without in) — except for the "in" field of that pair
         if (hasOpenPair) {
@@ -210,17 +211,20 @@ function ClockInOut() {
      */
     async function handleSaveTimeEntry(type, location = null) {
         try {
+            setIsSubmitting(true)
             await createTimeEntry(type, location)
-            refreshTimeEntries()
+            await refreshTimeEntries()
         } catch (error) {
             logger.error('Error saving time entry:', error)
             toast.error('Failed to save time entry. Please try again.')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
     async function refreshTimeEntries() {
         function getTimeEntryValue(entries, entryType, setter) {
-            const entry = entries.find((e) => e.logTypeCode === entryType)
+            const entry = entries.find((e) => entryType === 'Out' ? ['O', 'g', 'F','Z', 'Y', 'X'].includes(e.logTypeCode) : e.logTypeCode === entryType)
             setter(entry?.workdate && entry?.worktime
                 ? `${entry.workdate}T${entry.worktime}`
                 : null)
@@ -237,7 +241,6 @@ function ClockInOut() {
             if (isResultSuccessful(result)) {
                 const entries = result.data || []
                 getTimeEntryValue(entries, 'I', setCheckInTime)
-                getTimeEntryValue(entries, 'O', setCheckOutTime)
                 getTimeEntryValue(entries, 'o', setLunchOut)
                 getTimeEntryValue(entries, 'i', setLunchIn)
                 getTimeEntryValue(entries, '0', setBreak1Out)
@@ -246,6 +249,8 @@ function ClockInOut() {
                 getTimeEntryValue(entries, '3', setBreak2In)
                 getTimeEntryValue(entries, '4', setCombinedOut)
                 getTimeEntryValue(entries, '5', setCombinedIn)
+
+                getTimeEntryValue(entries, 'Out', setCheckOutTime)
             }
         } catch (error) {
             logger.error('Error fetching time entries:', error)
@@ -260,137 +265,139 @@ function ClockInOut() {
                 <RunningTime />
             )}
         >
-            <div className="flex flex-col gap-0 overflow-hidden text-sm">
+            <fieldset disabled={isSubmitting}>
+                <div className="flex flex-col gap-0 overflow-hidden text-sm">
 
-                {/* ── START ─────────────────────────────────────────── */}
-                <SectionHeader title="Start" />
-                <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
-                    {/* No flex-1 here — let it size to its content */}
-                    <div className="flex items-center gap-4 min-w-0">
-                        <ClockButton
-                            label="Check In"
-                            onClick={() => setLocationModalOpen(true)}
-                            disabled={isFieldDisabled('checkInTime')}
-                        />
-                        <TimeDisplay time={formatTime(checkInTime)} large />
+                    {/* ── START ─────────────────────────────────────────── */}
+                    <SectionHeader title="Start" />
+                    <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
+                        {/* No flex-1 here — let it size to its content */}
+                        <div className="flex items-center gap-4 min-w-0">
+                            <ClockButton
+                                label="Check In"
+                                onClick={() => setLocationModalOpen(true)}
+                                disabled={isFieldDisabled('checkInTime')}
+                            />
+                            <TimeDisplay time={formatTime(checkInTime)} large />
+                        </div>
+                        <button
+                            onClick={function () { window.location.reload() }}
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
+                            title="Refresh [F5]"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Refresh [F5]
+                        </button>
                     </div>
-                    <button
-                        onClick={function () { window.location.reload() }}
-                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
-                        title="Refresh [F5]"
-                    >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Refresh [F5]
-                    </button>
-                </div>
 
-                {/* ── BREAKS ────────────────────────────────────────── */}
-                <SectionHeader title="Breaks" />
-                {/*
+                    {/* ── BREAKS ────────────────────────────────────────── */}
+                    <SectionHeader title="Breaks" />
+                    {/*
                     On small screens all break rows (including Lunch) stack in a
                     single column. On md+ screens the original two-column layout
                     is restored with Lunch in the right column.
                 */}
-                <div className="border-b border-gray-200">
+                    <div className="border-b border-gray-200">
 
-                    {/* md+: two-column grid */}
-                    <div className="grid md:grid-cols-2 gap-0">
+                        {/* md+: two-column grid */}
+                        <div className="grid md:grid-cols-2 gap-0">
 
-                        {/* Left column: 1st, 2nd, Combined */}
-                        <div className="flex flex-col gap-5 px-4 py-4 md:border-r border-gray-200">
-                            <BreakRow
-                                label="1st (15mins)"
-                                outTime={break1Out}
-                                inTime={break1In}
-                                onOut={() => handleButtonClick('0')}
-                                onIn={() => handleButtonClick('1')}
-                                disabled={isFieldDisabled('break1Out')}
+                            {/* Left column: 1st, 2nd, Combined */}
+                            <div className="flex flex-col gap-5 px-4 py-4 md:border-r border-gray-200">
+                                <BreakRow
+                                    label="1st (15mins)"
+                                    outTime={break1Out}
+                                    inTime={break1In}
+                                    onOut={() => handleButtonClick('0')}
+                                    onIn={() => handleButtonClick('1')}
+                                    disabled={isFieldDisabled('break1Out')}
+                                />
+                                <BreakRow
+                                    label="2nd (15mins)"
+                                    outTime={break2Out}
+                                    inTime={break2In}
+                                    onOut={() => handleButtonClick('2')}
+                                    onIn={() => handleButtonClick('3')}
+                                    disabled={isFieldDisabled('break2Out')}
+                                />
+                                <BreakRow
+                                    label="Combined (30mins)"
+                                    outTime={combinedOut}
+                                    inTime={combinedIn}
+                                    onOut={() => handleButtonClick('4')}
+                                    onIn={() => handleButtonClick('5')}
+                                    disabled={isFieldDisabled('combinedOut')}
+                                />
+                            </div>
+
+                            {/* Right column: Lunch */}
+                            <div className="px-6 py-4">
+                                <LunchColumn
+                                    outTime={lunchOut}
+                                    inTime={lunchIn}
+                                    onOut={() => handleButtonClick('o')}
+                                    onIn={() => handleButtonClick('i')}
+                                    disabled={isFieldDisabled('lunchOut')}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── END ───────────────────────────────────────────── */}
+                    <SectionHeader title="End" />
+                    <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
+
+                        {/* Check Out row */}
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <ClockButton
+                                label="Check Out"
+                                onClick={() => handleButtonClick('O')}
+                                disabled={isFieldDisabled('checkOutTime')}
                             />
-                            <BreakRow
-                                label="2nd (15mins)"
-                                outTime={break2Out}
-                                inTime={break2In}
-                                onOut={() => handleButtonClick('2')}
-                                onIn={() => handleButtonClick('3')}
-                                disabled={isFieldDisabled('break2Out')}
-                            />
-                            <BreakRow
-                                label="Combined (30mins)"
-                                outTime={combinedOut}
-                                inTime={combinedIn}
-                                onOut={() => handleButtonClick('4')}
-                                onIn={() => handleButtonClick('5')}
-                                disabled={isFieldDisabled('combinedOut')}
-                            />
+                            <TimeDisplay time={formatTime(checkOutTime)} large />
                         </div>
 
-                        {/* Right column: Lunch */}
-                        <div className="px-6 py-4">
-                            <LunchColumn
-                                outTime={lunchOut}
-                                inTime={lunchIn}
-                                onOut={() => handleButtonClick('o')}
-                                onIn={() => handleButtonClick('i')}
-                                disabled={isFieldDisabled('lunchOut')}
-                            />
+                        {/* Combined checkout buttons */}
+                        <div>
+                            <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+
+                                <CombinedCheckoutButton
+                                    label={'15mins Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('g') }}
+                                    disabled={isFieldDisabled('checkOut15')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'30mins Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('F') }}
+                                    disabled={isFieldDisabled('checkOut30')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('Z') }}
+                                    disabled={isFieldDisabled('checkOut60')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr 15 Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('Y') }}
+                                    disabled={isFieldDisabled('checkOut75')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr 30 Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('X') }}
+                                    disabled={isFieldDisabled('checkOut90')}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                {/* ── END ───────────────────────────────────────────── */}
-                <SectionHeader title="End" />
-                <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
-
-                    {/* Check Out row */}
-                    <div className="flex items-center gap-4 flex-wrap">
-                        <ClockButton
-                            label="Check Out"
-                            onClick={() => handleButtonClick('O')}
-                            disabled={isFieldDisabled('checkOutTime')}
-                        />
-                        <TimeDisplay time={formatTime(checkOutTime)} large />
-                    </div>
-
-                    {/* Combined checkout buttons */}
-                    <div>
-                        <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-
-                            <CombinedCheckoutButton
-                                label={'15mins Break\n+ Check Out'}
-                                onClick={function () { handleButtonClick('g') }}
-                                disabled={isFieldDisabled('checkOut15')}
-                            />
-
-                            <CombinedCheckoutButton
-                                label={'30mins Break\n+ Check Out'}
-                                onClick={function () { handleButtonClick('F') }}
-                                disabled={isFieldDisabled('checkOut30')}
-                            />
-
-                            <CombinedCheckoutButton
-                                label={'1hr Break\n+ Check Out'}
-                                onClick={function () { handleButtonClick('Z') }}
-                                disabled={isFieldDisabled('checkOut60')}
-                            />
-
-                            <CombinedCheckoutButton
-                                label={'1hr 15 Break\n+ Check Out'}
-                                onClick={function () { handleButtonClick('Y') }}
-                                disabled={isFieldDisabled('checkOut75')}
-                            />
-
-                            <CombinedCheckoutButton
-                                label={'1hr 30 Break\n+ Check Out'}
-                                onClick={function () { handleButtonClick('X') }}
-                                disabled={isFieldDisabled('checkOut90')}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </fieldset>
 
             {locationModalOpen && (
                 <LocationModal

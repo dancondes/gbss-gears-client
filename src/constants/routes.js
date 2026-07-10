@@ -41,6 +41,10 @@ export const ROUTES = {
         CREATE: '/Ticketing',
     },
     USERS: {
+        GET_ALL: '/User',
         GET_BY_ID: (id) => `/User/${id}`,
+        CREATE: '/User/create',
+        UPDATE: (id) => `/User/${id}/update`,
+        GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
     }
 }

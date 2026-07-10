@@ -43,6 +43,10 @@ export const updateUser = (id, userData) => {
     return put(ROUTES.USERS.UPDATE(id), userData)
 }
 
+export function getUserDocuments() {
+    return get(ROUTES.USERS.GET_DOCUMENTS)
+}
+
 /**
  * Custom hook to fetch user options for select/typeahead components
  * @returns {object} - Object containing options array, loading state, and error

@@ -1,46 +1,41 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import ActionButtonGroup from '@/components/ActionButtonGroup'
 import useBlobViewerModal from '@/hooks/use-blob-viewer-modal'
 import useDownloadFileButton from '@/hooks/use-download-file-button'
-import { getEmployeeDocuments } from '@/services/employee-service'
-import { useAuthStore } from '@/store'
 import { updatePathFor201Files } from '@/utilities/file-utilities'
+import { getUserDocuments } from '@/services/user-service'
+import useSWR from 'swr'
 
 function Documents() {
-    const [documentList, setDocumentList] = useState([])
-    const [documentListLoading, setDocumentListLoading] = useState(false)
-    const user = useAuthStore((state) => state.user)
 
     const { openBlobViewerInNewWindow } = useBlobViewerModal()
     const { downloadFromDocument } = useDownloadFileButton()
 
     useEffect(() => {
-        if (user?.id) {
-            fetchDocuments(user.id)
-        }
-    }, [user])
+        fetchDocuments()
+    }, [])
 
-    async function fetchDocuments(id) {
+    async function fetchDocuments() {
         try {
-            setDocumentListLoading(true)
-            const result = await getEmployeeDocuments(id)
-            setDocumentList(result.map(doc => ({
+            const result = await getUserDocuments()
+            return result.map(doc => ({
                 ...doc,
+                filename: doc.displayName,
                 fullPath: updatePathFor201Files(doc.fullPath),
-            })))
+            }))
         } catch {
-            setDocumentList([])
-        } finally {
-            setDocumentListLoading(false)
+            return []
         }
     }
+
+    const { data, isValidating, mutate } = useSWR('user-documents', fetchDocuments)
 
     const columns = useMemo(
         () => [
             {
-                accessorKey: 'displayName',
+                accessorKey: 'filename',
                 header: 'File',
             },
             {
@@ -64,7 +59,6 @@ function Documents() {
         ], [])
 
     function handleView(data) {
-        console.log('handleView', data)
         openBlobViewerInNewWindow({
             name: data.displayName,
             path: data.fullPath
@@ -82,18 +76,19 @@ function Documents() {
         <PageTemplate
             title="201 Files"
             subtitle="View and download your documents"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={documentList}
+                    data={data}
                     enablePagination={false}
                     enableSorting={true}
-                    // pageSize={10}
                     noDataLabel="No documents found"
                     columnFilters={{
                     }}
-                    isLoading={documentListLoading}
+                    isLoading={isValidating}
+                    globalFilterColumns={['filename']}
                 />
 
                 {/* <div className="mt-4 text-sm text-gray-500">

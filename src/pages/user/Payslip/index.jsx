@@ -4,9 +4,7 @@ import Table from '@/components/Table'
 import ActionButtonGroup from '@/components/ActionButtonGroup'
 import useBlobViewerModal from '@/hooks/use-blob-viewer-modal'
 import useDownloadFileButton from '@/hooks/use-download-file-button'
-import { getEmployeeDocuments } from '@/services/employee-service'
 import { useAuthStore } from '@/store'
-import { updatePathFor201Files } from '@/utilities/file-utilities'
 
 function Payslip() {
     const [payslipList, setPayslipList] = useState([])
@@ -22,15 +20,10 @@ function Payslip() {
         }
     }, [user])
 
-    async function fetchPayslips(id) {
+    async function fetchPayslips() {
         try {
             setPayslipListLoading(true)
-            // TODO: udpate endpoint to get payslips instead of documents once the backend is ready
-            const result = await getEmployeeDocuments(id)
-            setPayslipList(result.map(doc => ({
-                ...doc,
-                fullPath: updatePathFor201Files(doc.fullPath),
-            })))
+            setPayslipList([])
         } catch {
             setPayslipList([])
         } finally {
@@ -65,7 +58,6 @@ function Payslip() {
         ], [])
 
     function handleView(data) {
-        console.log('handleView', data)
         openBlobViewerInNewWindow({
             name: data.displayName,
             path: data.fullPath

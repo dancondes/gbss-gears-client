@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
@@ -58,21 +58,10 @@ function Overtime() {
                     pageSize={50}
                     isLoading={isValidating}
                     noDataLabel="No overtime found"
-                    // globalFilterColumns={['comment']}
                     dateRange={{
                         column: 'date',
                         start: getCurrentDate(),
                         end: getCurrentDate(),
-                    }}
-                    columnFilters={{
-                        // workDate: {
-                        //     label: 'Work Date',
-                        //     type: 'date',
-                        // },
-                        // status: {
-                        //     label: 'Status',
-                        //     options: formatArrayOfStringsAsSelectOptions(['For Approval', 'Approved', 'Rejected', 'Cancelled'])
-                        // }
                     }}
                 />
 

@@ -1,27 +1,22 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
+import { useAuthStore } from '@/store'
 
 function PersonalDetails() {
-    const [personalDetails] = useState({
-        firstname: 'Jerwin',
-        lastname: 'Lalap',
-        birthdate: '2002-05-20',
-        civilStatus: '',
-        mobileNo: '0921 987 3062',
-        personalEmail: 'jerwin.jpl@gmail.com',
-        street: '327 San Pablo, Batangas Sto. Tomas,',
-        emergencyContact: 'Sergia Lalap ( Mother )',
-        emergencyNumber: '0909 378 0208',
-        sss: '04-4917850-6',
-        phic: '10-251575793-4',
-        atmNumber: '492-3-492-716171',
-        tin: '659-381-808',
-        hdmf: '1213-5446-3236'
-    })
+    const user = useAuthStore((state) => state.user)
+    const [personalDetails, setPersonalDetails] = useState({})
 
     const [editingField, setEditingField] = useState(null)
     const [editValue, setEditValue] = useState('')
+
+    useEffect(() => {
+        if (user?.personalDetails) {
+            setPersonalDetails({
+                ...user.personalDetails
+            })
+        }
+    }, [user])
 
     const fields = useMemo(
         () => [
@@ -29,11 +24,11 @@ function PersonalDetails() {
             { label: 'Lastname', key: 'lastname', required: true },
             { label: 'Birthdate', key: 'birthdate' },
             { label: 'Civil Status', key: 'civilStatus', required: true },
-            { label: 'Mobile No.', key: 'mobileNo' },
+            { label: 'Mobile No.', key: 'mobile' },
             { label: 'Personal Email', key: 'personalEmail', required: true },
-            { label: 'Street', key: 'street' },
-            { label: 'Emergency Contact', key: 'emergencyContact' },
-            { label: 'Emergency Number', key: 'emergencyNumber' },
+            { label: 'Street', key: 'address' },
+            { label: 'Emergency Contact', key: 'emergencyContactName' },
+            { label: 'Emergency Number', key: 'emergencyContactNumber' },
             { label: 'SSS', key: 'sss', required: true },
             { label: 'PHIC', key: 'phic', required: true },
             { label: 'ATM Number', key: 'atmNumber', required: true },
@@ -49,7 +44,7 @@ function PersonalDetails() {
             fieldLabel: field.label,
             fieldKey: field.key,
             required: field.required,
-            value: personalDetails[field.key]
+            value: personalDetails[field.key] || ''
         })),
         [fields, personalDetails]
     )

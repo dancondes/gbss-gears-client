@@ -85,7 +85,7 @@ function DailyRecords() {
                     enablePagination={true}
                     enableSorting={true}
                     enableFiltering={true}
-                    pageSize={10}
+                    pageSize={15}
                     noDataLabel="No time logs found"
                     isLoading={isValidating || isSearching}
                     columnFilters={{

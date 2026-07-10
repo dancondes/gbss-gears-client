@@ -2,9 +2,21 @@ import React, { useState, useMemo } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
+import { getOvertime } from '@/services/event-service'
+import useSWR from 'swr'
 
 function Overtime() {
-    const [overtimeList] = useState([])
+
+    async function fetchOvertimeList() {
+        try {
+            const result = await getOvertime()
+            return result?.data || []
+        } catch {
+            return []
+        }
+    }
+
+    const {data: overtimeList, isValidating, mutate} = useSWR('overtime', fetchOvertimeList)
 
     const columns = useMemo(
         () => [
@@ -35,6 +47,7 @@ function Overtime() {
         <PageTemplate
             title="Overtime"
             subtitle="View and manage your overtime records"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 <Table
@@ -42,7 +55,8 @@ function Overtime() {
                     data={overtimeList}
                     enablePagination={true}
                     enableSorting={true}
-                    pageSize={10}
+                    pageSize={50}
+                    isLoading={isValidating}
                     noDataLabel="No overtime found"
                     // globalFilterColumns={['comment']}
                     dateRange={{

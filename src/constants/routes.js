@@ -18,6 +18,12 @@ export const ROUTES = {
         DELETE_TIME_ENTRY: (id) => `/Event/time-entry/${id}/delete`,
         GET_TIME_ENTRIES: `/Event/time-entry/get`,
         GET_TIME_ENTRIES_BY_ID: (id) => `/Event/time-entry/get/${id}`,
+
+        // Overtime
+        CREATE_OVERTIME: '/Event/overtime/create',
+        UPDATE_OVERTIME: (id) => `/Event/overtime/${id}/update`,
+        DELETE_OVERTIME: (id) => `/Event/overtime/${id}/remove`,
+        GET_OVERTIME: '/Event/overtime',
     },
     FILE: {
         DOWNLOAD: (path) => `/File/download?blobName=${encodeURIComponent(path)}`,

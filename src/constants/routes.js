@@ -34,6 +34,9 @@ export const ROUTES = {
         UPDATE_LEAVE_UNPAID: (personId, leaveId) => `/Employee/${personId}/leave/${leaveId}/update/proceedUnPaid`,
         DELETE_LEAVE: (personId, leaveId) => `/Employee/${personId}/leave/${leaveId}/delete`,
     },
+    LOOKUPS: {
+        LOG_TYPES: '/Lookups/log-types',
+    },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',
     },

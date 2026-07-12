@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
@@ -18,7 +18,7 @@ function DailyRecords() {
         labelKey: 'definition'
     })
 
-    async function fetchTimeEntries() {
+    const fetchTimeEntries = useCallback(async () => {
         try {
             const params = {
                 dateFrom: previousWorkDateRef.current,
@@ -29,16 +29,14 @@ function DailyRecords() {
         } catch {
             return []
         }
-    }
+    }, [user?.userId])
 
     const { data, isValidating, mutate } = useSWR('daily-records', fetchTimeEntries)
 
-    async function handleSearch(filters) {
+    const handleSearch = useCallback(async (filters) => {
         const workDate = filters.workdate
-
         if (workDate && workDate !== previousWorkDateRef.current) {
             previousWorkDateRef.current = workDate
-
             try {
                 setIsSearching(true)
                 const result = await fetchTimeEntries()
@@ -50,7 +48,7 @@ function DailyRecords() {
                 setIsSearching(false)
             }
         }
-    }
+    }, [fetchTimeEntries, mutate])
 
     const columns = useMemo(
         () => [
@@ -66,9 +64,29 @@ function DailyRecords() {
             {
                 accessorKey: 'logTypeDescription',
                 header: 'Log Type'
+            },
+            {
+                accessorKey: 'location',
+                header: 'Location'
             }
         ],
         []
+    )
+
+    const columnFilters = useMemo(
+        () => ({
+            workdate: {
+                label: 'Work Date',
+                type: 'date',
+                value: getCurrentDate(),
+                serverSide: true,
+            },
+            logTypeDescription: {
+                label: 'Log Type',
+                options: logTypeOptions
+            }
+        }),
+        [logTypeOptions]
     )
 
     return (
@@ -88,18 +106,7 @@ function DailyRecords() {
                     pageSize={15}
                     noDataLabel="No time logs found"
                     isLoading={isValidating || isSearching}
-                    columnFilters={{
-                        workdate: {
-                            label: 'Work Date',
-                            type: 'date',
-                            value: getCurrentDate(),
-                            serverSide: true,
-                        },
-                        logTypeDescription: {
-                            label: 'Log Type',
-                            options: logTypeOptions
-                        }
-                    }}
+                    columnFilters={columnFilters}
                     onSearch={handleSearch}
                 />
             </div>

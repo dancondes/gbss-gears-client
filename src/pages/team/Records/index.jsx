@@ -1,12 +1,47 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
+import { LOCATION_OPTIONS } from '@/constants'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { getTimeEntries } from '@/services/event-service'
+import { getLogTypes } from '@/services/lookups-service'
+import { useAuthStore, useTabStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import useSWR from 'swr'
 
 export default function Records() {
-
     const currentDate = getCurrentDate()
+    const user = useAuthStore((state) => state.user)
+    const activeTabId = useTabStore((state) => state.activeTabId)
+    const [filters, setFilters] = useState({
+        dateFrom: currentDate,
+        dateTo: currentDate
+    })
+    const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
+        valueKey: 'definition',
+        labelKey: 'definition'
+    })
+
+    async function fetchTeamRecords() {
+        try {
+            const result = await getTimeEntries(filters)
+            return result?.data?.map(log => ({
+                ...log,
+                name: `${log?.firstname} ${log?.lastname}`,
+            })) || []
+        } catch {
+            return []
+        }
+    }
+
+    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchTeamRecords)
+
+    useEffect(() => {
+        if (activeTabId === 'Team-Records') {
+            mutate()
+        }
+    }, [user?.userId, mutate, activeTabId])
 
     const columns = useMemo(() => [
         {
@@ -14,17 +49,16 @@ export default function Records() {
             header: 'Name',
         },
         {
-            accessorKey: 'workDate',
+            accessorKey: 'workdate',
             header: 'Work Date',
             type: 'date',
         },
         {
-            accessorKey: 'time',
+            accessorKey: 'worktime',
             header: 'Time',
-            type: 'time',
         },
         {
-            accessorKey: 'logType',
+            accessorKey: 'logTypeDescription',
             header: 'Log Type',
         },
         {
@@ -33,35 +67,19 @@ export default function Records() {
         }
     ], [])
 
-    const data = [
-        // Marcus Blaze
-        { name: 'Marcus Blaze', workDate: currentDate, time: '08:02', logType: 'Check-in', location: 'Three NEO' },
-        { name: 'Marcus Blaze', workDate: currentDate, time: '12:01', logType: 'Lunch-out', location: 'Three NEO' },
-        { name: 'Marcus Blaze', workDate: currentDate, time: '13:00', logType: 'Lunch-in', location: 'Three NEO' },
-        { name: 'Marcus Blaze', workDate: currentDate, time: '17:05', logType: 'Check-out', location: 'Three NEO' },
+    async function handleSearch(serverFilters) {
+        const mappedFilters = {
+            dateFrom: serverFilters.dateFrom || currentDate,
+            dateTo: serverFilters.dateTo || currentDate,
+        }
 
-        // Tremaine Sky
-        { name: 'Tremaine Sky', workDate: currentDate, time: '08:15', logType: 'Check-in', location: 'HOME' },
-        { name: 'Tremaine Sky', workDate: currentDate, time: '12:10', logType: 'Lunch-out', location: 'HOME' },
-        { name: 'Tremaine Sky', workDate: currentDate, time: '13:05', logType: 'Lunch-in', location: 'HOME' },
-        { name: 'Tremaine Sky', workDate: currentDate, time: '17:20', logType: 'Check-out', location: 'HOME' },
-
-        // Deshawn Rivers
-        { name: 'Deshawn Rivers', workDate: currentDate, time: '07:58', logType: 'Check-in', location: 'Three NEO' },
-        { name: 'Deshawn Rivers', workDate: currentDate, time: '11:55', logType: 'Lunch-out', location: 'Three NEO' },
-        { name: 'Deshawn Rivers', workDate: currentDate, time: '12:50', logType: 'Lunch-in', location: 'Three NEO' },
-        { name: 'Deshawn Rivers', workDate: currentDate, time: '17:02', logType: 'Check-out', location: 'Three NEO' },
-
-        // Jaylen Storm
-        { name: 'Jaylen Storm', workDate: currentDate, time: '08:00', logType: 'Check-in', location: 'Three NEO' },
-        { name: 'Jaylen Storm', workDate: currentDate, time: '12:15', logType: 'Lunch-out', location: 'Three NEO' },
-        { name: 'Jaylen Storm', workDate: currentDate, time: '13:10', logType: 'Lunch-in', location: 'Three NEO' },
-        { name: 'Jaylen Storm', workDate: currentDate, time: '17:00', logType: 'Check-out', location: 'Three NEO' },
-    ]
+        setFilters(mappedFilters)
+    }
 
     return (
         <PageTemplate
             title="Records"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 <Table
@@ -69,29 +87,32 @@ export default function Records() {
                     data={data}
                     enableSorting={true}
                     pageSize={50}
+                    isLoading={isValidating}
+                    onSearch={handleSearch}
                     exportToExcel={{
                         fileName: 'Time Logs',
                         position: 'bottom-right',
                         buttonLabel: 'Export to Excel'
                     }}
                     dateRange={{
-                        column: 'workDate',
+                        column: 'workdate',
                         start: currentDate,
                         end: currentDate,
+                        serverSide: true,
                     }}
                     columnFilters={{
                         name: {
                             label: 'Employee',
-                            options: formatArrayOfStringsAsSelectOptions(data.map(d => d.name).filter((value, index, self) => self.indexOf(value) === index)),
+                            options: [], // formatArrayOfStringsAsSelectOptions(data.map(d => d.name).filter((value, index, self) => self.indexOf(value) === index)),
                             type: 'typeahead'
                         },
-                        logType: {
+                        logTypeDescription: {
                             label: 'Log Type',
-                            options: formatArrayOfStringsAsSelectOptions(data.map(d => d.logType).filter((value, index, self) => self.indexOf(value) === index))
+                            options: logTypeOptions,
                         },
                         location: {
                             label: 'Location',
-                            options: formatArrayOfStringsAsSelectOptions(data.map(d => d.location).filter((value, index, self) => self.indexOf(value) === index))
+                            options: formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)
                         }
                     }}
                 />

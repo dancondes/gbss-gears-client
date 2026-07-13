@@ -57,5 +57,6 @@ export const ROUTES = {
         UPDATE: (id) => `/User/${id}/update`,
         GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
         GET_DOCUMENTS: '/User/documents',
+        UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
     }
 }

@@ -2,49 +2,25 @@ import { ROUTES } from '@/constants/routes'
 import { get, put, post } from '@/utilities/api'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 
-/**
- * User API Service
- * Handles all user-related API calls
- */
 
-/**
- * User registration
- * @param {object} userData - Registration data
- * @returns {Promise} - Created user data and token
- */
-export const register = (userData) => {
-    return post(ROUTES.USERS.CREATE, userData)
-}
-
-/**
- * Fetch all users
- * @returns {Promise} - Array of users
- */
 export const getAllUsers = () => {
     return get(ROUTES.USERS.GET_ALL)
 }
 
-/**
- * Fetch a single user by ID
- * @param {number|string} id - User ID
- * @returns {Promise} - User object
- */
 export const getUserById = (id) => {
     return get(ROUTES.USERS.GET_BY_ID(id))
 }
 
-/**
- * Update a user
- * @param {number|string} id - User ID
- * @param {object} userData - Updated user data
- * @returns {Promise} - Updated user object
- */
 export const updateUser = (id, userData) => {
     return put(ROUTES.USERS.UPDATE(id), userData)
 }
 
 export function getUserDocuments() {
     return get(ROUTES.USERS.GET_DOCUMENTS)
+}
+
+export function updatePersonalDetails(personalDetails) {
+    return post(ROUTES.USERS.UPDATE_PERSONAL_DETAILS, personalDetails)
 }
 
 /**

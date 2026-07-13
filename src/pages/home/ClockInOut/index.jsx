@@ -224,7 +224,7 @@ function ClockInOut() {
 
     async function refreshTimeEntries() {
         function getTimeEntryValue(entries, entryType, setter) {
-            const entry = entries.find((e) => entryType === 'Out' ? ['O', 'g', 'F','Z', 'Y', 'X'].includes(e.logTypeCode) : e.logTypeCode === entryType)
+            const entry = entries.find((e) => e.logTypeCode === entryType)
             setter(entry?.workdate && entry?.worktime
                 ? `${entry.workdate}T${entry.worktime}`
                 : null)
@@ -250,7 +250,7 @@ function ClockInOut() {
                 getTimeEntryValue(entries, '4', setCombinedOut)
                 getTimeEntryValue(entries, '5', setCombinedIn)
 
-                getTimeEntryValue(entries, 'Out', setCheckOutTime)
+                getTimeEntryValue(entries, 'O', setCheckOutTime)
             }
         } catch (error) {
             logger.error('Error fetching time entries:', error)

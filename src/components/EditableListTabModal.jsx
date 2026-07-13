@@ -227,6 +227,9 @@ const EditableListTabModal = forwardRef(function EditableListTabModal({
                                     formConfig={formConfig}
                                     isAddMode={isAddMode}
                                     data={selectedRow}
+                                    canAdd={canAdd}
+                                    canSave={canSave}
+                                    canDelete={canDelete}
                                     {...formProps}
                                 />
                             </fieldset>

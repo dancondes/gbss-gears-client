@@ -9,6 +9,8 @@ import OvertimeForm from './OvertimeForm'
 import logger from '@/utilities/logger'
 import { toast } from 'react-toastify'
 import { isResultSuccessful } from '@/utilities'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { getApprovers } from '@/services/lookups-service'
 
 const currentDate = getCurrentDate()
 
@@ -24,6 +26,10 @@ function Overtime() {
     }
 
     const { data: overtimeList, isValidating, mutate } = useSWR('overtime', fetchOvertimeList)
+    const { options: approverOptions } = useFetchOptions(getApprovers, {
+        valueKey: 'name',
+        labelKey: 'name'
+    })
 
     const columns = useMemo(
         () => [
@@ -103,6 +109,9 @@ function Overtime() {
                             end: currentDate,
                         },
                         noDataLabel: 'No overtime found',
+                    }}
+                    formProps={{
+                        approverOptions,
                     }}
                     modalSize="lg"
                     canAdd={true}

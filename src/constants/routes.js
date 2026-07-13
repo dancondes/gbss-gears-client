@@ -42,6 +42,7 @@ export const ROUTES = {
     },
     LOOKUPS: {
         LOG_TYPES: '/Lookups/log-types',
+        APPROVERS: '/Lookups/approvers',
     },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',

@@ -45,7 +45,7 @@ export function paginateArray(array, page = 1, limit = 10) {
 
 
 export function isResultSuccessful(result) {
-    return result && (result.status === 200 || result.status === 201 || result.success === true || result === 200)
+    return result && (result.status === 200 || result.status === 201 || result.success === true || result === 200 || result.includes('success'))
 }
 
 export function convertBlankToEmptyString(array, key = 'description') {

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 const ConfirmationModal = ({
     isOpen,
     title = 'Confirm Action',
+    subtitle = null,
     message = 'Are you sure you want to proceed with this action?',
     confirmText = 'Confirm',
     cancelText = 'Cancel',
@@ -12,6 +13,7 @@ const ConfirmationModal = ({
     variant = 'info', // 'warning', 'danger', 'info', 'success'
     icon = null,
     loading = false,
+    textAlign = 'center', // 'left', 'center', 'right'
 }) => {
     const [isShaking, setIsShaking] = useState(false)
 
@@ -82,6 +84,13 @@ const ConfirmationModal = ({
 
     const currentVariant = variantStyles[variant] || variantStyles.warning
 
+    const separatedMessageLines = message.split('\n').map((line, index) => (
+        <p key={index} className={`text-sm text-gray-600 text-${textAlign}`}>
+            {line}
+            {index < message.split('\n').length - 1 && <br />}
+        </p>
+    ))
+
     return (
         <div className="fixed inset-0 z-100 overflow-y-auto">
             {/* Backdrop */}
@@ -92,7 +101,7 @@ const ConfirmationModal = ({
 
             {/* Modal */}
             <div className="flex min-h-full items-center justify-center p-4">
-                <div 
+                <div
                     className={`relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-4 ${isShaking ? 'animate-shake' : ''}`}
                     style={{
                         animation: isShaking ? 'shake 0.3s ease-in-out' : undefined
@@ -124,9 +133,8 @@ const ConfirmationModal = ({
                         <h3 className="text-lg font-semibold text-gray-900">
                             {title}
                         </h3>
-                        <p className="mt-2 text-sm text-gray-600">
-                            {message}
-                        </p>
+                        {subtitle && (<p className='text-gray-700 text-sm mb-4'>{subtitle}</p>)}
+                        {separatedMessageLines}
                     </div>
 
                     {/* Buttons */}
@@ -157,6 +165,7 @@ const ConfirmationModal = ({
 ConfirmationModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     title: PropTypes.string,
+    subtitle: PropTypes.string,
     message: PropTypes.string,
     confirmText: PropTypes.string,
     cancelText: PropTypes.string,
@@ -165,6 +174,7 @@ ConfirmationModal.propTypes = {
     variant: PropTypes.oneOf(['warning', 'danger', 'info', 'success']),
     icon: PropTypes.node,
     loading: PropTypes.bool,
+    textAlign: PropTypes.oneOf(['left', 'center', 'right']),
 }
 
 export default ConfirmationModal

@@ -17,10 +17,13 @@ import { createTimeEntry, getTimeEntriesById } from '@/services/event-service'
 import { toast } from 'react-toastify'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
+import OvertimeConfirmation from './components/OvertimeConfirmation'
+import useTabNavigation from '@/hooks/use-tab-navigation'
 
 function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
     const user = useAuthStore((state) => state.user)
+    const { navigate } = useTabNavigation()
     const {
         earlyCheckOut15,
         earlyCheckOut: earlyCheckOut30,
@@ -32,6 +35,8 @@ function ClockInOut() {
 
     const [locationModalOpen, setLocationModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(null)
+    const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false)
+    const [isFetchingEntries, setIsFetchingEntries] = useState(false)
 
     // Start
     const [checkInTime, setCheckInTime] = useState(null)
@@ -214,12 +219,39 @@ function ClockInOut() {
             setIsSubmitting(true)
             await createTimeEntry(type, location)
             await refreshTimeEntries()
+            
+            if (['O', 'g', 'F', 'Z', 'Y', 'X'].includes(type)) {
+                setShowOvertimeConfirmation(true)
+            }
         } catch (error) {
             logger.error('Error saving time entry:', error)
             toast.error('Failed to save time entry. Please try again.')
         } finally {
             setIsSubmitting(false)
         }
+    }
+
+    function handleOkayOvertimeConfirmation() {
+        setShowOvertimeConfirmation(false)
+        const message = '1. Press "YES" if you have Overtime hours that need to be rcorded.\n' +
+            '2. Press "NO" if you do not have any Overtime hours to log.\n\n' +
+            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported..'
+
+        showConfirmationModal({
+            title: 'Action Confirmation',
+            subtitle: 'Please select the appropriate options below:',
+            message,
+            confirmText: 'Yes',
+            cancelText: 'No',
+            variant: 'info',
+            textAlign: 'left',
+            onConfirm: () => {
+                navigate('/user/overtime', {
+                    id: 'Overtime',
+                    label: 'Overtime',
+                })
+            }
+        })
     }
 
     async function refreshTimeEntries() {
@@ -231,6 +263,7 @@ function ClockInOut() {
         }
 
         try {
+            setIsFetchingEntries(true)
             const currentDate = getCurrentDate()
             const params = {
                 dateFrom: currentDate,
@@ -255,17 +288,20 @@ function ClockInOut() {
         } catch (error) {
             logger.error('Error fetching time entries:', error)
             toast.error('Failed to fetch time entries. Please try again.')
+        } finally {
+            setIsFetchingEntries(false)
         }
     }
 
     return (
         <PageTemplate
             title="Clock In/Out"
+            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : 'Log your work hours and breaks'}
             rightSide={(
                 <RunningTime />
             )}
         >
-            <fieldset disabled={isSubmitting}>
+            <fieldset disabled={isSubmitting || isFetchingEntries}>
                 <div className="flex flex-col gap-0 overflow-hidden text-sm">
 
                     {/* ── START ─────────────────────────────────────────── */}
@@ -407,6 +443,14 @@ function ClockInOut() {
                         handleButtonClick('I', selectedLocation)
                         setLocationModalOpen(false)
                     }}
+                />
+            )}
+
+            {showOvertimeConfirmation && (
+                <OvertimeConfirmation
+                    isOpen={showOvertimeConfirmation}
+                    onClose={() => setShowOvertimeConfirmation(false)}
+                    onOkay={handleOkayOvertimeConfirmation}
                 />
             )}
         </PageTemplate>

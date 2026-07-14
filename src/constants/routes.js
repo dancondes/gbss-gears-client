@@ -61,5 +61,6 @@ export const ROUTES = {
         GET_DOCUMENTS: '/User/documents',
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
         PAYSLIP: '/User/Payslip',
+        COE: (type) => `/User/COE/${type}`,
     }
 }

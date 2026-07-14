@@ -31,6 +31,10 @@ export function getPayslip(data) {
     return post(ROUTES.USERS.PAYSLIP, data, { responseType: 'blob' })
 }
 
+export function getCOE(type) {
+    return post(ROUTES.USERS.COE(type), {}, { responseType: 'blob' })
+}
+
 /**
  * Custom hook to fetch user options for select/typeahead components
  * @returns {object} - Object containing options array, loading state, and error

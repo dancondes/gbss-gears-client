@@ -44,6 +44,7 @@ export const ROUTES = {
         LOG_TYPES: '/Lookups/log-types',
         APPROVERS: '/Lookups/approvers',
         PAY_PERIODS: '/Lookups/pay-periods',
+        EMPLOYEE_LIST: '/Lookups/employee-list',
     },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',

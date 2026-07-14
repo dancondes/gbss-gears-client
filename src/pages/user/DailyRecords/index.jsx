@@ -1,66 +1,113 @@
-import React, { useState, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
-import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
+import useSWR from 'swr'
+import { useAuthStore } from '@/store'
+import { getTimeEntriesById } from '@/services/event-service'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { getLogTypes } from '@/services/lookups-service'
+import { toast } from 'react-toastify'
 
 function DailyRecords() {
-    const [timeLogs] = useState([
-        { id: 1, workDate: getCurrentDate(), time: '05:50', logType: 'Check-in' },
-        { id: 2, workDate: getCurrentDate(), time: '15:23', logType: 'Check-out' },
-        { id: 3, workDate: getCurrentDate(), time: '05:51', logType: 'Check-in' },
-        { id: 4, workDate: getCurrentDate(), time: '15:12', logType: 'Check-out' },
-        { id: 5, workDate: getCurrentDate(), time: '05:54', logType: 'Check-in' },
-        { id: 6, workDate: getCurrentDate(), time: '15:02', logType: 'Check-out' },
-        { id: 7, workDate: getCurrentDate(), time: '05:49', logType: 'Check-in' }
-    ])
+    const user = useAuthStore((state) => state.user)
+    const [isSearching, setIsSearching] = useState(false)
+    const previousWorkDateRef = useRef(getCurrentDate())
+    const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
+        valueKey: 'definition',
+        labelKey: 'definition'
+    })
+
+    const fetchTimeEntries = useCallback(async () => {
+        try {
+            const params = {
+                dateFrom: previousWorkDateRef.current,
+                dateTo: previousWorkDateRef.current
+            }
+            const result = await getTimeEntriesById(user?.userId, params)
+            return result?.data || []
+        } catch {
+            return []
+        }
+    }, [user?.userId])
+
+    const { data, isValidating, mutate } = useSWR('daily-records', fetchTimeEntries)
+
+    const handleSearch = useCallback(async (filters) => {
+        const workDate = filters.workdate
+        if (workDate && workDate !== previousWorkDateRef.current) {
+            previousWorkDateRef.current = workDate
+            try {
+                setIsSearching(true)
+                const result = await fetchTimeEntries()
+                mutate(result, false)
+            } catch {
+                mutate([], false)
+                toast.error('Failed to fetch time logs. Please try again.')
+            } finally {
+                setIsSearching(false)
+            }
+        }
+    }, [fetchTimeEntries, mutate])
 
     const columns = useMemo(
         () => [
             {
-                accessorKey: 'workDate',
+                accessorKey: 'workdate',
                 header: 'Work Date',
                 type: 'date'
             },
             {
-                accessorKey: 'time',
+                accessorKey: 'worktime',
                 header: 'Time',
-                type: 'time'
             },
             {
-                accessorKey: 'logType',
+                accessorKey: 'logTypeDescription',
                 header: 'Log Type'
+            },
+            {
+                accessorKey: 'location',
+                header: 'Location'
             }
         ],
         []
+    )
+
+    const columnFilters = useMemo(
+        () => ({
+            workdate: {
+                label: 'Work Date',
+                type: 'date',
+                value: getCurrentDate(),
+                serverSide: true,
+            },
+            logTypeDescription: {
+                label: 'Log Type',
+                options: logTypeOptions
+            }
+        }),
+        [logTypeOptions]
     )
 
     return (
         <PageTemplate
             title="Daily Records"
             subtitle="View your daily clock-in and clock-out records"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 {/* Time Logs Table */}
                 <Table
                     columns={columns}
-                    data={timeLogs}
+                    data={data}
                     enablePagination={true}
                     enableSorting={true}
                     enableFiltering={true}
-                    pageSize={10}
+                    pageSize={15}
                     noDataLabel="No time logs found"
-                    columnFilters={{
-                        workDate: {
-                            label: 'Work Date',
-                            type: 'date',
-                            value: getCurrentDate()
-                        },
-                        logType: {
-                            label: 'Log Type',
-                            options: formatArrayOfStringsAsSelectOptions(['Check-in', 'Check-out'])
-                        }
-                    }}
+                    isLoading={isValidating || isSearching}
+                    columnFilters={columnFilters}
+                    onSearch={handleSearch}
                 />
             </div>
         </PageTemplate>

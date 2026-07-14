@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
-import EmailInput from '@/components/form/EmailInput'
 import Alert from '@/components/Alert'
 import CompanyBrand from '@/components/CompanyBrand'
 import DevelopmentBanner from '@/components/DevelopmentBanner'
@@ -25,7 +24,7 @@ const Login = () => {
         formState: { errors }
     } = useForm({
         defaultValues: {
-            email: '',
+            username: '',
             password: ''
         }
     })
@@ -45,15 +44,15 @@ const Login = () => {
             const result = await loginUser(data)
 
             if (isResultSuccessful(result)) {
-                const userId = getUserIdFromToken(result.token)
-    
+                const userId = getUserIdFromToken(result.data.token)
+
                 if (!userId) {
                     setFormError('Failed to extract user ID from token')
                     return
                 }
-    
+
                 const { login } = useAuthStore.getState()
-                login(result)
+                login(result.data)
             }
 
         } catch (err) {
@@ -109,7 +108,7 @@ const Login = () => {
                                     placeholder="yourname"
                                     label="Username"
                                     autoComplete="username"
-                                    error={errors.email?.message}
+                                    error={errors.username?.message}
                                     register={register}
                                     validation={{
                                         required: 'Username is required',

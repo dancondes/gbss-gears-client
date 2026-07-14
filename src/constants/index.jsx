@@ -21,6 +21,12 @@ export const FILE_PATHS = {
     EMPLOYEE_SIGNATURES: 'Images/e-Signatures/'
 }
 
+export const LOCATION_OPTIONS = [
+    'Home',
+    'Three NEO',
+    'PhilPlans',
+]
+
 // for Bulletins
 export const BULLETIN_TYPES = {
     STAFF: 'Staff',

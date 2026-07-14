@@ -181,7 +181,7 @@ function ApplicationLeaveFrom({
                             type="button"
                             // onClick=
                             className="btn-danger py-1.5! px-4!"
-                        >
+                    >
                             Delete
                         </button>
                     )}

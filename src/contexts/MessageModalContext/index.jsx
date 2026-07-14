@@ -22,6 +22,7 @@ function getDefaultConfirmationState() {
     return {
         isOpen: false,
         title: 'Confirm Action',
+        subtitle: null,
         message: 'Are you sure you want to proceed with this action?',
         confirmText: 'Confirm',
         cancelText: 'Cancel',
@@ -33,6 +34,7 @@ function getDefaultConfirmationState() {
         onCancel: null,
         onError: null,
         closeOnConfirm: true,
+        textAlign: 'center', // 'left', 'center', 'right'
     }
 }
 
@@ -134,6 +136,7 @@ export function MessageModalProvider({ children }) {
         setConfirmationState({
             isOpen: true,
             title: options.title || 'Confirm Action',
+            subtitle: options.subtitle || null,
             message: options.message || 'Are you sure you want to proceed with this action?',
             confirmText: options.confirmText || 'Confirm',
             cancelText: options.cancelText || 'Cancel',
@@ -145,6 +148,7 @@ export function MessageModalProvider({ children }) {
             onCancel: options.onCancel || null,
             onError: options.onError || null,
             closeOnConfirm: options.closeOnConfirm !== false,
+            textAlign: options.textAlign || 'center', // 'left', 'center', 'right'
         })
     }
 
@@ -326,6 +330,7 @@ export function MessageModalProvider({ children }) {
             <ConfirmationModal
                 isOpen={confirmationState.isOpen}
                 title={confirmationState.title}
+                subtitle={confirmationState.subtitle}
                 message={confirmationState.message}
                 confirmText={confirmationState.confirmText}
                 cancelText={confirmationState.cancelText}
@@ -334,6 +339,7 @@ export function MessageModalProvider({ children }) {
                 onConfirm={handleConfirmModal}
                 onCancel={handleCancelModal}
                 loading={confirmationState.loading}
+                textAlign={confirmationState.textAlign}
             />
 
             <BlobViewerModal

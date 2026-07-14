@@ -3,7 +3,7 @@ import PageTemplate from '@/components/PageTemplate'
 import SectionHeader from './components/SectionHeader'
 import ClockButton from './components/ClockButton'
 import TimeDisplay from './components/TimeDisplay'
-import { formatTime } from './helpers'
+import { formatTime, parseCustomDateTime } from './helpers'
 import BreakRow from './components/BreakRow'
 import LunchColumn from './components/LunchColumn'
 import CombinedCheckoutButton from './components/CombinedCheckoutButton'
@@ -11,9 +11,32 @@ import RunningTime from './components/RunningTime'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { LunchOverSound } from '@/assets/audio'
 import logger from '@/utilities/logger'
+import { useAuthStore } from '@/store'
+import LocationModal from './components/LocationModal'
+import { createTimeEntry, getTimeEntriesById } from '@/services/event-service'
+import { toast } from 'react-toastify'
+import { isResultSuccessful } from '@/utilities'
+import { getCurrentDate } from '@/utilities/date-utilities'
+import OvertimeConfirmation from './components/OvertimeConfirmation'
+import useTabNavigation from '@/hooks/use-tab-navigation'
 
 function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
+    const user = useAuthStore((state) => state.user)
+    const { navigate } = useTabNavigation()
+    const {
+        earlyCheckOut15,
+        earlyCheckOut: earlyCheckOut30,
+        earlyCheckOut60,
+        earlyCheckOut75,
+        earlyCheckOut90,
+        combinedBreak,
+    } = user?.schedule?.[0] || {}
+
+    const [locationModalOpen, setLocationModalOpen] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(null)
+    const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false)
+    const [isFetchingEntries, setIsFetchingEntries] = useState(false)
 
     // Start
     const [checkInTime, setCheckInTime] = useState(null)
@@ -34,15 +57,6 @@ function ClockInOut() {
     const [checkOutTime, setCheckOutTime] = useState(null)
 
     const isFieldDisabled = useCallback((field) => {
-        // Any pair where "out" has been logged but "in" hasn't yet —
-        // meaning the person is still out on that section
-        const hasOpenPair = [
-            [break1Out, break1In],
-            [break2Out, break2In],
-            [combinedOut, combinedIn],
-            [lunchOut, lunchIn],
-        ].some(([out, inTime]) => Boolean(out) && !inTime)
-
         // disable all fields if user has already checked out
         if (checkOutTime) {
             return true
@@ -52,6 +66,15 @@ function ClockInOut() {
         if (field !== 'checkInTime' && !checkInTime) {
             return true
         }
+
+        // Any pair where "out" has been logged but "in" hasn't yet —
+        // meaning the person is still out on that section
+        const hasOpenPair = [
+            [break1Out, break1In],
+            [break2Out, break2In],
+            [combinedOut, combinedIn],
+            [lunchOut, lunchIn],
+        ].some(([out, inTime]) => Boolean(out) && !inTime)
 
         // disable fields if there's an open pair (out without in) — except for the "in" field of that pair
         if (hasOpenPair) {
@@ -72,36 +95,43 @@ function ClockInOut() {
                 return combinedOut || !lunchOut // no Break 2 if user has already taken the combined break or hasn't taken lunch yet
 
             case 'combinedOut':
-                return break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
+                return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
 
             case 'checkOutTime':
                 return !checkInTime
 
             case 'checkOut15':
-                return break1Out && break2Out
+                return !earlyCheckOut15 || break1Out && break2Out
 
             case 'checkOut30':
-                return break1Out || break2Out || combinedOut
+                return !earlyCheckOut30 || break1Out || break2Out || combinedOut
 
             case 'checkOut60':
-                return lunchOut
+                return !earlyCheckOut60 || lunchOut
 
             case 'checkOut75':
-                return (break1Out && break2Out) || lunchOut
+                return !earlyCheckOut75 || (break1Out && break2Out) || lunchOut
 
             case 'checkOut90':
-                return break1Out || break2Out || combinedOut || lunchOut
+                return !earlyCheckOut90 || break1Out || break2Out || combinedOut || lunchOut
 
             default:
                 return false
         }
-    }, [checkInTime, checkOutTime, break1Out, break1In, break2Out, break2In, combinedOut, combinedIn, lunchOut, lunchIn])
+    }, [checkInTime, checkOutTime, break1Out, break1In, break2Out, break2In, combinedOut, combinedIn, lunchOut, lunchIn,
+        combinedBreak, earlyCheckOut15, earlyCheckOut30, earlyCheckOut60, earlyCheckOut75, earlyCheckOut90
+    ])
+
+    useEffect(() => {
+        refreshTimeEntries()
+    }, [])
 
     useEffect(() => {
         if (!lunchOut || lunchIn) return // only run while lunch is "open"
 
         const LUNCH_LIMIT_MINUTES = 55; // 55 minutes instead of 60 to give a 5-minute warning before the hour is up
-        const elapsedMs = Date.now() - new Date(lunchOut).getTime()
+        const lunchOutDate = parseCustomDateTime(lunchOut)
+        const elapsedMs = lunchOutDate ? Date.now() - lunchOutDate.getTime() : null
         const remainingMs = LUNCH_LIMIT_MINUTES * 60 * 1000 - elapsedMs
 
         if (remainingMs <= 0) {
@@ -147,167 +177,282 @@ function ClockInOut() {
         })
     }
 
-    function stamp() { return new Date() }
-
     // show confirmation modal on click
-    function handleButtonClick(action, type = 'info') {
+    function handleButtonClick(type, location = null) {
         showConfirmationModal({
             title: 'Action Confirmation',
             message: 'Are you sure you want to perform the selected action?',
             confirmText: 'Yes',
             cancelText: 'No',
-            variant: type || 'info',
-            onConfirm: function () {
-                action(new Date())
-            },
+            variant: 'info',
+            onConfirm: () => {
+                handleSaveTimeEntry(type, location)
+            }
         })
+    }
+
+    /**
+     * Log Types:
+     * I - Check In
+     * O - Check Out
+     * o - Lunch-out
+     * i - Lunch-in
+     * 0 - 1st 15mins Break-out
+     * 1 - 1st 15mins Break-in
+     * 2 - 2nd 15mins Break-out
+     * 3 - 2nd 15mins Break-in
+     * 4 - Combined 30mins Break-out
+     * 5 - Combined 30mins Break-in
+     * g - 1st or 2nd 15mins Break + Check Out
+     * F - Combinded 30mins + Check Out
+     * Z - 1hr Lunch Break + Check-out
+     * Y - 1st or 2nd 15mins Break + 1hr Lunch Break + Check-out
+     * X - Combined 30mins Break + 1hr Lunch Break + Check-out
+     * 
+     * Note: The log types are case-sensitive.
+     * 
+     * @param {string} type - The type of time entry to save.
+     * @param {object} data - Additional data for the time entry (optional).
+     */
+    async function handleSaveTimeEntry(type, location = null) {
+        try {
+            setIsSubmitting(true)
+            await createTimeEntry(type, location)
+            await refreshTimeEntries()
+            
+            if (['O', 'g', 'F', 'Z', 'Y', 'X'].includes(type)) {
+                setShowOvertimeConfirmation(true)
+            }
+        } catch (error) {
+            logger.error('Error saving time entry:', error)
+            toast.error('Failed to save time entry. Please try again.')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    function handleOkayOvertimeConfirmation() {
+        setShowOvertimeConfirmation(false)
+        const message = '1. Press "YES" if you have Overtime hours that need to be rcorded.\n' +
+            '2. Press "NO" if you do not have any Overtime hours to log.\n\n' +
+            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported..'
+
+        showConfirmationModal({
+            title: 'Action Confirmation',
+            subtitle: 'Please select the appropriate options below:',
+            message,
+            confirmText: 'Yes',
+            cancelText: 'No',
+            variant: 'info',
+            textAlign: 'left',
+            onConfirm: () => {
+                navigate('/user/overtime', {
+                    id: 'Overtime',
+                    label: 'Overtime',
+                })
+            }
+        })
+    }
+
+    async function refreshTimeEntries() {
+        function getTimeEntryValue(entries, entryType, setter) {
+            const entry = entries.find((e) => e.logTypeCode === entryType)
+            setter(entry?.workdate && entry?.worktime
+                ? `${entry.workdate}T${entry.worktime}`
+                : null)
+        }
+
+        try {
+            setIsFetchingEntries(true)
+            const currentDate = getCurrentDate()
+            const params = {
+                dateFrom: currentDate,
+                dateTo: currentDate
+            }
+            const result = await getTimeEntriesById(user?.userId, params)
+
+            if (isResultSuccessful(result)) {
+                const entries = result.data || []
+                getTimeEntryValue(entries, 'I', setCheckInTime)
+                getTimeEntryValue(entries, 'o', setLunchOut)
+                getTimeEntryValue(entries, 'i', setLunchIn)
+                getTimeEntryValue(entries, '0', setBreak1Out)
+                getTimeEntryValue(entries, '1', setBreak1In)
+                getTimeEntryValue(entries, '2', setBreak2Out)
+                getTimeEntryValue(entries, '3', setBreak2In)
+                getTimeEntryValue(entries, '4', setCombinedOut)
+                getTimeEntryValue(entries, '5', setCombinedIn)
+
+                getTimeEntryValue(entries, 'O', setCheckOutTime)
+            }
+        } catch (error) {
+            logger.error('Error fetching time entries:', error)
+            toast.error('Failed to fetch time entries. Please try again.')
+        } finally {
+            setIsFetchingEntries(false)
+        }
     }
 
     return (
         <PageTemplate
             title="Clock In/Out"
+            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : 'Log your work hours and breaks'}
             rightSide={(
                 <RunningTime />
             )}
         >
-            <div className="flex flex-col gap-0 overflow-hidden text-sm">
+            <fieldset disabled={isSubmitting || isFetchingEntries}>
+                <div className="flex flex-col gap-0 overflow-hidden text-sm">
 
-                {/* ── START ─────────────────────────────────────────── */}
-                <SectionHeader title="Start" />
-                <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
-                    {/* No flex-1 here — let it size to its content */}
-                    <div className="flex items-center gap-4 min-w-0">
-                        <ClockButton
-                            label="Check In"
-                            onClick={() => handleButtonClick(setCheckInTime)}
-                            disabled={isFieldDisabled('checkInTime')}
-                        />
-                        <TimeDisplay time={formatTime(checkInTime)} large />
+                    {/* ── START ─────────────────────────────────────────── */}
+                    <SectionHeader title="Start" />
+                    <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
+                        {/* No flex-1 here — let it size to its content */}
+                        <div className="flex items-center gap-4 min-w-0">
+                            <ClockButton
+                                label="Check In"
+                                onClick={() => setLocationModalOpen(true)}
+                                disabled={isFieldDisabled('checkInTime')}
+                            />
+                            <TimeDisplay time={formatTime(checkInTime)} large />
+                        </div>
+                        <button
+                            onClick={function () { window.location.reload() }}
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
+                            title="Refresh [F5]"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Refresh [F5]
+                        </button>
                     </div>
-                    <button
-                        onClick={function () { window.location.reload() }}
-                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
-                        title="Refresh [F5]"
-                    >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Refresh [F5]
-                    </button>
-                </div>
 
-                {/* ── BREAKS ────────────────────────────────────────── */}
-                <SectionHeader title="Breaks" />
-                {/*
+                    {/* ── BREAKS ────────────────────────────────────────── */}
+                    <SectionHeader title="Breaks" />
+                    {/*
                     On small screens all break rows (including Lunch) stack in a
                     single column. On md+ screens the original two-column layout
                     is restored with Lunch in the right column.
                 */}
-                <div className="border-b border-gray-200">
+                    <div className="border-b border-gray-200">
 
-                    {/* md+: two-column grid */}
-                    <div className="grid md:grid-cols-2 gap-0">
+                        {/* md+: two-column grid */}
+                        <div className="grid md:grid-cols-2 gap-0">
 
-                        {/* Left column: 1st, 2nd, Combined */}
-                        <div className="flex flex-col gap-5 px-4 py-4 border-r border-gray-200">
-                            <BreakRow
-                                label="1st (15mins)"
-                                outTime={break1Out}
-                                inTime={break1In}
-                                onOut={() => handleButtonClick(setBreak1Out)}
-                                onIn={() => handleButtonClick(setBreak1In)}
-                                disabled={isFieldDisabled('break1Out')}
-                            />
-                            <BreakRow
-                                label="2nd (15mins)"
-                                outTime={break2Out}
-                                inTime={break2In}
-                                onOut={() => handleButtonClick(setBreak2Out)}
-                                onIn={() => handleButtonClick(setBreak2In)}
-                                disabled={isFieldDisabled('break2Out')}
-                            />
-                            <BreakRow
-                                label="Combined (30mins)"
-                                outTime={combinedOut}
-                                inTime={combinedIn}
-                                onOut={() => handleButtonClick(setCombinedOut)}
-                                onIn={() => handleButtonClick(setCombinedIn)}
-                                disabled={isFieldDisabled('combinedOut')}
-                            />
-                        </div>
+                            {/* Left column: 1st, 2nd, Combined */}
+                            <div className="flex flex-col gap-5 px-4 py-4 md:border-r border-gray-200">
+                                <BreakRow
+                                    label="1st (15mins)"
+                                    outTime={break1Out}
+                                    inTime={break1In}
+                                    onOut={() => handleButtonClick('0')}
+                                    onIn={() => handleButtonClick('1')}
+                                    disabled={isFieldDisabled('break1Out')}
+                                />
+                                <BreakRow
+                                    label="2nd (15mins)"
+                                    outTime={break2Out}
+                                    inTime={break2In}
+                                    onOut={() => handleButtonClick('2')}
+                                    onIn={() => handleButtonClick('3')}
+                                    disabled={isFieldDisabled('break2Out')}
+                                />
+                                <BreakRow
+                                    label="Combined (30mins)"
+                                    outTime={combinedOut}
+                                    inTime={combinedIn}
+                                    onOut={() => handleButtonClick('4')}
+                                    onIn={() => handleButtonClick('5')}
+                                    disabled={isFieldDisabled('combinedOut')}
+                                />
+                            </div>
 
-                        {/* Right column: Lunch */}
-                        <div className="px-6 py-4">
-                            <LunchColumn
-                                outTime={lunchOut}
-                                inTime={lunchIn}
-                                onOut={() => handleButtonClick(setLunchOut)}
-                                onIn={() => handleButtonClick(setLunchIn)}
-                                disabled={isFieldDisabled('lunchOut')}
-                            />
+                            {/* Right column: Lunch */}
+                            <div className="px-6 py-4">
+                                <LunchColumn
+                                    outTime={lunchOut}
+                                    inTime={lunchIn}
+                                    onOut={() => handleButtonClick('o')}
+                                    onIn={() => handleButtonClick('i')}
+                                    disabled={isFieldDisabled('lunchOut')}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* ── END ───────────────────────────────────────────── */}
-                <SectionHeader title="End" />
-                <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
+                    {/* ── END ───────────────────────────────────────────── */}
+                    <SectionHeader title="End" />
+                    <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
 
-                    {/* Check Out row */}
-                    <div className="flex items-center gap-4 flex-wrap">
-                        <ClockButton
-                            label="Check Out"
-                            onClick={() => handleButtonClick(setCheckOutTime)}
-                            disabled={isFieldDisabled('checkOutTime')}
-                        />
-                        <TimeDisplay time={formatTime(checkOutTime)} large />
-                    </div>
+                        {/* Check Out row */}
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <ClockButton
+                                label="Check Out"
+                                onClick={() => handleButtonClick('O')}
+                                disabled={isFieldDisabled('checkOutTime')}
+                            />
+                            <TimeDisplay time={formatTime(checkOutTime)} large />
+                        </div>
 
-                    {/* Combined checkout buttons */}
-                    <div>
-                        <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                            <CombinedCheckoutButton
-                                label={'15mins Break\n+ Check Out'}
-                                onClick={function () {
-                                    setBreak1Out(stamp())
-                                    setTimeout(function () {
-                                        setBreak1In(stamp())
-                                        setCheckOutTime(stamp())
-                                    }, 100)
-                                }}
-                                disabled={isFieldDisabled('checkOut15')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'30mins Break\n+ Check Out'}
-                                onClick={function () {
-                                    setCombinedOut(stamp())
-                                    setTimeout(function () {
-                                        setCombinedIn(stamp())
-                                        setCheckOutTime(stamp())
-                                    }, 100)
-                                }}
-                                disabled={isFieldDisabled('checkOut30')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut60')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr 15 Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut75')}
-                            />
-                            <CombinedCheckoutButton
-                                label={'1hr 30 Break\n+ Check Out'}
-                                onClick={function () { setCheckOutTime(stamp()) }}
-                                disabled={isFieldDisabled('checkOut90')}
-                            />
+                        {/* Combined checkout buttons */}
+                        <div>
+                            <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+
+                                <CombinedCheckoutButton
+                                    label={'15mins Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('g') }}
+                                    disabled={isFieldDisabled('checkOut15')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'30mins Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('F') }}
+                                    disabled={isFieldDisabled('checkOut30')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('Z') }}
+                                    disabled={isFieldDisabled('checkOut60')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr 15 Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('Y') }}
+                                    disabled={isFieldDisabled('checkOut75')}
+                                />
+
+                                <CombinedCheckoutButton
+                                    label={'1hr 30 Break\n+ Check Out'}
+                                    onClick={function () { handleButtonClick('X') }}
+                                    disabled={isFieldDisabled('checkOut90')}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </fieldset>
+
+            {locationModalOpen && (
+                <LocationModal
+                    isOpen={locationModalOpen}
+                    onClose={() => setLocationModalOpen(false)}
+                    onSave={(selectedLocation) => {
+                        handleButtonClick('I', selectedLocation)
+                        setLocationModalOpen(false)
+                    }}
+                />
+            )}
+
+            {showOvertimeConfirmation && (
+                <OvertimeConfirmation
+                    isOpen={showOvertimeConfirmation}
+                    onClose={() => setShowOvertimeConfirmation(false)}
+                    onOkay={handleOkayOvertimeConfirmation}
+                />
+            )}
         </PageTemplate>
     )
 }

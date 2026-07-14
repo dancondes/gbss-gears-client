@@ -4,8 +4,29 @@ import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import React, { useMemo } from 'react'
 import UserForm from './components/UserForm'
+import useSWR from 'swr'
+import { getAllUsers } from '@/services/user-service'
 
 export default function ManageUsers() {
+
+    async function fetchUsers() {
+        try {
+            const users = await getAllUsers()
+            const data = users?.data || []
+
+            return data.map(user => ({
+                ...user.employeeInfo,
+                userId: user.userId,
+                username: user.username,
+                name: `${user?.employeeInfo.firstname} ${user?.employeeInfo.lastname}`,
+                role: user.role,
+            }))
+        } catch {
+            return []
+        }
+    }
+
+    const { data, isValidating, mutate } = useSWR('manage-users', fetchUsers)
 
     const columns = useMemo(() => [
         {
@@ -19,26 +40,9 @@ export default function ManageUsers() {
         {
             accessorKey: 'account',
             header: 'Account',
+            cell: ({ getValue }) => getValue()?.name,
         }
     ], [])
-
-    const data = [
-        {
-            name: 'John Doe',
-            username: 'johndoe',
-            account: 'GBSS'
-        },
-        {
-            name: 'Jane Smith',
-            username: 'janesmith',
-            account: 'GBSS'
-        },
-        {
-            name: 'Bob Johnson',
-            username: 'bobjohnson',
-            account: 'GBSS'
-        }
-    ]
 
     async function handleSave(data) {
         console.log('handleSave', data)
@@ -47,6 +51,7 @@ export default function ManageUsers() {
     return (
         <PageTemplate
             title="Manage Users"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 <EditableListTabModal
@@ -57,15 +62,16 @@ export default function ManageUsers() {
                     //     name: '',
                     //     email: '',
                     // }}
+                    isLoading={isValidating}
                     singularName="User"
                     onSave={handleSave}
                     // isLoading={isValidating}
                     searchableFields={['name', 'username']}
-                    // tableProps={{
-                    //     pageSize: 50,
-                    //     globalFilterColumns: ['name', 'email'],
-                    //     defaultSorting: [{ id: 'name' }],
-                    // }}
+                    tableProps={{
+                        pageSize: 50,
+                        // globalFilterColumns: ['name', 'email'],
+                        // defaultSorting: [{ id: 'name' }],
+                    }}
                     modalSize="lg"
                     canAdd={true}
                     canSave={true}

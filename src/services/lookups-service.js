@@ -8,3 +8,7 @@ export function getLogTypes() {
 export function getApprovers() {
     return get(ROUTES.LOOKUPS.APPROVERS)
 }
+
+export function getPayPeriods() {
+    return get(ROUTES.LOOKUPS.PAY_PERIODS)
+}

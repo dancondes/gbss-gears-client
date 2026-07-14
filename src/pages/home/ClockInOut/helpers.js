@@ -1,12 +1,16 @@
 export function formatTime(dateString) {
     const date = parseCustomDateTime(dateString)
     if (!date) return '__:__:__ AM/PM'
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    return date
+        .toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        .toUpperCase()
 }
 
 export function formatTimeShort(date) {
     if (!date) return '__:__ AM/PM'
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date
+        .toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        .toUpperCase()
 }
 
 export function calcDuration(outTime, inTime) {
@@ -29,15 +33,15 @@ export function formatDateTime(date) {
 export function parseCustomDateTime(dateString) {
     if (!dateString) return null
 
-    const match = dateString.match(/^(\d{4}-\d{2}-\d{2})T(\d{1,2}):(\d{2})(AM|PM)$/i)
+    const match = dateString.match(/^(\d{4}-\d{2}-\d{2})T(\d{1,2}):(\d{2}):(\d{2})\s?(AM|PM)$/i)
     if (!match) return null
 
-    const [, datePart, hoursRaw, minutes, period] = match
+    const [, datePart, hoursRaw, minutes, seconds, period] = match
     let hours = parseInt(hoursRaw, 10) % 12
     if (period.toUpperCase() === 'PM') hours += 12
 
     const date = new Date(datePart)
-    date.setHours(hours, parseInt(minutes, 10), 0, 0)
+    date.setHours(hours, parseInt(minutes, 10), parseInt(seconds, 10), 0)
 
     return isNaN(date.getTime()) ? null : date
 }

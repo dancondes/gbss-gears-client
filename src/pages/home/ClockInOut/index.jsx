@@ -257,9 +257,7 @@ function ClockInOut() {
     async function refreshTimeEntries() {
         function getTimeEntryValue(entries, entryType, setter) {
             const entry = entries.find((e) => e.logTypeCode === entryType)
-            setter(entry?.workdate && entry?.worktime
-                ? `${entry.workdate}T${entry.worktime}`
-                : null)
+            setter(entry?.workdate && entry?.worktime ? `${entry.workdate}T${entry.worktime}` : null)
         }
 
         try {

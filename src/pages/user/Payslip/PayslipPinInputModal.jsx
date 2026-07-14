@@ -6,13 +6,17 @@ import { toast } from 'react-toastify'
 import { useAuthStore } from '@/store'
 import FormInput from '@/components/form/FormInput'
 import useTabNavigation from '@/hooks/use-tab-navigation'
+import { getPIN } from '@/utilities/jwt-utils'
 
 
 function PayslipPinInputModal({
     isOpen,
-    setIsOpen
+    setIsOpen,
+    showCloseButton = true,
 }) {
+    const token = useAuthStore((state) => state.token)
     const user = useAuthStore((state) => state.user)
+    const setUser = useAuthStore((state) => state.setUser)
     const navigate = useTabNavigation().navigate
 
     const {
@@ -25,13 +29,16 @@ function PayslipPinInputModal({
 
     async function onSubmit(data) {
         try {
-            const params = {
-                pin: data.pin,
-                personId: user?.id
+
+            const inputPIN = data.pin
+            const userPIN = getPIN(token)
+
+            if (inputPIN !== userPIN) {
+                toast.error('Invalid PIN. Please try again.')
+                return
             }
 
-            console.log('Payslip PIN submitted:', params)
-
+            setUser({ ...user, payslipPinVerified: true })
             navigate('/user/payslip', {
                 id: 'Payslip',
                 label: 'Payslip',
@@ -55,6 +62,7 @@ function PayslipPinInputModal({
             onClose={handleClose}
             title="View Payslip"
             size="md"
+            showCloseButton={showCloseButton}
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <FormInput
@@ -81,7 +89,8 @@ function PayslipPinInputModal({
 
 PayslipPinInputModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
-    setIsOpen: PropTypes.func.isRequired
+    setIsOpen: PropTypes.func.isRequired,
+    showCloseButton: PropTypes.bool,
 }
 
 export default PayslipPinInputModal

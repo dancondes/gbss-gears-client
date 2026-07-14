@@ -97,3 +97,7 @@ export function getTimeUntilExpiration(token) {
 
     return timeRemaining > 0 ? timeRemaining : 0
 }
+
+export function getPIN(token) {
+    return decodeJWT(token)?.PNo || null
+}

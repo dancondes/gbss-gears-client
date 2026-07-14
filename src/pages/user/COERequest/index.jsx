@@ -5,9 +5,9 @@ import FormSelect from '@/components/form/FormSelect'
 import { useForm } from 'react-hook-form'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'react-toastify'
-import { requestCOE } from '@/services/reports-service'
 import { downloadFile } from '@/utilities/file-utilities'
 import { useAuthStore } from '@/store'
+import { getCOE } from '@/services/user-service'
 
 const FORMAT_OPTIONS = [
     { value: 1, label: 'Regular' },
@@ -54,16 +54,11 @@ function COERequests({
 
     async function handleSave(data) {
         try {
-            const params = {
-                type: data.format,
-                personId: user?.id
-            }
-
             // create a filename when we have the logged in user details
             setIsOpen(false)
             toast.success('Processing your COE request. Please do not refresh the page. The document will be downloaded automatically once complete.')
-            const response = await requestCOE(params)
-            const filename = `Certificate of Employment${data.format == 1 ? '' : ' with Compensation'} - ${generateNameForFilename(user)}.pdf`
+            const response = await getCOE(data.format)
+            const filename = `Certificate of Employment${data.format == 1 ? '' : ' with Compensation'} - ${generateNameForFilename(user?.employeeInfo)}.pdf`
             downloadFile(response, filename)
             toast.success('COE request successful. The file has been downloaded.')
 
@@ -81,7 +76,7 @@ function COERequests({
             isOpen={isOpen}
             onClose={handleClose}
             title="COE Request"
-            size="lg"
+            size="md"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <FormSelect

@@ -3,7 +3,7 @@ import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getTimeEntries } from '@/services/event-service'
-import { getLogTypes } from '@/services/lookups-service'
+import { getEmployeeList, getLogTypes } from '@/services/lookups-service'
 import { useAuthStore, useTabStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
@@ -36,6 +36,13 @@ export default function Records() {
     }
 
     const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchTeamRecords)
+    const { options: employeeOptions } = useFetchOptions(getEmployeeList, {
+        valueKey: 'name',
+        labelKey: 'name',
+        transform: (list) => list.map(emp => ({
+            name: `${emp.firstname} ${emp.lastname}`,
+        }))
+    })
 
     useEffect(() => {
         if (activeTabId === 'Team-Records') {
@@ -103,7 +110,7 @@ export default function Records() {
                     columnFilters={{
                         name: {
                             label: 'Employee',
-                            options: [], // formatArrayOfStringsAsSelectOptions(data.map(d => d.name).filter((value, index, self) => self.indexOf(value) === index)),
+                            options: employeeOptions,
                             type: 'typeahead'
                         },
                         logTypeDescription: {

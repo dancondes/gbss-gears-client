@@ -43,6 +43,8 @@ export const ROUTES = {
     LOOKUPS: {
         LOG_TYPES: '/Lookups/log-types',
         APPROVERS: '/Lookups/approvers',
+        PAY_PERIODS: '/Lookups/pay-periods',
+        EMPLOYEE_LIST: '/Lookups/employee-list',
     },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',
@@ -58,5 +60,7 @@ export const ROUTES = {
         GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
         GET_DOCUMENTS: '/User/documents',
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
+        PAYSLIP: '/User/Payslip',
+        COE: (type) => `/User/COE/${type}`,
     }
 }

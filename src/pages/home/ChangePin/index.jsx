@@ -1,15 +1,11 @@
 import FormInput from '@/components/form/FormInput'
-import Modal from '@/components/modals/Modal'
-import PropTypes from 'prop-types'
+import PageTemplate from '@/components/PageTemplate'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 
 const PIN_PATTERN = /^\d{4}$/
 
-export default function ChangePin({
-    isOpen,
-    setIsOpen
-}) {
+export default function ChangePin() {
     const {
         register,
         handleSubmit,
@@ -22,19 +18,14 @@ export default function ChangePin({
     async function onSubmit(formValues) {
     }
 
-    function handleClose() {
-        setIsOpen(false)
-    }
-
     return (
-        <Modal
+        <PageTemplate
             title="Change Pin"
-            isOpen={isOpen}
-            onClose={handleClose}
+            subtitle="Update your pin to keep your account secure."
         >
             <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="rounded border border-primary overflow-hidden mb-4">
-                    <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                <div className="rounded border border-primary/60 overflow-hidden mb-4">
+                    <div className="bg-white px-4 py-2 border-b border-primary/60 border-t-4 border-t-primary/60">
                         <h4 className="text-sm font-semibold text-gray-800">Current Pin</h4>
                     </div>
                     <div className="px-4 py-3">
@@ -57,8 +48,8 @@ export default function ChangePin({
                     </div>
                 </div>
 
-                <div className="rounded border border-primary overflow-hidden">
-                    <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                <div className="rounded border border-primary/60 overflow-hidden">
+                    <div className="bg-white px-4 py-2 border-b border-primary/60 border-t-4 border-t-primary/60">
                         <h4 className="text-sm font-semibold text-gray-800">New Pin</h4>
                     </div>
                     <div className="px-4 py-3 space-y-3">
@@ -97,13 +88,13 @@ export default function ChangePin({
 
                 {/* Footer: error + actions */}
                 <div className="flex items-center justify-end mt-4 gap-3 border-t border-gray-200 pt-4">
-                        <button
+                        {/* <button
                             type="button"
                             onClick={handleClose}
                             className="btn-white"
                         >
                             Cancel
-                        </button>
+                        </button> */}
                         <button
                             type="submit"
                             disabled={isSubmitting}
@@ -113,11 +104,6 @@ export default function ChangePin({
                         </button>
                 </div>
             </form>
-        </Modal>
+        </PageTemplate>
     )
-}
-
-ChangePin.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    setIsOpen: PropTypes.func.isRequired,
 }

@@ -35,10 +35,18 @@ function SubmenuPanel({ items, isOpen, onClose }) {
                 })
                 return
             case 'change-password':
-                setChangePasswordModalOpen(true)
+                navigate('/user/personal-details', {
+                    id: 'Personal-Details',
+                    label: 'Personal Details',
+                    state: { goToChangePassword: true },
+                })
                 return
             case 'change-pin':
-                setChangePinModalOpen(true)
+                navigate('/user/personal-details', {
+                    id: 'Personal-Details',
+                    label: 'Personal Details',
+                    state: { goToChangePin: true },
+                })
                 return
         }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import SubmenuPanel from './SubMenuPanel'
+import SubmenuPanel from './SubmenuPanel'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 
 // ---------------------------------------------------------------------------

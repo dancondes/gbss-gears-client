@@ -1,5 +1,4 @@
 import FormInput from '@/components/form/FormInput'
-import Modal from '@/components/modals/Modal'
 import PageTemplate from '@/components/PageTemplate'
 import PropTypes from 'prop-types'
 import React from 'react'
@@ -40,10 +39,7 @@ CheckIcon.propTypes = {
     className: PropTypes.string,
 }
 
-export default function ChangePassword({
-    isOpen,
-    setIsOpen
-}) {
+export default function ChangePassword() {
     const {
         register,
         handleSubmit,
@@ -56,23 +52,17 @@ export default function ChangePassword({
     async function onSubmit(formValues) {
     }
 
-    function handleClose() {
-        setIsOpen(false)
-    }
-
     return (
-        <Modal
+        <PageTemplate
             title="Change Password"
-            isOpen={isOpen}
-            onClose={handleClose}
-            size="3xl"
+            subtitle="Update your password to keep your account secure."
         >
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-4">
                     {/* Left: password fields */}
                     <div className="space-y-4">
-                        <div className="rounded border border-primary overflow-hidden">
-                            <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                        <div className="rounded border border-primary/60 overflow-hidden">
+                            <div className="bg-white px-4 py-2 border-b border-primary/60 border-t-4 border-t-primary/60">
                                 <h4 className="text-sm font-semibold text-gray-800">Current Password</h4>
                             </div>
                             <div className="px-4 py-3">
@@ -90,8 +80,8 @@ export default function ChangePassword({
                             </div>
                         </div>
 
-                        <div className="rounded border border-primary overflow-hidden">
-                            <div className="bg-white px-4 py-2 border-b border-primary border-t-4 border-t-primary">
+                        <div className="rounded border border-primary/60 overflow-hidden">
+                            <div className="bg-white px-4 py-2 border-b border-primary/60 border-t-4 border-t-primary/60">
                                 <h4 className="text-sm font-semibold text-gray-800">New Password</h4>
                             </div>
                             <div className="px-4 py-3 space-y-3">
@@ -155,13 +145,13 @@ export default function ChangePassword({
 
                 {/* Footer: error + actions */}
                 <div className="flex items-center justify-end gap-3 mt-4 border-t border-gray-200 pt-4">
-                    <button
+                    {/* <button
                         type="button"
                         onClick={handleClose}
                         className="btn-white"
                     >
                         Cancel
-                    </button>
+                    </button> */}
                     <button
                         type="submit"
                         disabled={isSubmitting}
@@ -171,11 +161,6 @@ export default function ChangePassword({
                     </button>
                 </div>
             </form>
-        </Modal>
+        </PageTemplate>
     )
-}
-
-ChangePassword.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    setIsOpen: PropTypes.func.isRequired,
 }

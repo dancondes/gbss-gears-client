@@ -23,6 +23,7 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
     const user = useAuthStore((state) => state.user)
+    const setUser = useAuthStore((state) => state.setUser)
     const { navigate } = useTabNavigation()
     const {
         earlyCheckOut15,
@@ -258,6 +259,13 @@ function ClockInOut() {
         function getTimeEntryValue(entries, entryType, setter) {
             const entry = entries.find((e) => e.logTypeCode === entryType)
             setter(entry?.workdate && entry?.worktime ? `${entry.workdate}T${entry.worktime}` : null)
+
+            if (entryType === 'I') {
+                setUser({
+                    ...user,
+                    loggedAtLoc: entry?.location || null
+                })
+            }
         }
 
         try {

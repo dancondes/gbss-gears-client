@@ -1,16 +1,42 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
+import { AMENDMENT_STATUS } from '@/constants'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
-import { approveAmendmentRequest, rejectAmendmentRequest } from '@/services/attendance-service'
-import { formatArrayOfStringsAsSelectOptions, isResultSuccessful } from '@/utilities'
+import { timeAmendApproval } from '@/services/event-service'
+import { getTeamRequests } from '@/services/user-service'
+import { useAuthStore } from '@/store'
+import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import logger from '@/utilities/logger'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
+import useSWR from 'swr'
+
+const currentDate = getCurrentDate()
 
 export default function Requests() {
-    const currentDate = getCurrentDate()
     const { showConfirmationModal } = useConfirmationModal()
+    const user = useAuthStore((state) => state.user)
+    const [filters, setFilters] = useState({
+        dateFrom: currentDate,
+        dateTo: currentDate,
+        status: 3,
+    })
+
+    async function fetchTeamRequests() {
+        try {
+            const params = {
+                dateFrom: filters.dateFrom,
+                dateTo: filters.dateTo,
+            }
+            const result = await getTeamRequests(filters.status || 4, params)
+            return result?.data || []
+        } catch {
+            return []
+        }
+    }
+
+    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-requests', user?.userId, filters] : null, fetchTeamRequests)
 
     function handleApproveClick(request) {
         showConfirmationModal({
@@ -19,7 +45,7 @@ export default function Requests() {
             confirmText: 'Yes, Approve',
             cancelText: 'Cancel',
             variant: 'info',
-            onConfirm: () => handleConfirmApprove(request),
+            onConfirm: () => handleAmendmentAction(request, true),
         })
     }
 
@@ -30,40 +56,30 @@ export default function Requests() {
             confirmText: 'Yes, Disapprove',
             cancelText: 'Cancel',
             variant: 'danger',
-            onConfirm: () => handleConfirmDisapprove(request),
+            onConfirm: () => handleAmendmentAction(request, false),
         })
     }
 
-    function handleConfirmApprove(request) {
-        return handleAmendmentAction(request, 'approve')
-    }
-
-    function handleConfirmDisapprove(request) {
-        return handleAmendmentAction(request, 'disapprove')
-    }
-
-    async function handleAmendmentAction(request, actionName) {
+    async function handleAmendmentAction(request, approve, reason = '') {
         try {
-            const actionFn = actionName === 'approve' ? approveAmendmentRequest : rejectAmendmentRequest
-            const result = await actionFn(request.id)
+            const result = await timeAmendApproval(request.rid, approve, reason)
             if (isResultSuccessful(result)) {
-                // const updatedList = amendmentRequests.filter(req => req.id !== selectedRequest.id)
-                // mutate(updatedList, false) // TODO: update this to mutate after action
-                toast.success(result.message || `Amendment request ${actionName}d successfully`)
+                mutate() // Refresh the data after approval/rejection
+                toast.success(result.message || `Amendment request ${approve ? 'approve' : 'rejecte'}d successfully`)
             } else {
-                toast.error(result.message || `Failed to ${actionName} amendment request`)
+                toast.error(result.message || `Failed to ${approve ? 'approve' : 'rejecte'} amendment request`)
             }
         } catch (error) {
-            logger.error(`Failed to ${actionName} amendment request:`, error)
-            toast.error(`Failed to ${actionName} amendment request`)
+            logger.error(`Failed to ${approve ? 'approve' : 'rejected'} amendment request:`, error)
+            toast.error(`Failed to ${approve ? 'approve' : 'rejected'} amendment request`)
         }
     }
 
     const columns = useMemo(() => [
-        {
-            accessorKey: 'pid',
-            header: 'PID',
-        },
+        // {
+        //     accessorKey: 'pid',
+        //     header: 'PID',
+        // },
         {
             accessorKey: 'name',
             header: 'Name',
@@ -71,7 +87,7 @@ export default function Requests() {
         {
             accessorKey: 'workDate',
             header: 'Work Date',
-            type: 'date',
+            // type: 'date',
         },
         {
             accessorKey: 'logTime',
@@ -81,7 +97,7 @@ export default function Requests() {
         {
             accessorKey: 'amendmentOn',
             header: 'Amendment On',
-            type: 'date',
+            // type: 'date',
         },
         {
             accessorKey: 'requestedTime',
@@ -96,10 +112,10 @@ export default function Requests() {
             accessorKey: 'status',
             header: 'Status',
         },
-        {
-            accessorKey: 'rid',
-            header: 'RID',
-        },
+        // {
+        //     accessorKey: 'rid',
+        //     header: 'RID',
+        // },
         {
             accessorKey: 'reason',
             header: 'Reason',
@@ -138,99 +154,47 @@ export default function Requests() {
         }
     ], [])
 
-    const data = [
-        {
-            pid: '1001',
-            name: 'Marcus Blaze',
-            workDate: currentDate,
-            logTime: '08:45',
-            amendmentOn: currentDate,
-            requestedTime: '08:00',
-            comment: 'Forgot to tap in, arrived on time',
-            status: 'Pending',
-            rid: '2001',
-            reason: 'System did not register check-in',
-        },
-        {
-            pid: '1002',
-            name: 'Tremaine Sky',
-            workDate: currentDate,
-            logTime: '12:40',
-            amendmentOn: currentDate,
-            requestedTime: '12:00',
-            comment: 'Lunch out was logged late',
-            status: 'Approved',
-            rid: '2002',
-            reason: 'Biometric scanner malfunction',
-        },
-        {
-            pid: '1003',
-            name: 'Deshawn Rivers',
-            workDate: currentDate,
-            logTime: '17:50',
-            amendmentOn: currentDate,
-            requestedTime: '17:05',
-            comment: 'Left on time, log delayed',
-            status: 'Rejected',
-            rid: '2003',
-            reason: 'No supporting evidence provided',
-        },
-        {
-            pid: '1004',
-            name: 'Jaylen Storm',
-            workDate: currentDate,
-            logTime: '09:15',
-            amendmentOn: currentDate,
-            requestedTime: '08:05',
-            comment: 'Stuck in traffic, checked in late',
-            status: 'Pending',
-            rid: '2004',
-            reason: 'Heavy traffic due to road closure',
-        },
-        {
-            pid: '1005',
-            name: 'Antoine Fury',
-            workDate: currentDate,
-            logTime: '13:10',
-            amendmentOn: currentDate,
-            requestedTime: '13:00',
-            comment: 'Lunch-in logged 10 mins late',
-            status: 'Approved',
-            rid: '2005',
-            reason: 'Approved by supervisor via email',
-        },
-    ]
+    function handleSearch(serverFilters) {
+        setFilters({
+            dateFrom: serverFilters.dateFrom || currentDate,
+            dateTo: serverFilters.dateTo || currentDate,
+            status: serverFilters.status || 3,
+        })
+    }
 
     return (
         <PageTemplate
             title="My Team's Requests"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enableSorting={true}
                     pageSize={50}
                     dateRange={{
                         column: 'workDate',
                         start: currentDate,
                         end: currentDate,
+                        serverSide: true,
                     }}
                     columnFilters={{
                         name: {
                             label: 'Employee',
-                            options: formatArrayOfStringsAsSelectOptions(data.map(d => d.name).filter((value, index, self) => self.indexOf(value) === index)),
+                            options: [],
                             type: 'typeahead'
                         },
                         status: {
                             label: 'Status',
-                            options: [
-                                { value: 'Pending', label: 'Pending' },
-                                { value: 'Approved', label: 'Approved' },
-                                { value: 'Rejected', label: 'Rejected' }
-                            ],
+                            options: AMENDMENT_STATUS,
+                            serverSide: true,
+                            noAll: true,
+                            value: 3, // For Approval
                         }
                     }}
+                    isLoading={isValidating}
+                    onSearch={handleSearch}
                 />
             </div>
         </PageTemplate>

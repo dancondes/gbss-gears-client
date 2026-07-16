@@ -7,7 +7,6 @@ import TypeaheadSelect from '@/components/form/TypeaheadSelect'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'react-toastify'
 import logger from '@/utilities/logger'
-import { fileLeave, updateLeave } from '@/services/leaves-service'
 import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
 
@@ -73,7 +72,7 @@ function ApplicationLeaveFrom({
                 comment: formData.approvedBy
             }
             const personId = user?.id
-            const result = await (selectedLeave ? updateLeave(personId, selectedLeave.id, params) : fileLeave(personId, params))
+            const result = [] // await (selectedLeave ? updateLeave(personId, selectedLeave.id, params) : fileLeave(personId, params))
             if (isResultSuccessful(result)) {
                 toast.success(selectedLeave ? 'Leave updated successfully.' : 'Leave filed successfully.')
                 setSelectedLeave(null)

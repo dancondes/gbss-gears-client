@@ -48,6 +48,6 @@ export function createTimeAmendment(data) {
     return post(ROUTES.EVENT.CREATE_TIME_AMENDMENT, data)
 }
 
-export function timeAmendApproval(id, status, data) {
-    return post(ROUTES.EVENT.TIME_AMEND_APPROVAL(id, status), data)
+export function timeAmendApproval(id, status, reasonString) {
+    return post(ROUTES.EVENT.TIME_AMEND_APPROVAL(id, status), reasonString)
 }

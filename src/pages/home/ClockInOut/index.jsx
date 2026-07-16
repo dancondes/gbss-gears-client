@@ -128,7 +128,8 @@ function ClockInOut() {
     }, [])
 
     useEffect(() => {
-        if (!lunchOut || lunchIn) return // only run while lunch is "open"
+        // Dont run if user is not 1710 or if lunchOut is not set or if lunchIn is already set
+        if (user?.employeeInfo?.personId != 1710 || !lunchOut || lunchIn) return
 
         const LUNCH_LIMIT_MINUTES = 55; // 55 minutes instead of 60 to give a 5-minute warning before the hour is up
         const lunchOutDate = parseCustomDateTime(lunchOut)
@@ -145,7 +146,7 @@ function ClockInOut() {
         }, remainingMs)
 
         return () => clearTimeout(timerId) // cancels if lunchIn is set before time's up, or on unmount
-    }, [lunchOut, lunchIn])
+    }, [lunchOut, lunchIn, user])
 
     const alertAudioRef = useRef(null)
 
@@ -170,7 +171,9 @@ function ClockInOut() {
             variant: 'info',
             onConfirm: function () {
                 stopAlertSound()
-                setLunchIn(new Date())
+                setTimeout(() => {
+                    handleButtonClick('i') // Lunch In
+                }, 300)
             },
             onCancel: function () {
                 stopAlertSound()
@@ -220,7 +223,7 @@ function ClockInOut() {
             setIsSubmitting(true)
             await createTimeEntry(type, location)
             await refreshTimeEntries()
-            
+
             if (['O', 'g', 'F', 'Z', 'Y', 'X'].includes(type)) {
                 setShowOvertimeConfirmation(true)
             }

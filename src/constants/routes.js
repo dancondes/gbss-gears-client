@@ -2,16 +2,6 @@ export const ROUTES = {
     AUTH: {
         LOGIN: '/Auth/login',
     },
-    ATTENDANCE: {
-        APPROVE_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/approve/${id}`,
-        REJECT_AMENDMENT_REQUEST: (id) => `/Attendance/time-amendments-requests/reject/${id}`,
-    },
-    BULLETIN: {
-        STAFF_BULLETINS: '/Email/bulletin/Staff'
-    },
-    EMPLOYEE: {
-        GET_DOCUMENTS: (id) => `/Employee/${id}/documents`,
-    },
     EVENT: {
         CREATE_TIME_ENTRY: (type) => `/Event/time-entry/create/${type}`,
         UPDATE_TIME_ENTRY: (id) => `/Event/time-entry/${id}/update`,
@@ -38,27 +28,12 @@ export const ROUTES = {
         UPLOAD: '/File/upload',
         GET_BY_FOLDER_PATH: (folderPath) => `/File/${encodeURIComponent(folderPath)}`,
     },
-    LEAVES: {
-        GET_LEAVE_CREDITS: (personId) => `/Employee/${personId}/leave-credits`,
-        GET_FILED_LEAVES: (personId) => `/Employee/${personId}/leave`,
-        FILE_LEAVE: (personId) => `/Employee/${personId}/leave/add`,
-        FILE_LEAVE_UNPAID: (personId) => `/Employee/${personId}/leave/add/proceedUnPaid`,
-        UPDATE_LEAVE: (personId, leaveId) => `/Employee/${personId}/leave/${leaveId}/update`,
-        UPDATE_LEAVE_UNPAID: (personId, leaveId) => `/Employee/${personId}/leave/${leaveId}/update/proceedUnPaid`,
-        DELETE_LEAVE: (personId, leaveId) => `/Employee/${personId}/leave/${leaveId}/delete`,
-    },
     LOOKUPS: {
         LOG_TYPES: '/Lookups/log-types',
         APPROVERS: '/Lookups/approvers',
         PAY_PERIODS: '/Lookups/pay-periods',
         EMPLOYEE_LIST: '/Lookups/employee-list',
         ENQUIRY_TYPES: '/Lookups/enquiry-types',
-    },
-    REPORTS: {
-        COE_REQUESTS: '/Reports/Pdf/COE',
-    },
-    TICKETING: {
-        CREATE: '/Ticketing',
     },
     USERS: {
         GET_ALL: '/User',
@@ -70,5 +45,7 @@ export const ROUTES = {
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
         PAYSLIP: '/User/Payslip',
         COE: (type) => `/User/COE/${type}`,
+        MY_REQUESTS: (status) => `/User/my-requests/${status}`,
+        TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,
     }
 }

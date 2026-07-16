@@ -52,7 +52,7 @@ export default function Status() {
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enablePagination={false}
                     isLoading={isValidating}
                     globalFilterColumns={['name']}

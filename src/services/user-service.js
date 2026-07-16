@@ -43,19 +43,6 @@ export function getTeamRequests(status, data) {
     return post(ROUTES.USERS.TEAM_REQUESTS(status), data)
 }
 
-/**
- * Custom hook to fetch user options for select/typeahead components
- * @returns {object} - Object containing options array, loading state, and error
- */
-export function useUserOptions(valueKey = 'userId') {
-    return useFetchOptions(getAllUsers, {
-        valueKey,
-        labelKey: 'name',
-        transform: (data) => data
-            .filter(user => user.firstName && user.lastName) // Filter out users with missing names
-            .map(user => ({
-                [valueKey]: valueKey === 'userId' ? user.userId?.toUpperCase() : user?.[valueKey],
-                name: `${user.firstName} ${user.lastName}`
-            }))
-    })
+export function getTeamStatus() {
+    return get(ROUTES.USERS.TEAM_STATUS)
 }

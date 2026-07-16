@@ -47,5 +47,6 @@ export const ROUTES = {
         COE: (type) => `/User/COE/${type}`,
         MY_REQUESTS: (status) => `/User/my-requests/${status}`,
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,
+        TEAM_STATUS: '/User/team-status',
     }
 }

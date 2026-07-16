@@ -3,6 +3,7 @@ import Table from '@/components/Table'
 import { AMENDMENT_STATUS } from '@/constants'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { timeAmendApproval } from '@/services/event-service'
+import { useFetchEmployeeOptions } from '@/services/lookups-service'
 import { getTeamRequests } from '@/services/user-service'
 import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
@@ -16,6 +17,7 @@ const currentDate = getCurrentDate()
 
 export default function Requests() {
     const { showConfirmationModal } = useConfirmationModal()
+    const { options: employeeOptions } = useFetchEmployeeOptions()
     const user = useAuthStore((state) => state.user)
     const [filters, setFilters] = useState({
         dateFrom: currentDate,
@@ -182,7 +184,7 @@ export default function Requests() {
                     columnFilters={{
                         name: {
                             label: 'Employee',
-                            options: [],
+                            options: employeeOptions,
                             type: 'typeahead'
                         },
                         status: {

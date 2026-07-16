@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { useFetchOptions } from "@/hooks/use-fetch-options";
 import { get } from "@/utilities/api";
 
 export function getLogTypes() {
@@ -20,3 +21,13 @@ export function getEmployeeList() {
 export function getEnquiryTypes() {
     return get(ROUTES.LOOKUPS.ENQUIRY_TYPES)
 }
+
+export function useFetchEmployeeOptions() {
+    return useFetchOptions(getEmployeeList, {
+        valueKey: 'name',
+        labelKey: 'name',
+        transform: (list) => list.map(emp => ({
+            name: `${emp.firstname} ${emp.lastname}`,
+        }))
+    })
+} 

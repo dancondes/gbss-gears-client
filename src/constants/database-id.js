@@ -16,3 +16,5 @@ export const LEAVE_TAB_OPTIONS = [32, 1, 17, 19, 11, 13, 29, 30, 5, 2, 18, 8, 10
 export const EMPLOYMENT_STATUS_ID_TO_SHOW = [1, 2, 6, 11, 13, 19]
 export const ACTIVE_LOCATION_IDS = [6, 7, 8]
 export const IT_DEPARTMENT_ID = 3
+export const TIME_AMENDMENT_ENQUIRY_TYPE_ID = 7
+export const LOG_TYPES_FOR_TIME_AMENDMENT = ['I', 'O', 'i', 'o', '0', '1', '2', '3', '4', '5']

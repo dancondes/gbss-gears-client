@@ -1,30 +1,26 @@
 import FileDropzone from '@/components/form/FileDropzone'
+import FormInput, { validateStrictDateInput } from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
 import FormTextarea from '@/components/form/FormTextarea'
+import TimeInput from '@/components/form/TimeInput'
+import { LOCATION_OPTIONS } from '@/constants'
+import { LOG_TYPES_FOR_TIME_AMENDMENT, TIME_AMENDMENT_ENQUIRY_TYPE_ID } from '@/constants/database-id'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
-import { createTicket } from '@/services/ticketing-service'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { createTicket, createTimeAmendment, getTimeEntriesById } from '@/services/event-service'
+import { getEnquiryTypes, getLogTypes } from '@/services/lookups-service'
 import { useAuthStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions, isResultSuccessful } from '@/utilities'
+import { formatDate, getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
+// import { createTicket } from '@/services/ticketing-service'
 import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
-// TODO: update this list with the actual ticket types from the backend
-const TICKET_TYPE_OPTIONS = formatArrayOfStringsAsSelectOptions([
-    'Room Booking',
-    'HR',
-    'Payroll',
-    'Leave',
-    'Jobs',
-    'Time_Amend',
-    'IT',
-    'Other'
-])
-
 export default function TicketingForm({
-    defaultValues = {},
+    defaultValues = null,
     onCancel,
 }) {
     // Hooks
@@ -32,16 +28,52 @@ export default function TicketingForm({
         register,
         handleSubmit,
         reset,
+        watch,
         formState: { errors },
+        setError,
     } = useForm({
-        defaultValues,
+        defaultValues: defaultValues || {
+            ticketType: '',
+            description: '',
+            amendDate: getCurrentDate(),
+            amendTime: getCurrentTime(true),
+            amendType: '',
+            location: ''
+        },
     })
     const { showConfirmationModal } = useConfirmationModal()
-    const user = useAuthStore((state) => state.user)
+    const { options: typeOptions } = useFetchOptions(getEnquiryTypes)
+    const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
+        valueKey: 'code',
+        labelKey: 'definition',
+        transform: (list) => list.filter(item => LOG_TYPES_FOR_TIME_AMENDMENT.includes(item.code))
+    })
+    const watchedTicketType = watch('ticketType')
+    const watchedLogType = watch('amendType')
+    const watchedAmendDate = watch('amendDate')
+    const isTimeAmendment = watchedTicketType == TIME_AMENDMENT_ENQUIRY_TYPE_ID
+    const isCheckInLogType = isTimeAmendment && watchedLogType == 'I'
+    const user = useAuthStore(state => state.user)
 
     // States
     const [filesToUpload, setFilesToUpload] = useState([])
     const [uploading, setUploading] = useState(false)
+    const [timeEntries, setTimeEntries] = useState([])
+
+    useEffect(() => {
+        async function fetchTimeEntries(date) {
+            try {
+                const result = await getTimeEntriesById(user?.userId, { dateFrom: date, dateTo: date })
+                setTimeEntries(result?.data || [])
+            } catch {
+                setTimeEntries([])
+            }
+        }
+
+        if (isTimeAmendment && watchedAmendDate && validateStrictDateInput(watchedAmendDate) === true) {
+            fetchTimeEntries(watchedAmendDate)
+        }
+    }, [watchedAmendDate, user, isTimeAmendment, setTimeEntries])
 
     async function onSubmit(data) {
         showConfirmationModal({
@@ -56,34 +88,48 @@ export default function TicketingForm({
     }
 
     async function handleSave(data) {
+        function formatDateTimeForAPI(date, time) {
+            return `${date}T${time}`
+        }
         try {
             setUploading(true)
-            const params = {
-                // hardcoded
-                statusId: 1, // Open
-                comments: null,
-                closedById: null,
-                assignedToId: null,
-                priorityId: 4, // Low
-                targetDate: null,
-
-                // TODO: update the value for this. confirm with Sir Dan on the correct team to assign the ticket to
-                teamId: 3, // IT
-                teamDescription: 'IT',
-
-                // from form
-                requestedById: user?.id,
-                requestedByName: (user?.firstname || '' + ' ' + user?.lastname || '').trim(),
-                taskName: data.ticketType,
+            const params = isTimeAmendment ? {
+                workDate: data.amendDate,
+                logType: logTypeOptions.find(option => option.value === data.amendType)?.label || '',
+                requestedTime: formatDateTimeForAPI(data.amendDate, data.amendTime),
+                comment: data.description,
+                attachments: filesToUpload,
+                location: isCheckInLogType ? data.location : null
+            } : {
+                teamId: data.ticketType,
                 details: data.description,
+                attachments: filesToUpload
             }
-            const result = await createTicket(params, filesToUpload, null)
 
-            if (isResultSuccessful(result)) {
+            if (isTimeAmendment) {
+                const existingEntry = timeEntries.find(entry => entry.logTypeCode === data.amendType)
+                if(!existingEntry) {
+                    setError('amendType', {
+                        type: 'manual',
+                        message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
+                    })
+                    return
+                }
+
+                params.logTime = formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime))
+            }
+
+            const result = await (isTimeAmendment ? createTimeAmendment(params) : createTicket(params))
+
+            if (result == 'New ticket has been added to the system!' || isResultSuccessful(result)) {
                 toast.success('Ticket submitted successfully!')
                 reset({
                     ticketType: '',
                     description: '',
+                    amendDate: getCurrentDate(),
+                    amendTime: getCurrentTime(true),
+                    amendType: '',
+                    location: ''
                 })
                 setFilesToUpload([]) // Clear the file dropzone
                 if (onCancel) onCancel() // Close the form after successful submission
@@ -105,7 +151,7 @@ export default function TicketingForm({
                 <FormSelect
                     name='ticketType'
                     label='Type'
-                    options={TICKET_TYPE_OPTIONS}
+                    options={typeOptions}
                     register={register}
                     className='max-w-100'
                     validation={{
@@ -134,6 +180,62 @@ export default function TicketingForm({
                     }}
                     error={errors.description?.message}
                 />
+
+                {
+                    isTimeAmendment && (
+                        <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
+                            <FormInput
+                                name='amendDate'
+                                label='Date'
+                                type='date'
+                                register={register}
+                                validation={{
+                                    required: { value: isTimeAmendment, message: 'Please select a date for the time amendment' },
+                                }}
+                                error={errors.amendDate?.message}
+                                className='mb-0!'
+                            />
+
+                            <TimeInput
+                                name='amendTime'
+                                label='Time'
+                                register={register}
+                                validation={{
+                                    required: { value: isTimeAmendment, message: 'Please select a time for the time amendment' },
+                                }}
+                                error={errors.amendTime?.message}
+                                showSeconds
+                                className='mb-0!'
+                            />
+
+                            <FormSelect
+                                name='amendType'
+                                label='Log Type'
+                                options={logTypeOptions}
+                                register={register}
+                                validation={{
+                                    required: { value: isTimeAmendment, message: 'Please select a log type for the time amendment' },
+                                }}
+                                error={errors.amendType?.message}
+                            // className='col-span-2 sm:col-span-1'
+                            />
+
+                            {isCheckInLogType && (
+                                <FormSelect
+                                    name='location'
+                                    label='Location'
+                                    options={formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)}
+                                    register={register}
+                                    validation={{
+                                        required: { value: isTimeAmendment && isCheckInLogType, message: 'Please select a location for Check In' },
+                                    }}
+                                    error={errors.location?.message}
+                                // className='col-span-2 sm:col-span-1'
+                                />
+                            )}
+                        </div>
+                    )
+                }
 
 
                 <div className='flex justify-end gap-2 border-t border-gray-200 pt-4'>

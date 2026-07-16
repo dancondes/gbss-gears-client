@@ -1,12 +1,11 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
-import { getStaffBulletins } from '@/services/bulletins-service'
 import React, { useMemo, useState } from 'react'
 import useSWR from 'swr'
 import ViewBodyModal from './components/ViewBodyModal'
 
 export default function StaffBulletins() {
-    const { data, isValidating, mutate } = useSWR('/user/staff-bulletins', getStaffBulletins)
+    const { data, isValidating, mutate } = useSWR('/user/staff-bulletins', () => [])
     const [selectedBulletin, setSelectedBulletin] = useState(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
 

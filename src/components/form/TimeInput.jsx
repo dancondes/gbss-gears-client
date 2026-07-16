@@ -9,6 +9,7 @@ function TimeInput({
     validation = {},
     disabled = false,
     // interval = 15, // no longer working as expected, so removed for now
+    showSeconds = false,
     className = '',
     labelClassName = '',
     inputClassName = ''
@@ -37,7 +38,7 @@ function TimeInput({
                 <input
                     id={name}
                     type="time"
-                    // step={interval * 60}
+                    step={showSeconds ? 1 : undefined}
                     {...register(name, validation)}
                     disabled={disabled}
                     className={inputClass}
@@ -56,6 +57,7 @@ TimeInput.propTypes = {
     validation: PropTypes.object,
     disabled: PropTypes.bool,
     interval: PropTypes.number,
+    showSeconds: PropTypes.bool,
     className: PropTypes.string,
     labelClassName: PropTypes.string,
     inputClassName: PropTypes.string

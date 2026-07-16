@@ -4,21 +4,22 @@
  * Using Intl.DateTimeFormat is the correct, DST-safe approach — it works even
  * if the JS runtime is running in UTC (e.g. a Node server).
  * @param {Date} date
- * @returns {{ year: number, month: number, day: number, hours: number, minutes: number }}
+ * @returns {{ year: number, month: number, day: number, hours: number, minutes: number, seconds: number }}
  */
 function getManilaDateParts(date) {
     const fmt = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Manila',
         year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', hour12: false,
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
     })
     const parts = Object.fromEntries(fmt.formatToParts(date).map(p => [p.type, p.value]))
     return {
-        year:    parseInt(parts.year),
-        month:   parseInt(parts.month),   // 1-based
-        day:     parseInt(parts.day),
-        hours:   parseInt(parts.hour),    // 0-23
+        year: parseInt(parts.year),
+        month: parseInt(parts.month),   // 1-based
+        day: parseInt(parts.day),
+        hours: parseInt(parts.hour),    // 0-23
         minutes: parseInt(parts.minute),
+        seconds: parseInt(parts.second),
     }
 }
 
@@ -37,12 +38,13 @@ export function getCurrentDate(days = 0) {
 }
 
 /**
- * Returns current time in 24-hour format (HH:MM) in Manila time
- * @returns {string} Time like "14:30" or "09:15"
+ * Returns current time in 24-hour format (HH:MM) or (HH:MM:SS) in Manila time
+ * @returns {string} Time like "14:30" or "09:15" or "14:30:45" if includeSeconds=true
  */
-export function getCurrentTime() {
-    const { hours, minutes } = getManilaDateParts(new Date())
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+export function getCurrentTime(includeSeconds = false) {
+    const { hours, minutes, seconds } = getManilaDateParts(new Date())
+    const time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+    return includeSeconds ? `${time}:${String(seconds).padStart(2, '0')}` : time
 }
 
 /**
@@ -250,4 +252,28 @@ export function nextFriday(today = new Date()) {
     const result = new Date(today);
     result.setDate(today.getDate() + daysUntilFriday);
     return result.toISOString().slice(0, 10);
+}
+
+/**
+ * Converts a 12-hour time string (e.g. "6:05:16 AM") to 24-hour "HH:MM:SS" format.
+ * @param {string} dateString - Time string in the format "H:MM:SS AM/PM"
+ * @returns {string} Time in "HH:MM:SS" 24-hour format
+ */
+export function to24HourTime(dateString) {
+    const match = dateString.trim().match(/^(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/i)
+
+    if (!match) {
+        throw new Error(`Invalid time string: "${dateString}"`)
+    }
+
+    let [, hours, minutes, seconds, period] = match
+    hours = parseInt(hours, 10)
+
+    if (period.toUpperCase() === 'PM' && hours !== 12) {
+        hours += 12
+    } else if (period.toUpperCase() === 'AM' && hours === 12) {
+        hours = 0
+    }
+
+    return `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`
 }

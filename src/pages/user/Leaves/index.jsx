@@ -7,14 +7,13 @@ import SickLeaveList from './components/SickLeaveList'
 import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
 import OpenTicketModal from './components/OpenTicketModal'
 import useSWR from 'swr'
-import { getFiledLeaves, getLeaveCredits } from '@/services/leaves-service'
 import { useAuthStore } from '@/store'
 import { spliceDateFromTime } from '@/utilities/date-utilities'
 
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
-    const { data: leaveCreditsData, isValidating: isLeaveCreditsLoading, mutate: mutateLeaveCredits } = useSWR('/api/leave-credits', () => getLeaveCredits(user?.id))
-    const { data: filedLeavesData, isValidating: isFiledLeavesLoading, mutate: mutateFiledLeaves } = useSWR('/api/filed-leaves', () => getFiledLeaves(user?.id))
+    const { data: leaveCreditsData, isValidating: isLeaveCreditsLoading, mutate: mutateLeaveCredits } = useSWR('/api/leave-credits', () => [])
+    const { data: filedLeavesData, isValidating: isFiledLeavesLoading, mutate: mutateFiledLeaves } = useSWR('/api/filed-leaves', () => [])
 
     // States
     const [selectedLeave, setSelectedLeave] = useState(null)

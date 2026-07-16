@@ -35,6 +35,14 @@ export function getCOE(type) {
     return post(ROUTES.USERS.COE(type), {}, { responseType: 'blob' })
 }
 
+export function getMyRequests(status, data) {
+    return post(ROUTES.USERS.MY_REQUESTS(status), data)
+}
+
+export function getTeamRequests(status, data) {
+    return post(ROUTES.USERS.TEAM_REQUESTS(status), data)
+}
+
 /**
  * Custom hook to fetch user options for select/typeahead components
  * @returns {object} - Object containing options array, loading state, and error

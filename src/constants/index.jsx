@@ -27,6 +27,14 @@ export const LOCATION_OPTIONS = [
     'PhilPlans',
 ]
 
+export const AMENDMENT_STATUS = [
+    {value: 0, label: 'Pending'},
+    { value: 1, label: 'Approved' },
+    { value: 2, label: 'Rejected' },
+    { value: 3, label: 'For Approval' },
+    { value: 4, label: 'All' },
+]
+
 // for Bulletins
 export const BULLETIN_TYPES = {
     STAFF: 'Staff',

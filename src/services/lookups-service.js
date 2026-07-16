@@ -16,3 +16,7 @@ export function getPayPeriods() {
 export function getEmployeeList() {
     return get(ROUTES.LOOKUPS.EMPLOYEE_LIST)
 }
+
+export function getEnquiryTypes() {
+    return get(ROUTES.LOOKUPS.ENQUIRY_TYPES)
+}

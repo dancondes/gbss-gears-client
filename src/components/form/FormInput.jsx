@@ -27,7 +27,7 @@ function runCustomValidation(validateRule, value) {
     return true
 }
 
-function validateStrictDateInput(value) {
+export function validateStrictDateInput(value) {
     if (value === null || value === undefined || String(value).trim() === '') {
         return true
     }

@@ -24,6 +24,13 @@ export const ROUTES = {
         UPDATE_OVERTIME: (id) => `/Event/overtime/${id}/update`,
         DELETE_OVERTIME: (id) => `/Event/overtime/${id}/remove`,
         GET_OVERTIME: '/Event/overtime',
+
+        // Tickets
+        CREATE_TICKET: '/Event/ticket/create',
+
+        // Time Amendment
+        CREATE_TIME_AMENDMENT: '/Event/time-amend/create',
+        TIME_AMEND_APPROVAL: (id, status) => `/Event/time-amend/approval/${id}/${status}`,
     },
     FILE: {
         DOWNLOAD: (path) => `/File/download?blobName=${encodeURIComponent(path)}`,
@@ -45,6 +52,7 @@ export const ROUTES = {
         APPROVERS: '/Lookups/approvers',
         PAY_PERIODS: '/Lookups/pay-periods',
         EMPLOYEE_LIST: '/Lookups/employee-list',
+        ENQUIRY_TYPES: '/Lookups/enquiry-types',
     },
     REPORTS: {
         COE_REQUESTS: '/Reports/Pdf/COE',

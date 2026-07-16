@@ -37,3 +37,17 @@ export function deleteOvertime(id) {
 export function getOvertime() {
     return get(ROUTES.EVENT.GET_OVERTIME)
 }
+
+// Ticket
+export function createTicket(data) {
+    return post(ROUTES.EVENT.CREATE_TICKET, data)
+}
+
+// Time Amendment
+export function createTimeAmendment(data) {
+    return post(ROUTES.EVENT.CREATE_TIME_AMENDMENT, data)
+}
+
+export function timeAmendApproval(id, status, data) {
+    return post(ROUTES.EVENT.TIME_AMEND_APPROVAL(id, status), data)
+}

@@ -34,9 +34,16 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
-      - name: Verify environment variable
+      - name: Verify secret
         run: |
-          echo "VITE_API_URL=$VITE_API_URL"
+          if [ -z "$VITE_API_URL" ]; then
+            echo "VITE_API_URL is NOT set"
+            exit 1
+          else
+            echo "VITE_API_URL is set"
+          fi
+        env:
+          VITE_API_URL: ${{ secrets.API_URL }}
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest

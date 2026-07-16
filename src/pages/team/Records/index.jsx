@@ -91,7 +91,7 @@ export default function Records() {
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enableSorting={true}
                     pageSize={50}
                     isLoading={isValidating}

@@ -15,7 +15,7 @@ function TicketingModal({
             title="Ticketing"
             size="4xl"
         >
-            <TicketingForm defaultValues={defaultValues} onCancel={onClose} />
+            <TicketingForm defaultValues={defaultValues || {}} onCancel={onClose} />
         </Modal>
     )
 }

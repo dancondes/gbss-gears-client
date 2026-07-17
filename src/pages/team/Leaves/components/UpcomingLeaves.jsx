@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import Table from '@/components/Table'
 
 function UpcomingLeaves({
-    data
+    data = [],
+    isLoading = false
 }) {
 
     const columns = useMemo(() => [
@@ -43,13 +44,15 @@ function UpcomingLeaves({
                     position: 'bottom-right',
                     buttonLabel: 'Download to Excel'
                 }}
+                isLoading={isLoading}
             />
         </div>
     )
 }
 
 UpcomingLeaves.propTypes = {
-    data: PropTypes.array.isRequired
+    data: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool,
 }
 
 export default UpcomingLeaves

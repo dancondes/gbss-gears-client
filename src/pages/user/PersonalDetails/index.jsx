@@ -8,6 +8,8 @@ import { toast } from 'react-toastify'
 import { isResultSuccessful } from '@/utilities'
 import ChangePassword from '@/pages/home/ChangePassword'
 import ChangePin from '@/pages/home/ChangePin'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_HR } from '@/constants/database-id'
 
 function PersonalDetails() {
     const user = useAuthStore((state) => state.user)
@@ -180,6 +182,7 @@ function PersonalDetails() {
             <PageTemplate
                 title="Personal Details"
                 subtitle="View and update your personal information"
+                rightSide={<OpenTicketModal concernLabel="Details" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_HR }} />}
             >
                 <div className="p-1 sm:p-3">
                     <div className="flex flex-col lg:flex-row gap-6">

@@ -19,6 +19,15 @@ import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
+const DEFAULT_FORM_VALUES = {
+    ticketType: '',
+    description: '',
+    amendDate: getCurrentDate(),
+    amendTime: getCurrentTime(true),
+    amendType: '',
+    location: ''
+}
+
 export default function TicketingForm({
     defaultValues = null,
     onCancel,
@@ -32,18 +41,14 @@ export default function TicketingForm({
         formState: { errors },
         setError,
     } = useForm({
-        defaultValues: defaultValues || {
-            ticketType: '',
-            description: '',
-            amendDate: getCurrentDate(),
-            amendTime: getCurrentTime(true),
-            amendType: '',
-            location: ''
-        },
+        defaultValues: defaultValues ? {
+            ...DEFAULT_FORM_VALUES,
+            ...defaultValues,
+        } : DEFAULT_FORM_VALUES,
     })
     const { showConfirmationModal } = useConfirmationModal()
-    const { options: typeOptions } = useFetchOptions(getEnquiryTypes)
-    const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
+    const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes)
+    const { options: logTypeOptions, loading: logTypesLoading } = useFetchOptions(getLogTypes, {
         valueKey: 'code',
         labelKey: 'definition',
         transform: (list) => list.filter(item => LOG_TYPES_FOR_TIME_AMENDMENT.includes(item.code))
@@ -59,6 +64,13 @@ export default function TicketingForm({
     const [filesToUpload, setFilesToUpload] = useState([])
     const [uploading, setUploading] = useState(false)
     const [timeEntries, setTimeEntries] = useState([])
+
+    useEffect(() => {
+        reset(defaultValues ? {
+            ...DEFAULT_FORM_VALUES,
+            ...defaultValues,
+        } : DEFAULT_FORM_VALUES)
+    }, [typeOptions])
 
     useEffect(() => {
         async function fetchTimeEntries(date) {
@@ -108,7 +120,7 @@ export default function TicketingForm({
 
             if (isTimeAmendment) {
                 const existingEntry = timeEntries.find(entry => entry.logTypeCode === data.amendType)
-                if(!existingEntry) {
+                if (!existingEntry) {
                     setError('amendType', {
                         type: 'manual',
                         message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
@@ -143,6 +155,17 @@ export default function TicketingForm({
         } finally {
             setUploading(false)
         }
+    }
+
+    if (enquiryTypesLoading || logTypesLoading) {
+        return (
+            <div className='flex justify-center items-center h-32'>
+                <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        )
     }
 
     return (

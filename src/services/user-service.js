@@ -53,3 +53,11 @@ export function getTeamStatus() {
 export function changePasswordPin(data) {
     return put(ROUTES.USERS.CHANGE_PASSWORD_PIN, data)
 }
+
+export function getTeamLeaves() {
+    return get(ROUTES.USERS.TEAM_LEAVES)
+}
+
+export function getUpcomingLeaves() {
+    return get(ROUTES.USERS.UPCOMING_LEAVES)
+}

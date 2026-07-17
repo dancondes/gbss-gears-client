@@ -4,11 +4,11 @@ import LeaveCredits from './components/LeaveCredits'
 import ApplicationLeaveFrom from './components/ApplicationLeaveForm'
 import VacationLeaveList from './components/VacationLeaveList'
 import SickLeaveList from './components/SickLeaveList'
-import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
 import OpenTicketModal from './components/OpenTicketModal'
 import useSWR from 'swr'
-import { useAuthStore } from '@/store'
 import { spliceDateFromTime } from '@/utilities/date-utilities'
+import { ENQUIRY_TYPE_ID_FOR_LEAVE } from '@/constants/database-id'
+import { useAuthStore } from '@/store'
 
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
@@ -17,7 +17,6 @@ export default function Leaves() {
 
     // States
     const [selectedLeave, setSelectedLeave] = useState(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const vacationLeaveData = [
         { id: 1, order: 1, workDate: '2024-01-01', description: 'Accrue VL Credit', value: 1.67, balance: 1.67 },
@@ -73,7 +72,7 @@ export default function Leaves() {
     return (
         <PageTemplate
             title="Leaves"
-            rightSide={<OpenTicketModal setIsOpen={setIsModalOpen} />}
+            rightSide={<OpenTicketModal concernLabel="Leaves" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_LEAVE }} />}
             mutate={handleMutate}
         >
             {/* 1st Row */}
@@ -122,16 +121,6 @@ export default function Leaves() {
                     </div>
                 </div>
             </div>
-
-            {isModalOpen && (
-                <TicketingModal
-                    defaultValues={{
-                        ticketType: 'Leave',
-                    }}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
         </PageTemplate>
     )
 }

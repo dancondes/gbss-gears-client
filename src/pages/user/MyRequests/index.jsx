@@ -6,6 +6,8 @@ import { AMENDMENT_STATUS } from '@/constants'
 import useSWR from 'swr'
 import { getMyRequests } from '@/services/user-service'
 import { useAuthStore } from '@/store'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_TIME_AMEND } from '@/constants/database-id'
 
 const currentDate = getCurrentDate()
 const DEFAUL_STATUS = 3 // For Approval
@@ -80,6 +82,7 @@ function MyRequests() {
             title="My Requests"
             subtitle="View and manage your requests"
             mutate={mutate}
+            rightSide={<OpenTicketModal concernLabel="Time Entry" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_TIME_AMEND }} />}
         >
             <div className="p-1 sm:p-3">
                 <Table

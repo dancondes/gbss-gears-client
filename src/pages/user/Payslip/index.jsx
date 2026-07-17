@@ -10,6 +10,8 @@ import { toast } from 'react-toastify'
 import { downloadFile } from '@/utilities/file-utilities'
 import { useAuthStore } from '@/store'
 import PayslipPinInputModal from './PayslipPinInputModal'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_PAYROLL } from '@/constants/database-id'
 
 function Payslip() {
     const user = useAuthStore((state) => state.user)
@@ -74,6 +76,7 @@ function Payslip() {
         <PageTemplate
             title="Payslips"
             subtitle="Download your payslips for the selected pay period"
+            rightSide={<OpenTicketModal concernLabel="Payroll" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_PAYROLL }} />}
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">

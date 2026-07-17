@@ -53,5 +53,7 @@ export const ROUTES = {
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,
         TEAM_STATUS: '/User/team-status',
         CHANGE_PASSWORD_PIN: '/User/password-pin/update',
+        TEAM_LEAVES: '/User/team-leaves',
+        UPCOMING_LEAVES: '/User/upcoming-leaves',
     }
 }

@@ -1,8 +1,11 @@
 import FormInput from '@/components/form/FormInput'
 import PageTemplate from '@/components/PageTemplate'
+import { changePasswordPin } from '@/services/user-service'
+import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
 
 export const PASSWORD_REQUIREMENTS = [
     {
@@ -45,11 +48,23 @@ export default function ChangePassword() {
         handleSubmit,
         watch,
         formState: { errors, isSubmitting },
+        reset
     } = useForm({ mode: 'onSubmit' })
 
     const newPassword = watch('newPassword', '')
 
-    async function onSubmit(formValues) {
+    async function onSubmit(formData) {
+        try {
+            const params = {
+                pin: formData.newPassword,
+            }
+            await changePasswordPin(params)
+            reset()
+            toast.success('Password changed successfully.')
+        } catch (error) {
+            logger.error('Error changing password:', error)
+            toast.error('Failed to change password. Please try again later.')
+        }
     }
 
     return (
@@ -58,7 +73,7 @@ export default function ChangePassword() {
             subtitle="Update your password to keep your account secure."
         >
             <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-[minmax(250px,1fr)_minmax(100px,1fr)] gap-4">
                     {/* Left: password fields */}
                     <div className="space-y-4">
                         <div className="rounded border border-primary/60 overflow-hidden">

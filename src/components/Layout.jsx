@@ -12,8 +12,6 @@ import MenuBar from './MenuBar'
 import StatusBar from './StatusBar'
 import COERequests from '@/pages/user/COERequest'
 import PayslipPinInputModal from '@/pages/user/Payslip/PayslipPinInputModal'
-import ChangePassword from '@/pages/home/ChangePassword'
-import ChangePin from '@/pages/home/ChangePin'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -104,10 +102,6 @@ const Layout = () => {
     const setCOERequestModalOpen = useUIStore((state) => state.setCOERequestModalOpen)
     const payslipPinModalOpen = useUIStore((state) => state.payslipPinModalOpen)
     const setPayslipPinModalOpen = useUIStore((state) => state.setPayslipPinModalOpen)
-    const changePasswordModalOpen = useUIStore((state) => state.changePasswordModalOpen)
-    const setChangePasswordModalOpen = useUIStore((state) => state.setChangePasswordModalOpen)
-    const changePinModalOpen = useUIStore((state) => state.changePinModalOpen)
-    const setChangePinModalOpen = useUIStore((state) => state.setChangePinModalOpen)
 
     const hasTabs = tabs.length > 0
 
@@ -270,20 +264,6 @@ const Layout = () => {
                 <PayslipPinInputModal
                     isOpen={payslipPinModalOpen}
                     setIsOpen={setPayslipPinModalOpen}
-                />
-            )}
-
-            {changePasswordModalOpen && (
-                <ChangePassword
-                    isOpen={changePasswordModalOpen}
-                    setIsOpen={setChangePasswordModalOpen}
-                />
-            )}
-
-            {changePinModalOpen && (
-                <ChangePin
-                    isOpen={changePinModalOpen}
-                    setIsOpen={setChangePinModalOpen}
                 />
             )}
         </div>

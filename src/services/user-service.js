@@ -49,3 +49,7 @@ export function getTeamRequests(status, data) {
 export function getTeamStatus() {
     return get(ROUTES.USERS.TEAM_STATUS)
 }
+
+export function changePasswordPin(data) {
+    return put(ROUTES.USERS.CHANGE_PASSWORD_PIN, data)
+}

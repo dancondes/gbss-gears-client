@@ -1,7 +1,12 @@
 import FormInput from '@/components/form/FormInput'
 import PageTemplate from '@/components/PageTemplate'
+import { changePasswordPin } from '@/services/user-service'
+import { useAuthStore } from '@/store'
+import { getPIN } from '@/utilities/jwt-utils'
+import logger from '@/utilities/logger'
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-toastify'
 
 export const PIN_PATTERN = /^\d{4}$/
 
@@ -11,11 +16,35 @@ export default function ChangePin() {
         handleSubmit,
         watch,
         formState: { errors, isSubmitting },
+        setError,
+        reset
     } = useForm({ mode: 'onSubmit' })
+    const token = useAuthStore((state) => state.token)
 
     const newPin = watch('newPin', '')
 
-    async function onSubmit(formValues) {
+    async function onSubmit(formData) {
+        try {
+            const currentPin = getPIN(token)
+            const params = {
+                pin: formData.newPin,
+            }
+
+            if (currentPin !== formData.currentPin) {
+                setError('currentPin', {
+                    type: 'manual',
+                    message: 'Current pin is incorrect',
+                })
+                return
+            }
+
+            await changePasswordPin(params)
+            reset() // Reset the form after successful submission
+            toast.success('PIN changed successfully.')
+        } catch (error) {
+            logger.error('Error changing PIN:', error)
+            toast.error('Failed to change PIN. Please try again later.')
+        }
     }
 
     return (
@@ -88,20 +117,20 @@ export default function ChangePin() {
 
                 {/* Footer: error + actions */}
                 <div className="flex items-center justify-end mt-4 gap-3 border-t border-gray-200 pt-4">
-                        {/* <button
+                    {/* <button
                             type="button"
                             onClick={handleClose}
                             className="btn-white"
                         >
                             Cancel
                         </button> */}
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="btn-primary"
-                        >
-                            Change
-                        </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="btn-primary"
+                    >
+                        Change
+                    </button>
                 </div>
             </form>
         </PageTemplate>

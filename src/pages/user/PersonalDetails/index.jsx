@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useTabStore } from '@/store'
 import { updatePersonalDetails } from '@/services/user-service'
 import logger from '@/utilities/logger'
 import { toast } from 'react-toastify'
@@ -14,9 +14,28 @@ function PersonalDetails() {
     const setUser = useAuthStore((state) => state.setUser)
     const [personalDetails, setPersonalDetails] = useState({})
     const [isSaving, setIsSaving] = useState(false)
+    const getActiveTab = useTabStore((state) => state.getActiveTab)
+    const clearTabState = useTabStore((state) => state.clearTabState)
 
     const [editingField, setEditingField] = useState(null)
     const [editValue, setEditValue] = useState('')
+
+    const changePasswordRef = useRef(null)
+    const changePinRef = useRef(null)
+
+    useEffect(() => {
+        const activeTab = getActiveTab()
+
+        if (activeTab?.state?.goToChangePassword) {
+            changePasswordRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+
+        if (activeTab?.state?.goToChangePin) {
+            changePinRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+
+        clearTabState(activeTab?.id)
+    }, [getActiveTab, clearTabState])
 
     useEffect(() => {
         if (user?.personalDetails) {
@@ -223,12 +242,12 @@ function PersonalDetails() {
                 </div>
             </PageTemplate>
 
-            <div className='grid grid-cols-1 md:grid-cols-5'>
-                <div className='col-span-1 md:col-span-3'>
+            <div className='grid grid-cols-1 md:grid-cols-6'>
+                <div ref={changePasswordRef} className='col-span-1 md:col-span-4 scroll-mt-24'>
                     <ChangePassword />
                 </div>
 
-                <div className='col-span-2'>
+                <div ref={changePinRef} className='col-span-2 scroll-mt-24'>
                     <ChangePin />
                 </div>
             </div>

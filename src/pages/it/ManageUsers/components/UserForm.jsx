@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import FormInput from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
 import TypeaheadSelect from '@/components/form/TypeaheadSelect'
+import { PASSWORD_REQUIREMENTS } from '@/pages/home/ChangePassword'
+import { PIN_PATTERN } from '@/pages/home/ChangePin'
 
 function UserForm({
     isAddMode,
@@ -23,7 +25,7 @@ function UserForm({
                     className="col-span-1 sm:col-span-2 mb-0!"
                     options={[]} // Options will be fetched in the parent component
                     disabled={!isAddMode} // Disable the field when editing an existing user
-                    // autoFocus={isAddMode} // Auto-focus only when adding a new user
+                // autoFocus={isAddMode} // Auto-focus only when adding a new user
                 />
 
                 <FormInput
@@ -33,7 +35,7 @@ function UserForm({
                     validation={{ required: 'Username is required' }}
                     error={errors.username?.message}
                     className="mb-0!"
-                    // autoFocus={!isAddMode} // Auto-focus only when editing an existing user
+                // autoFocus={!isAddMode} // Auto-focus only when editing an existing user
                 />
 
                 <FormSelect
@@ -63,6 +65,16 @@ function UserForm({
                     className="sm:col-span-3 mb-0!"
                     validation={{
                         required: { value: isAddMode, message: 'Password is required when creating a new user' },
+                        validate: (value) => {
+
+                            // only validate in update mode if a value is provided
+                            if (!isAddMode && !value) {
+                                return true
+                            }
+                            
+                            const failed = PASSWORD_REQUIREMENTS.find(r => !r.test(value))
+                            return failed ? `Password must ${failed.label}` : true
+                        },
                     }}
                 />
 
@@ -75,6 +87,16 @@ function UserForm({
                     className="sm:col-span-2 mb-0!"
                     validation={{
                         required: { value: isAddMode, message: 'PIN is required when creating a new user' },
+                        pattern: {
+                            value: PIN_PATTERN,
+                            message: 'Pin must be exactly 4 digits',
+                        },
+                        onChange: (e) => {
+                            // Only allow digits to be entered
+                            const value = e.target.value
+                            e.target.value = value.replace(/\D/g, '')
+                        },
+                        maxLength: { value: 4, message: 'Pin must be exactly 4 digits' },
                     }}
                 />
             </div>

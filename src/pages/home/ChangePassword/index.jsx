@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 
-const PASSWORD_REQUIREMENTS = [
+export const PASSWORD_REQUIREMENTS = [
     {
         label: 'have a length of atleast 15 characters',
         test: (v) => v.length >= 15,

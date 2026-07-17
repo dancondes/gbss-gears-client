@@ -3,7 +3,7 @@ import PageTemplate from '@/components/PageTemplate'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 
-const PIN_PATTERN = /^\d{4}$/
+export const PIN_PATTERN = /^\d{4}$/
 
 export default function ChangePin() {
     const {

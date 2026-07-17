@@ -80,6 +80,7 @@ export default function Records() {
     return (
         <PageTemplate
             title="Records"
+            subtitle="View your team members' time logs"
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">

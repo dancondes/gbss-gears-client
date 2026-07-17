@@ -1,6 +1,5 @@
 import { ROUTES } from '@/constants/routes'
 import { get, put, post } from '@/utilities/api'
-import { useFetchOptions } from '@/hooks/use-fetch-options'
 
 
 export const getAllUsers = () => {
@@ -9,6 +8,10 @@ export const getAllUsers = () => {
 
 export const getUserById = (id) => {
     return get(ROUTES.USERS.GET_BY_ID(id))
+}
+
+export const createUser = (userData) => {
+    return post(ROUTES.USERS.CREATE, userData)
 }
 
 export const updateUser = (id, userData) => {

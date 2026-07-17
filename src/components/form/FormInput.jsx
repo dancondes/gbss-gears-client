@@ -80,6 +80,7 @@ const FormInput = ({
     step,
     disabled = false,
     readonly = false,
+    autoFocus = false,
 }) => {
     const [showPassword, setShowPassword] = useState(false)
 
@@ -183,6 +184,7 @@ const FormInput = ({
                                     WebkitTextSecurity: 'disc',
                                     MozTextSecurity: 'disc'
                                 } : undefined}
+                                autoFocus={autoFocus}
                                 {...inputProps}
                             />
 
@@ -238,6 +240,7 @@ FormInput.propTypes = {
     step: PropTypes.string, // For number input step attribute
     disabled: PropTypes.bool, // For disabling the input,
     readonly: PropTypes.bool, // For read-only input
+    autoFocus: PropTypes.bool, // For auto-focusing the input
 }
 
 export default FormInput

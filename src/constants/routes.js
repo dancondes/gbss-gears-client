@@ -34,12 +34,16 @@ export const ROUTES = {
         PAY_PERIODS: '/Lookups/pay-periods',
         EMPLOYEE_LIST: '/Lookups/employee-list',
         ENQUIRY_TYPES: '/Lookups/enquiry-types',
+        ROLES: '/Lookups/roles',
     },
     USERS: {
-        GET_ALL: '/User',
         GET_BY_ID: (id) => `/User/${id}`,
+
+        // Manage Users
+        GET_ALL: '/User',
         CREATE: '/User/create',
         UPDATE: (id) => `/User/${id}/update`,
+
         GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
         GET_DOCUMENTS: '/User/documents',
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',

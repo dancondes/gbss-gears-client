@@ -17,6 +17,7 @@ const TypeaheadSelect = ({
     className = '',
     labelClassName = '',
     inputClassName = '',
+    autoFocus = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
@@ -247,6 +248,7 @@ const TypeaheadSelect = ({
                 placeholder={placeholder}
                 disabled={disabled}
                 autoComplete="off"
+                autoFocus={autoFocus}
                 className={`appearance-none rounded relative block w-full px-2.5 py-1.5 pr-12! border ${
                     error ? 'border-red-500' : 'border-tertiary'
                 } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] disabled:bg-gray-100 disabled:cursor-not-allowed ${inputClassName}`}
@@ -401,6 +403,7 @@ TypeaheadSelect.propTypes = {
     className: PropTypes.string,
     labelClassName: PropTypes.string,
     inputClassName: PropTypes.string,
+    autoFocus: PropTypes.bool,
 }
 
 export default TypeaheadSelect

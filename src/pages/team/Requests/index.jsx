@@ -167,6 +167,7 @@ export default function Requests() {
     return (
         <PageTemplate
             title="My Team's Requests"
+            subtitle="View and manage your team members' amendment requests"
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">

@@ -28,11 +28,11 @@ export const LOCATION_OPTIONS = [
 ]
 
 export const AMENDMENT_STATUS = [
-    {value: 0, label: 'Pending'},
+    // {value: 0, label: 'Pending'},
+    { value: 0, label: 'All' },
     { value: 1, label: 'Approved' },
     { value: 2, label: 'Rejected' },
     { value: 3, label: 'For Approval' },
-    { value: 4, label: 'All' },
 ]
 
 // for Bulletins

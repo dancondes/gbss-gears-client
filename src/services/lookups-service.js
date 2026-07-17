@@ -22,6 +22,10 @@ export function getEnquiryTypes() {
     return get(ROUTES.LOOKUPS.ENQUIRY_TYPES)
 }
 
+export function getRoles() {
+    return get(ROUTES.LOOKUPS.ROLES)
+}
+
 export function useFetchEmployeeOptions() {
     return useFetchOptions(getEmployeeList, {
         valueKey: 'name',

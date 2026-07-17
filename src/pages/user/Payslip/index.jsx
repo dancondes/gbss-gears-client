@@ -81,7 +81,7 @@ function Payslip() {
                     user?.payslipPinVerified ? (
                         <Table
                             columns={columns}
-                            data={payslipList}
+                            data={payslipList || []}
                             enablePagination={false}
                             enableSorting={true}
                             noDataLabel="No payslips found"

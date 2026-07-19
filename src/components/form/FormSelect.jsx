@@ -62,13 +62,13 @@ const FormSelect = ({
                     >
 
                         {!noPlaceholder && <option value="">{placeholder}</option>}
-                        {options.map((option) => {
+                        {options.map((option, index) => {
                             // Support both string array and object array formats
                             const value = typeof option === 'string' ? option : option.value
                             const displayLabel = typeof option === 'string' ? option : option.label
 
                             return (
-                                <option key={value} value={value}>
+                                <option key={option.value + '_' + option.label + '_' + index} value={value}>
                                     {displayLabel}
                                 </option>
                             )

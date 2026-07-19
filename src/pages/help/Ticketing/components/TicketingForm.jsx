@@ -11,7 +11,7 @@ import { createTicket, createTimeAmendment, getTimeEntriesById } from '@/service
 import { getEnquiryTypes, getLogTypes } from '@/services/lookups-service'
 import { useAuthStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions, isResultSuccessful } from '@/utilities'
-import { formatDate, getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
+import { getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
 // import { createTicket } from '@/services/ticketing-service'
 import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
@@ -39,7 +39,7 @@ export default function TicketingForm({
         reset,
         watch,
         formState: { errors },
-        setError,
+        // setError,
     } = useForm({
         defaultValues: defaultValues ? {
             ...DEFAULT_FORM_VALUES,
@@ -47,7 +47,10 @@ export default function TicketingForm({
         } : DEFAULT_FORM_VALUES,
     })
     const { showConfirmationModal } = useConfirmationModal()
-    const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes)
+    const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes, {
+        valueKey:'teamNameId',
+        includeFields: ['teamNameId']
+    })
     const { options: logTypeOptions, loading: logTypesLoading } = useFetchOptions(getLogTypes, {
         valueKey: 'code',
         labelKey: 'definition',
@@ -110,28 +113,26 @@ export default function TicketingForm({
                 logType: logTypeOptions.find(option => option.value === data.amendType)?.label || '',
                 requestedTime: formatDateTimeForAPI(data.amendDate, data.amendTime),
                 comment: data.description,
-                attachments: filesToUpload,
                 location: isCheckInLogType ? data.location : null
             } : {
-                teamId: data.ticketType,
+                teamNameId: data.ticketType,
                 details: data.description,
-                attachments: filesToUpload
             }
 
             if (isTimeAmendment) {
                 const existingEntry = timeEntries.find(entry => entry.logTypeCode === data.amendType)
-                if (!existingEntry) {
-                    setError('amendType', {
-                        type: 'manual',
-                        message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
-                    })
-                    return
-                }
+                // if (!existingEntry) {
+                //     setError('amendType', {
+                //         type: 'manual',
+                //         message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
+                //     })
+                //     return
+                // }
 
-                params.logTime = formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime))
+                params.logTime = existingEntry ? formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime)) : null
             }
 
-            const result = await (isTimeAmendment ? createTimeAmendment(params) : createTicket(params))
+            const result = await (isTimeAmendment ? createTimeAmendment(params, filesToUpload) : createTicket(params, filesToUpload))
 
             if (result == 'New ticket has been added to the system!' || isResultSuccessful(result)) {
                 toast.success('Ticket submitted successfully!')

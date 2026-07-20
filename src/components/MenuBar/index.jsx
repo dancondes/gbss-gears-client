@@ -18,7 +18,7 @@ function MenuBar() {
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const messageModalContext = useContext(MessageModalContext)
     const user = useAuthStore((state) => state.user)
-    const fullName = user?.employeeInfo ? `${user.employeeInfo.firstname} ${user.employeeInfo.lastname}` : ''
+    const fullName = user?.employeeInfo ? `${user?.employeeInfo?.preferedName || user?.employeeInfo?.firstname} ${user?.employeeInfo?.lastname}` : ''
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
     const { navigate: navigateTo } = useTabNavigation()

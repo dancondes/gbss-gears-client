@@ -2,7 +2,9 @@ import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import { AMENDMENT_STATUS } from '@/constants'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
+import useInputModal from '@/hooks/use-input-modal '
 import { timeAmendApproval } from '@/services/event-service'
+import { useFetchEmployeeOptions } from '@/services/lookups-service'
 import { getTeamRequests } from '@/services/user-service'
 import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
@@ -16,6 +18,8 @@ const currentDate = getCurrentDate()
 
 export default function Requests() {
     const { showConfirmationModal } = useConfirmationModal()
+    const { showInputModal } = useInputModal()
+    const { options: employeeOptions } = useFetchEmployeeOptions()
     const user = useAuthStore((state) => state.user)
     const [filters, setFilters] = useState({
         dateFrom: currentDate,
@@ -38,6 +42,16 @@ export default function Requests() {
 
     const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-requests', user?.userId, filters] : null, fetchTeamRequests)
 
+    function showReasonForRejectionModal(request) {
+        showInputModal({
+            title: 'Reason for Rejection',
+            fields: [
+                { name: 'reason', label: 'Reason', type: 'textarea' },
+            ],
+            onConfirm: (data) => handleDisapproveClick(request, data.reason?.trim()),
+        })
+    }
+
     function handleApproveClick(request) {
         showConfirmationModal({
             title: 'Approve Amendment Request',
@@ -49,14 +63,14 @@ export default function Requests() {
         })
     }
 
-    function handleDisapproveClick(request) {
+    function handleDisapproveClick(request, reason = '') {
         showConfirmationModal({
             title: 'Disapprove Amendment Request',
             message: `Are you sure you want to disapprove this attendance amendment request for ${request?.name || 'this employee'}?`,
             confirmText: 'Yes, Disapprove',
             cancelText: 'Cancel',
             variant: 'danger',
-            onConfirm: () => handleAmendmentAction(request, false),
+            onConfirm: () => handleAmendmentAction(request, false, reason),
         })
     }
 
@@ -125,31 +139,33 @@ export default function Requests() {
             header: 'Action',
             cell: ({ row }) => {
                 const request = row.original
-                return (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                handleDisapproveClick(request)
-                            }}
-                            className="btn-danger py-2! text-xs!"
-                            title="Disapprove request"
-                        >
-                            Disapprove
-                        </button>
+                if (request.status === 'For Approval') {
+                    return (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    showReasonForRejectionModal(request)
+                                }}
+                                className="btn-danger py-2! text-xs!"
+                                title="Disapprove request"
+                            >
+                                Disapprove
+                            </button>
 
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                handleApproveClick(request)
-                            }}
-                            className="btn-primary py-1! text-xs!"
-                            title="Approve request"
-                        >
-                            Approve
-                        </button>
-                    </div>
-                )
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleApproveClick(request)
+                                }}
+                                className="btn-primary py-1! text-xs!"
+                                title="Approve request"
+                            >
+                                Approve
+                            </button>
+                        </div>
+                    )
+                }
             }
         }
     ], [])
@@ -165,6 +181,7 @@ export default function Requests() {
     return (
         <PageTemplate
             title="My Team's Requests"
+            subtitle="View and manage your team members' amendment requests"
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">
@@ -182,7 +199,7 @@ export default function Requests() {
                     columnFilters={{
                         name: {
                             label: 'Employee',
-                            options: [],
+                            options: employeeOptions,
                             type: 'typeahead'
                         },
                         status: {

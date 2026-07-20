@@ -6,6 +6,7 @@ import NavbarUserProfile from '../NavbarUserProfile'
 import MenuBarItem from './components/MenuBarItem'
 import { MessageModalContext } from '@/contexts/MessageModalContext'
 import { useNavigate } from 'react-router-dom'
+import useTabNavigation from '@/hooks/use-tab-navigation'
 
 // ---------------------------------------------------------------------------
 // MenuBar – the full horizontal menu bar
@@ -20,6 +21,7 @@ function MenuBar() {
     const fullName = user?.employeeInfo ? `${user.employeeInfo.firstname} ${user.employeeInfo.lastname}` : ''
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
+    const { navigate: navigateTo } = useTabNavigation()
 
     const handleToggle = useCallback(function (index) {
         setOpenIndex(function (prev) {
@@ -64,6 +66,14 @@ function MenuBar() {
 
     function handleUserMenuClose() {
         setUserMenuOpen(false)
+    }
+
+    function handleUserProfileClick() {
+        setUserMenuOpen(false)
+        navigateTo('/user/personal-details', {
+            id: 'Personal-Details',
+            title: 'Personal Details',
+        })
     }
 
     if (!menuItems || menuItems.length === 0) return null
@@ -131,6 +141,7 @@ function MenuBar() {
                             onUserMenuToggle={handleUserMenuToggle}
                             onUserMenuClose={handleUserMenuClose}
                             onLogoutClick={handleLogoutClick}
+                            onProfileClick={handleUserProfileClick}
                         />
                     </div>
                 </div>

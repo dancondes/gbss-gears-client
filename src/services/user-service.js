@@ -1,6 +1,5 @@
 import { ROUTES } from '@/constants/routes'
 import { get, put, post } from '@/utilities/api'
-import { useFetchOptions } from '@/hooks/use-fetch-options'
 
 
 export const getAllUsers = () => {
@@ -9,6 +8,10 @@ export const getAllUsers = () => {
 
 export const getUserById = (id) => {
     return get(ROUTES.USERS.GET_BY_ID(id))
+}
+
+export const createUser = (userData) => {
+    return post(ROUTES.USERS.CREATE, userData)
 }
 
 export const updateUser = (id, userData) => {
@@ -43,19 +46,18 @@ export function getTeamRequests(status, data) {
     return post(ROUTES.USERS.TEAM_REQUESTS(status), data)
 }
 
-/**
- * Custom hook to fetch user options for select/typeahead components
- * @returns {object} - Object containing options array, loading state, and error
- */
-export function useUserOptions(valueKey = 'userId') {
-    return useFetchOptions(getAllUsers, {
-        valueKey,
-        labelKey: 'name',
-        transform: (data) => data
-            .filter(user => user.firstName && user.lastName) // Filter out users with missing names
-            .map(user => ({
-                [valueKey]: valueKey === 'userId' ? user.userId?.toUpperCase() : user?.[valueKey],
-                name: `${user.firstName} ${user.lastName}`
-            }))
-    })
+export function getTeamStatus() {
+    return get(ROUTES.USERS.TEAM_STATUS)
+}
+
+export function changePasswordPin(data) {
+    return put(ROUTES.USERS.CHANGE_PASSWORD_PIN, data)
+}
+
+export function getTeamLeaves() {
+    return get(ROUTES.USERS.TEAM_LEAVES)
+}
+
+export function getUpcomingLeaves() {
+    return get(ROUTES.USERS.UPCOMING_LEAVES)
 }

@@ -11,6 +11,7 @@ import logger from '@/utilities/logger'
  * @param {string} config.valueKey - The key to use for option value (default: 'id')
  * @param {string} config.labelKey - The key to use for option label (default: 'description')
  * @param {Function} config.transform - Optional transform function to modify items before converting
+ * @param {string[]} config.includeFields - Optional array of field names to include as-is on each option object
  * 
  * @returns {object} - { options, loading, error }
  * 
@@ -32,6 +33,15 @@ import logger from '@/utilities/logger'
  *   labelKey: 'description',
  *   transform: (items) => items.filter(item => item.isActive)
  * })
+ * 
+ * @example
+ * // With includeFields - adds extra fields to each option
+ * const { options: employees } = useFetchOptions(getAllEmployees, {
+ *   valueKey: 'empNo',
+ *   labelKey: 'description',
+ *   includeFields: ['departmentId', 'isActive']
+ * })
+ * // => [{ value: '001', label: 'John Doe', departmentId: 5, isActive: true }, ...]
  */
 export const useFetchOptions = (fetchFunction, config = {}) => {
     const {
@@ -39,7 +49,8 @@ export const useFetchOptions = (fetchFunction, config = {}) => {
         labelKey = 'description',
         transform = null,
         sort = true,
-        labelAsValue = false
+        labelAsValue = false,
+        includeFields = []
     } = config
 
     const [options, setOptions] = useState([])
@@ -77,7 +88,17 @@ export const useFetchOptions = (fetchFunction, config = {}) => {
                         // we want unique values when labelAsValue is true to avoid duplicate options with same label and value
                         if (labelAsValue && seen.has(value)) return acc
                         seen.add(value)
-                        acc.push({ value, label: item[labelKey] })
+
+                        const option = { value, label: item[labelKey] }
+
+                        // Include additional fields as-is if specified
+                        if (includeFields.length > 0) {
+                            includeFields.forEach((field) => {
+                                option[field] = item[field]
+                            })
+                        }
+
+                        acc.push(option)
                         return acc
                     }, [])
 

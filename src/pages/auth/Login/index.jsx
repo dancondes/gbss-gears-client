@@ -113,6 +113,7 @@ const Login = () => {
                                     validation={{
                                         required: 'Username is required',
                                     }}
+                                    autoFocus
                                 />
 
                                 {/* Password */}

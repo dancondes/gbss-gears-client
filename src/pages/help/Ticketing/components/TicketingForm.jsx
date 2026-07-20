@@ -10,14 +10,23 @@ import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { createTicket, createTimeAmendment, getTimeEntriesById } from '@/services/event-service'
 import { getEnquiryTypes, getLogTypes } from '@/services/lookups-service'
 import { useAuthStore } from '@/store'
-import { formatArrayOfStringsAsSelectOptions, isResultSuccessful } from '@/utilities'
-import { formatDate, getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
+import { isResultSuccessful } from '@/utilities'
+import { getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
 // import { createTicket } from '@/services/ticketing-service'
 import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
+
+const DEFAULT_FORM_VALUES = {
+    ticketType: '',
+    description: '',
+    amendDate: getCurrentDate(),
+    amendTime: getCurrentTime(true),
+    amendType: '',
+    location: ''
+}
 
 export default function TicketingForm({
     defaultValues = null,
@@ -30,20 +39,19 @@ export default function TicketingForm({
         reset,
         watch,
         formState: { errors },
-        setError,
+        // setError,
     } = useForm({
-        defaultValues: defaultValues || {
-            ticketType: '',
-            description: '',
-            amendDate: getCurrentDate(),
-            amendTime: getCurrentTime(true),
-            amendType: '',
-            location: ''
-        },
+        defaultValues: defaultValues ? {
+            ...DEFAULT_FORM_VALUES,
+            ...defaultValues,
+        } : DEFAULT_FORM_VALUES,
     })
     const { showConfirmationModal } = useConfirmationModal()
-    const { options: typeOptions } = useFetchOptions(getEnquiryTypes)
-    const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
+    const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes, {
+        // valueKey:'teamNameId',
+        includeFields: ['teamNameId']
+    })
+    const { options: logTypeOptions, loading: logTypesLoading } = useFetchOptions(getLogTypes, {
         valueKey: 'code',
         labelKey: 'definition',
         transform: (list) => list.filter(item => LOG_TYPES_FOR_TIME_AMENDMENT.includes(item.code))
@@ -59,6 +67,13 @@ export default function TicketingForm({
     const [filesToUpload, setFilesToUpload] = useState([])
     const [uploading, setUploading] = useState(false)
     const [timeEntries, setTimeEntries] = useState([])
+
+    useEffect(() => {
+        reset(defaultValues ? {
+            ...DEFAULT_FORM_VALUES,
+            ...defaultValues,
+        } : DEFAULT_FORM_VALUES)
+    }, [typeOptions])
 
     useEffect(() => {
         async function fetchTimeEntries(date) {
@@ -98,28 +113,26 @@ export default function TicketingForm({
                 logType: logTypeOptions.find(option => option.value === data.amendType)?.label || '',
                 requestedTime: formatDateTimeForAPI(data.amendDate, data.amendTime),
                 comment: data.description,
-                attachments: filesToUpload,
                 location: isCheckInLogType ? data.location : null
             } : {
-                teamId: data.ticketType,
+                teamNameId: data.ticketType,
                 details: data.description,
-                attachments: filesToUpload
             }
 
             if (isTimeAmendment) {
                 const existingEntry = timeEntries.find(entry => entry.logTypeCode === data.amendType)
-                if(!existingEntry) {
-                    setError('amendType', {
-                        type: 'manual',
-                        message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
-                    })
-                    return
-                }
+                // if (!existingEntry) {
+                //     setError('amendType', {
+                //         type: 'manual',
+                //         message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
+                //     })
+                //     return
+                // }
 
-                params.logTime = formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime))
+                params.logTime = existingEntry ? formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime)) : null
             }
 
-            const result = await (isTimeAmendment ? createTimeAmendment(params) : createTicket(params))
+            const result = await (isTimeAmendment ? createTimeAmendment(params, filesToUpload) : createTicket(params, filesToUpload))
 
             if (result == 'New ticket has been added to the system!' || isResultSuccessful(result)) {
                 toast.success('Ticket submitted successfully!')
@@ -143,6 +156,17 @@ export default function TicketingForm({
         } finally {
             setUploading(false)
         }
+    }
+
+    if (enquiryTypesLoading || logTypesLoading) {
+        return (
+            <div className='flex justify-center items-center h-32'>
+                <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        )
     }
 
     return (
@@ -224,7 +248,7 @@ export default function TicketingForm({
                                 <FormSelect
                                     name='location'
                                     label='Location'
-                                    options={formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)}
+                                    options={LOCATION_OPTIONS}
                                     register={register}
                                     validation={{
                                         required: { value: isTimeAmendment && isCheckInLogType, message: 'Please select a location for Check In' },

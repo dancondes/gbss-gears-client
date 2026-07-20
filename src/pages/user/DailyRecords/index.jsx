@@ -99,7 +99,7 @@ function DailyRecords() {
                 {/* Time Logs Table */}
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enablePagination={true}
                     enableSorting={true}
                     enableFiltering={true}

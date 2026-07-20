@@ -1,6 +1,7 @@
 export const ROUTES = {
     AUTH: {
         LOGIN: '/Auth/login',
+        REFRESH_TOKEN: '/Auth/login/refresh',
     },
     EVENT: {
         CREATE_TIME_ENTRY: (type) => `/Event/time-entry/create/${type}`,
@@ -34,12 +35,16 @@ export const ROUTES = {
         PAY_PERIODS: '/Lookups/pay-periods',
         EMPLOYEE_LIST: '/Lookups/employee-list',
         ENQUIRY_TYPES: '/Lookups/enquiry-types',
+        ROLES: '/Lookups/roles',
     },
     USERS: {
-        GET_ALL: '/User',
         GET_BY_ID: (id) => `/User/${id}`,
+
+        // Manage Users
+        GET_ALL: '/User',
         CREATE: '/User/create',
         UPDATE: (id) => `/User/${id}/update`,
+
         GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
         GET_DOCUMENTS: '/User/documents',
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
@@ -47,5 +52,9 @@ export const ROUTES = {
         COE: (type) => `/User/COE/${type}`,
         MY_REQUESTS: (status) => `/User/my-requests/${status}`,
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,
+        TEAM_STATUS: '/User/team-status',
+        CHANGE_PASSWORD_PIN: '/User/password-pin/update',
+        TEAM_LEAVES: '/User/team-leaves',
+        UPCOMING_LEAVES: '/User/upcoming-leaves',
     }
 }

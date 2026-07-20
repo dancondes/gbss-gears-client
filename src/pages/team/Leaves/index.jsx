@@ -1,76 +1,48 @@
 import PageTemplate from '@/components/PageTemplate'
-import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
 import OpenTicketModal from '@/pages/user/Leaves/components/OpenTicketModal'
-import React, { useState } from 'react'
+import React from 'react'
 import LeaveCredits from './components/LeaveCredits'
 import UpcomingLeaves from './components/UpcomingLeaves'
+import useSWR from 'swr'
+import { getTeamLeaves, getUpcomingLeaves } from '@/services/user-service'
+import { ENQUIRY_TYPE_ID_FOR_LEAVE } from '@/constants/database-id'
+import { useAuthStore } from '@/store'
 
 export default function Leaves() {
-    // States
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const user = useAuthStore((state) => state.user)
+    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-leaves', user?.userId] : null, fetchTeamLeaves)
 
-    const data = {
-        leaveCredits: [
-            {
-                name: 'John Doe',
-                leaveType: 'Annual-Paid',
-                earned: 10.0,
-                additional: 2.0,
-                used: 5.0,
-                remaining: 7.0
-            },
-            {
-                name: 'John Doe',
-                leaveType: 'Illness-Paid',
-                earned: 5.0,
-                additional: 1.0,
-                used: 2.0,
-                remaining: 4.0
-            },
-            {
-                name: 'John Doe',
-                leaveType: 'Freeday',
-                earned: 2.0,
-                additional: 0.0,
-                used: 1.0,
-                remaining: 1.0
+    async function fetchTeamLeaves() {
+        try {
+            const teamLeaves = await getTeamLeaves()
+            const upcomingLeaves = await getUpcomingLeaves()
+
+
+            return {
+                teamLeaves: teamLeaves?.data || [],
+                upcomingLeaves: upcomingLeaves?.data || [],
             }
-        ],
-        upcomingLeaves: [
-            {
-                name: 'John Doe',
-                fromDate: '2026-08-01',
-                toDate: '2026-08-05',
-                reason: 'Annual-Paid'
-            },
-            {
-                name: 'John Doe',
-                fromDate: '2026-08-11',
-                toDate: '2026-08-15',
-                reason: 'Annual-Paid'
-            },
-        ],
+        } catch {
+            return {
+                teamLeaves: [],
+                upcomingLeaves: [],
+            }
+        }
     }
 
     return (
         <PageTemplate
             title="Team Leaves"
-            rightSide={<OpenTicketModal setIsOpen={setIsModalOpen} />}
+            rightSide={<OpenTicketModal concernLabel="Leaves" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_LEAVE }} />}
+            subtitle="View your team's leave credits and upcoming leaves"
+            mutate={mutate}
         >
             <div className="p-1 sm:p-3">
-                <LeaveCredits data={data.leaveCredits} />
-                <UpcomingLeaves data={data.upcomingLeaves} />
+                <LeaveCredits data={data?.teamLeaves || []} isLoading={isValidating} />
+                <UpcomingLeaves data={data?.upcomingLeaves || []} isLoading={isValidating} />
             </div>
 
-            {isModalOpen && (
-                <TicketingModal
-                    defaultValues={{
-                        ticketType: 'Leave',
-                    }}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
+
         </PageTemplate>
     )
 }

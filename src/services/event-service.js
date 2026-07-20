@@ -1,5 +1,5 @@
 import { ROUTES } from "@/constants/routes";
-import { del, get, post, put } from "@/utilities/api";
+import { del, get, post, put, uploadFile } from "@/utilities/api";
 
 export function createTimeEntry(type, data) {
     return post(ROUTES.EVENT.CREATE_TIME_ENTRY(type), data ? JSON.stringify(data) : '')
@@ -39,13 +39,30 @@ export function getOvertime() {
 }
 
 // Ticket
-export function createTicket(data) {
-    return post(ROUTES.EVENT.CREATE_TICKET, data)
+export function createTicket(ticketData, files = [], onUploadProgress = null) {
+    const formData = new FormData()
+    formData.append('TeamNameId', ticketData.teamNameId)
+    formData.append('Details', ticketData.details)
+    files.forEach(function (file) {
+        formData.append('Attachments', file)
+    })
+    return uploadFile(ROUTES.EVENT.CREATE_TICKET, formData, onUploadProgress, 'post')
 }
 
 // Time Amendment
-export function createTimeAmendment(data) {
-    return post(ROUTES.EVENT.CREATE_TIME_AMENDMENT, data)
+export function createTimeAmendment(ticketData, files = [], onUploadProgress = null) {
+    const formData = new FormData()
+    formData.append('WorkDate', ticketData.workDate)
+    formData.append('LogTime', ticketData.logTime || '')
+    formData.append('LogType', ticketData.logType)
+    formData.append('RequestedTime', ticketData.requestedTime)
+    formData.append('Comment', ticketData.comment)
+    formData.append('Location', ticketData.location)
+    files.forEach(function (file) {
+        formData.append('Attachments', file)
+    })
+
+    return uploadFile(ROUTES.EVENT.CREATE_TIME_AMENDMENT, formData, onUploadProgress, 'post')
 }
 
 export function timeAmendApproval(id, status, reasonString) {

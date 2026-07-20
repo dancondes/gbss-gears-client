@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 const LOCATIONS = [
     { id: 'Home', label: 'Home', icon: 'home' },
-    { id: 'Three NEO', label: 'Three NEO', icon: 'pin' },
+    { id: 'Three Neo', label: 'Three NEO', icon: 'pin' },
     { id: 'PhilPlans', label: 'PhilPlans', icon: 'pin' }
 ]
 

@@ -3,9 +3,8 @@ import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getTimeEntries } from '@/services/event-service'
-import { getEmployeeList, getLogTypes } from '@/services/lookups-service'
+import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useAuthStore, useTabStore } from '@/store'
-import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import React, { useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
@@ -36,13 +35,7 @@ export default function Records() {
     }
 
     const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchTeamRecords)
-    const { options: employeeOptions } = useFetchOptions(getEmployeeList, {
-        valueKey: 'name',
-        labelKey: 'name',
-        transform: (list) => list.map(emp => ({
-            name: `${emp.firstname} ${emp.lastname}`,
-        }))
-    })
+    const { options: employeeOptions } = useFetchEmployeeOptions()
 
     useEffect(() => {
         if (activeTabId === 'Team-Records') {
@@ -86,6 +79,7 @@ export default function Records() {
     return (
         <PageTemplate
             title="Records"
+            subtitle="View your team members' time logs"
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">
@@ -119,7 +113,7 @@ export default function Records() {
                         },
                         location: {
                             label: 'Location',
-                            options: formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)
+                            options: LOCATION_OPTIONS
                         }
                     }}
                 />

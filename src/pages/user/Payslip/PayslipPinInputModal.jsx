@@ -72,6 +72,7 @@ function PayslipPinInputModal({
                     register={register}
                     validation={{ required: 'Please enter your PIN' }}
                     error={errors.pin?.message}
+                    autoFocus
                 />
 
                 <div className="flex justify-end mt-4 border-t border-gray-200 pt-">

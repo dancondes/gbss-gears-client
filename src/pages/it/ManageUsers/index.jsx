@@ -84,7 +84,7 @@ export default function ManageUsers() {
     return (
         <PageTemplate
             title="Manage Users"
-            sub
+            subtitle="Create and manage user accounts"
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">

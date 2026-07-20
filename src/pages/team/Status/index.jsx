@@ -1,7 +1,6 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
-import { useFetchEmployeeOptions } from '@/services/lookups-service'
 import { getTeamStatus } from '@/services/user-service'
 import { useTabStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
@@ -26,7 +25,6 @@ export default function Status() {
 
     const { data, isValidating, mutate } = useSWR('team-status', fetchTeamStatus)
     const activeTabId = useTabStore((state) => state.activeTabId)
-    const { options: employeeOptions } = useFetchEmployeeOptions()
 
     async function fetchTeamStatus() {
         try {
@@ -63,7 +61,7 @@ export default function Status() {
                         },
                         location: {
                             label: 'Location',
-                            options: formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)
+                            options: LOCATION_OPTIONS
                         }
                     }}
                 />

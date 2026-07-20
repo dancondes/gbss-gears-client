@@ -26,13 +26,11 @@ export function getRoles() {
     return get(ROUTES.LOOKUPS.ROLES)
 }
 
-export function useFetchEmployeeOptions({
-    valueKey = 'name',
-    labelKey = 'name',
-}) {
+export function useFetchEmployeeOptions(config) {
+    const { valueKey, labelKey } = config || {}
     return useFetchOptions(getEmployeeList, {
-        valueKey,
-        labelKey,
+        valueKey: valueKey || 'name',
+        labelKey: labelKey || 'name',
         transform: (list) => list.map(emp => ({
             ...emp,
             name: `${emp.firstname} ${emp.lastname}`,

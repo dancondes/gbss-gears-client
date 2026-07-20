@@ -5,7 +5,6 @@ import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getTimeEntries } from '@/services/event-service'
 import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useAuthStore, useTabStore } from '@/store'
-import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import React, { useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
@@ -114,7 +113,7 @@ export default function Records() {
                         },
                         location: {
                             label: 'Location',
-                            options: formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)
+                            options: LOCATION_OPTIONS
                         }
                     }}
                 />

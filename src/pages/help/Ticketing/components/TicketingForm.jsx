@@ -10,7 +10,7 @@ import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { createTicket, createTimeAmendment, getTimeEntriesById } from '@/services/event-service'
 import { getEnquiryTypes, getLogTypes } from '@/services/lookups-service'
 import { useAuthStore } from '@/store'
-import { formatArrayOfStringsAsSelectOptions, isResultSuccessful } from '@/utilities'
+import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
 // import { createTicket } from '@/services/ticketing-service'
 import logger from '@/utilities/logger'
@@ -248,7 +248,7 @@ export default function TicketingForm({
                                 <FormSelect
                                     name='location'
                                     label='Location'
-                                    options={formatArrayOfStringsAsSelectOptions(LOCATION_OPTIONS)}
+                                    options={LOCATION_OPTIONS}
                                     register={register}
                                     validation={{
                                         required: { value: isTimeAmendment && isCheckInLogType, message: 'Please select a location for Check In' },

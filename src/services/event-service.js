@@ -41,7 +41,7 @@ export function getOvertime() {
 // Ticket
 export function createTicket(ticketData, files = [], onUploadProgress = null) {
     const formData = new FormData()
-    formData.append('TeamNameId', ticketData.teamNameId)
+    formData.append('EnquiryTypeId', ticketData.enquiryTypeId)
     formData.append('Details', ticketData.details)
     files.forEach(function (file) {
         formData.append('Attachments', file)

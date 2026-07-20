@@ -115,7 +115,7 @@ export default function TicketingForm({
                 comment: data.description,
                 location: isCheckInLogType ? data.location : null
             } : {
-                teamNameId: data.ticketType,
+                enquiryTypeId: data.ticketType,
                 details: data.description,
             }
 

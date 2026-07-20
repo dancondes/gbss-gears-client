@@ -81,7 +81,7 @@ function Documents() {
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enablePagination={false}
                     enableSorting={true}
                     noDataLabel="No documents found"

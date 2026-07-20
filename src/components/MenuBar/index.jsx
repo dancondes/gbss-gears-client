@@ -22,6 +22,8 @@ function MenuBar() {
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
     const { navigate: navigateTo } = useTabNavigation()
+    const canViewTeams = useAuthStore((state) => state.canViewTeams)
+    const canViewIT = useAuthStore((state) => state.canViewIT)
 
     const handleToggle = useCallback(function (index) {
         setOpenIndex(function (prev) {
@@ -148,6 +150,14 @@ function MenuBar() {
             </div>
             <div className="flex items-center gap-0.5 px-2 py-1 border-b border-gray-200 bg-white">
                 {menuItems.map(function (item, index) {
+                    if (item.name === 'Team' && !canViewTeams()) {
+                        return null
+                    }
+
+                    if (item.name === 'IT' && !canViewIT()) {
+                        return null
+                    }
+
                     return (
                         <MenuBarItem
                             key={item.name ?? `icon-menu-${index}`}

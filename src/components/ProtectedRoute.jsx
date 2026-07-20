@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuthStore, useFormsMenuStore, useTabStore } from '@/store'
+import { useAuthStore, useTabStore } from '@/store'
 import { getUserById } from '@/services/user-service'
 import { getTimeUntilExpiration, getUserIdFromToken, isTokenExpired, shouldRefreshToken } from '@/utilities/jwt-utils'
 import Spinner from './Spinner'
@@ -17,8 +17,6 @@ import { useRefreshToken } from '@/hooks/use-refresh-token'
  */
 function ProtectedRoute({ children }) {
     const { user, token, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired } = useAuthStore()
-    const setFormsMenuData = useFormsMenuStore((state) => state.setFormsMenuData)
-    const clearFormsMenuData = useFormsMenuStore((state) => state.clearFormsMenuData)
     const activeTabId = useTabStore(function (state) { return state.activeTabId })
     const tabsCount = useTabStore(function (state) { return state.tabs.length })
     const location = useLocation()
@@ -44,21 +42,15 @@ function ProtectedRoute({ children }) {
 
     // Initialize authentication: validate token, fetch user data, and load forms menu
     const initializeAuth = useCallback(async () => {
-        // TODO: remove this
-        setFormsMenuData([])
-
-        
         try {
             // Guard: if no token, clear menu and mark as initialized
             if (!token) {
-                clearFormsMenuData()
                 setIsInitialized(true)
                 return
             }
 
             // Guard: if token is expired, clear menu and halt initialization
             if (!enforceTokenValidity()) {
-                clearFormsMenuData()
                 setIsInitialized(true)
                 return
             }
@@ -74,7 +66,6 @@ function ProtectedRoute({ children }) {
 
             // Guard: if no valid user ID in token, logout and reset
             if (!userId) {
-                clearFormsMenuData()
                 logout()
                 setIsInitialized(true)
                 return
@@ -89,17 +80,13 @@ function ProtectedRoute({ children }) {
 
                 try {
                     // Fetch forms menu data for authenticated user
-                    // const buttonPermissions = getSystemFunctions(userData[0])
-                    // setFormsMenuData(buttonPermissions)
                 } catch (menuError) {
                     // Log menu fetch failure but continue (non-critical)
                     logger.error('Forms menu initialization error:', menuError)
-                    clearFormsMenuData()
                 }
             } else {
                 // User not found or inactive: show error and logout
                 toast.error('Failed to fetch user data')
-                clearFormsMenuData()
                 logout()
             }
 
@@ -108,11 +95,10 @@ function ProtectedRoute({ children }) {
             // Catch-all for unexpected errors during auth setup
             logger.error('Auth initialization error:', err)
             toast.error('Failed to initialize authentication')
-            clearFormsMenuData()
             logout()
             setIsInitialized(true)
         }
-    }, [token, user, setUser, logout, enforceTokenValidity, clearFormsMenuData, setFormsMenuData])
+    }, [token, user, setUser, logout, enforceTokenValidity])
 
     // Run initial auth setup when component mounts or when dependencies change
     useEffect(() => {
@@ -207,7 +193,6 @@ function ProtectedRoute({ children }) {
     }
 
     // Display session expired modal when token has expired
-    // TODO: uncomment this once validations are implemented
     if (showSessionExpired) {
         return (
             <SessionExpiredModal
@@ -218,7 +203,6 @@ function ProtectedRoute({ children }) {
     }
 
     // Redirect to login if not authenticated, no token, or redirect flag is set
-    // TODO: uncomment this once validations are implemented
     if (shouldRedirect || !isAuthenticated || !token) {
         return <Navigate to="/login" replace />
     }

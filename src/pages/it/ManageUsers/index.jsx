@@ -4,11 +4,15 @@ import React, { useMemo } from 'react'
 import UserForm from './components/UserForm'
 import useSWR from 'swr'
 import { createUser, getAllUsers, updateUser } from '@/services/user-service'
-import { getRoles } from '@/services/lookups-service'
+import { getRoles, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { toast } from 'react-toastify'
+import { useAuthStore } from '@/store'
+import { useRefreshToken } from '@/hooks/use-refresh-token'
 
 export default function ManageUsers() {
+    const user = useAuthStore((state) => state.user)
+    const { refresh } = useRefreshToken()
 
     async function fetchUsers() {
         try {
@@ -29,6 +33,9 @@ export default function ManageUsers() {
 
     const { data, isValidating, mutate } = useSWR('manage-users', fetchUsers)
     const { options: roleOptions } = useFetchOptions(getRoles)
+    const { options: employeeOptions } = useFetchEmployeeOptions({
+        valueKey: 'pId'
+    })
 
     const columns = useMemo(() => [
         {
@@ -52,12 +59,15 @@ export default function ManageUsers() {
         const params = {
             username: data.username,
             roleId: data.roleId,
-            password: data.password || null,
-            pin: data.pin || null,
+            password: data.password?.trim() || '',
+            pin: data.pin?.trim() || '',
             personId: id ? undefined : data.personId // Only include personId when creating a new user
         }
 
         await (id ? updateUser(id, params) : createUser(params))
+        if (user?.employeeInfo?.personId === data.personId) {
+            await refresh()
+        }
         toast.success(`User ${id ? 'updated' : 'created'} successfully`)
         mutate()
     }
@@ -74,6 +84,7 @@ export default function ManageUsers() {
     return (
         <PageTemplate
             title="Manage Users"
+            sub
             mutate={mutate}
         >
             <div className="p-1 sm:p-3">
@@ -94,6 +105,7 @@ export default function ManageUsers() {
                     canDelete={false}
                     formProps={{
                         roleOptions,
+                        employeeOptions
                     }}
                     onRowClick={handleRowClick}
                 />

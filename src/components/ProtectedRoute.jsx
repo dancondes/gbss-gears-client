@@ -3,12 +3,12 @@ import PropTypes from 'prop-types'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useFormsMenuStore, useTabStore } from '@/store'
 import { getUserById } from '@/services/user-service'
-import { refreshToken as refreshTokenAPI } from '@/services/auth-service'
 import { getTimeUntilExpiration, getUserIdFromToken, isTokenExpired, shouldRefreshToken } from '@/utilities/jwt-utils'
 import Spinner from './Spinner'
 import SessionExpiredModal from './modals/SessionExpiredModal'
 import { toast } from 'react-toastify'
 import logger from '@/utilities/logger'
+import { useRefreshToken } from '@/hooks/use-refresh-token'
 
 /**
  * ProtectedRoute Component
@@ -16,7 +16,7 @@ import logger from '@/utilities/logger'
  * Redirects to login if not authenticated
  */
 function ProtectedRoute({ children }) {
-    const { user, token, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired, getTokens, setTokens } = useAuthStore()
+    const { user, token, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired } = useAuthStore()
     const setFormsMenuData = useFormsMenuStore((state) => state.setFormsMenuData)
     const clearFormsMenuData = useFormsMenuStore((state) => state.clearFormsMenuData)
     const activeTabId = useTabStore(function (state) { return state.activeTabId })
@@ -26,6 +26,7 @@ function ProtectedRoute({ children }) {
     const [showSessionExpired, setShowSessionExpired] = useState(false)
     const [shouldRedirect, setShouldRedirect] = useState(false)
     const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // Refresh 5 minutes before expiry
+    const { refresh } = useRefreshToken()
 
     // Check if current token has expired and trigger session expiry if needed
     const enforceTokenValidity = useCallback(function () {
@@ -40,39 +41,6 @@ function ProtectedRoute({ children }) {
 
         return true
     }, [token, setSessionExpired])
-
-    // Call refresh token API and update stored tokens with new credentials
-    const handleTokenRefresh = useCallback(async () => {
-
-        if (isTokenExpired(token)) {
-            logger.warn('Token already expired. Please log in again.')
-            setSessionExpired(true)
-            return
-        }
-
-        try {
-            // Get both access and refresh tokens from store
-            const { accessToken, refreshToken: refreshTokenValue } = getTokens()
-
-            // Guard: abort if no refresh token is available
-            if (!refreshTokenValue) {
-                logger.warn('No refresh token available')
-                return
-            }
-
-            // Call backend to get new token pair using current tokens
-            const response = await refreshTokenAPI({ accessToken, refreshToken: refreshTokenValue })
-
-            // Update store with newly issued tokens for next refresh cycle
-            if (response && response.token && response.refreshToken) {
-                setTokens(response.token, response.refreshToken)
-            }
-        } catch (err) {
-            // On failure, trigger session expiry to force re-login
-            logger.error('Token refresh failed:', err)
-            setSessionExpired(true)
-        }
-    }, [getTokens, setTokens, setSessionExpired])
 
     // Initialize authentication: validate token, fetch user data, and load forms menu
     const initializeAuth = useCallback(async () => {
@@ -177,7 +145,7 @@ function ProtectedRoute({ children }) {
         if (shouldRefreshToken(token)) {
             // Less than 5 minutes left, refresh immediately if tab is visible
             if (!document.hidden) {
-                handleTokenRefresh()
+                refresh()
             }
             return
         }
@@ -186,7 +154,7 @@ function ProtectedRoute({ children }) {
         const timeoutId = window.setTimeout(() => {
             // Only refresh if tab is still visible
             if (!document.hidden) {
-                handleTokenRefresh()
+                refresh()
             } else {
                 // If tab is hidden, will refresh when it becomes visible again
                 logger.log('Tab hidden, skipping token refresh')
@@ -197,7 +165,7 @@ function ProtectedRoute({ children }) {
         return function () {
             window.clearTimeout(timeoutId)
         }
-    }, [token, handleTokenRefresh])
+    }, [token, refresh])
 
     // Refresh token when tab regains focus or becomes visible after inactivity
     useEffect(() => {
@@ -205,7 +173,7 @@ function ProtectedRoute({ children }) {
             if (!document.hidden) {
                 // Only attempt refresh if token is not already expired
                 if (shouldRefreshToken(token)) {
-                    handleTokenRefresh()
+                    refresh()
                 }
 
                 enforceTokenValidity()
@@ -222,11 +190,8 @@ function ProtectedRoute({ children }) {
             // window.removeEventListener('focus', handleWindowStateChange)
             document.removeEventListener('visibilitychange', handleWindowStateChange)
         }
-    }, [enforceTokenValidity, handleTokenRefresh])
+    }, [enforceTokenValidity, refresh])
 
-    function getSystemFunctions(user) {
-        return [...new Set(user?.access?.flatMap(role => role.buttonId))];
-    }
 
     // Clear session state and prepare redirect to login when user confirms expiry modal
     function handleSessionExpiredConfirm() {

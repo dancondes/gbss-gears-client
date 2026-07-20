@@ -12,6 +12,7 @@ function UserForm({
     control,
     errors,
     roleOptions = [],
+    employeeOptions = [],
 }) {
     return (
         <div>
@@ -20,10 +21,10 @@ function UserForm({
                     name="personId"
                     label="Employee"
                     control={control}
-                    validation={{ required: 'Employee is required' }}
+                    validation={{ required: { value: isAddMode, message: 'Employee is required when creating a new user' } }}
                     error={errors.personId?.message}
                     className="col-span-1 sm:col-span-2 mb-0!"
-                    options={[]} // Options will be fetched in the parent component
+                    options={employeeOptions} // Options will be fetched in the parent component
                     disabled={!isAddMode} // Disable the field when editing an existing user
                 // autoFocus={isAddMode} // Auto-focus only when adding a new user
                 />
@@ -71,7 +72,7 @@ function UserForm({
                             if (!isAddMode && !value) {
                                 return true
                             }
-                            
+
                             const failed = PASSWORD_REQUIREMENTS.find(r => !r.test(value))
                             return failed ? `Password must ${failed.label}` : true
                         },
@@ -110,6 +111,7 @@ UserForm.propTypes = {
     control: PropTypes.object.isRequired,
     errors: PropTypes.object.isRequired,
     roleOptions: PropTypes.array.isRequired,
+    employeeOptions: PropTypes.array.isRequired,
 }
 
 export default UserForm

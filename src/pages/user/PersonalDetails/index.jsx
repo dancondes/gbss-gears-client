@@ -245,15 +245,17 @@ function PersonalDetails() {
                 </div>
             </PageTemplate>
 
-            <div className='grid grid-cols-1 md:grid-cols-6'>
-                <div ref={changePasswordRef} className='col-span-1 md:col-span-4 scroll-mt-24'>
-                    <ChangePassword />
-                </div>
+            <PageTemplate>
+                <div className='grid grid-cols-1 md:grid-cols-6'>
+                    <div ref={changePasswordRef} className='col-span-1 md:col-span-4 scroll-mt-24'>
+                        <ChangePassword />
+                    </div>
 
-                <div ref={changePinRef} className='col-span-2 scroll-mt-24'>
-                    <ChangePin />
+                    <div ref={changePinRef} className='col-span-2 scroll-mt-24'>
+                        <ChangePin />
+                    </div>
                 </div>
-            </div>
+            </PageTemplate>
 
 
         </div>

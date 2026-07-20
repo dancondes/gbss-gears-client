@@ -81,6 +81,7 @@ const FormInput = ({
     disabled = false,
     readonly = false,
     autoFocus = false,
+    maxLength,
 }) => {
     const [showPassword, setShowPassword] = useState(false)
 
@@ -185,6 +186,7 @@ const FormInput = ({
                                     MozTextSecurity: 'disc'
                                 } : undefined}
                                 autoFocus={autoFocus}
+                                maxLength={maxLength}
                                 {...inputProps}
                             />
 
@@ -241,6 +243,7 @@ FormInput.propTypes = {
     disabled: PropTypes.bool, // For disabling the input,
     readonly: PropTypes.bool, // For read-only input
     autoFocus: PropTypes.bool, // For auto-focusing the input
+    maxLength: PropTypes.number, // For maximum length of input
 }
 
 export default FormInput

@@ -48,7 +48,7 @@ export default function TicketingForm({
     })
     const { showConfirmationModal } = useConfirmationModal()
     const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes, {
-        valueKey:'teamNameId',
+        // valueKey:'teamNameId',
         includeFields: ['teamNameId']
     })
     const { options: logTypeOptions, loading: logTypesLoading } = useFetchOptions(getLogTypes, {

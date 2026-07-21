@@ -19,8 +19,8 @@ export function useRefreshToken() {
                 throw new Error('No refresh token available')
             }
             
-            const data = await refreshTokenApi({ accessToken, refreshToken })
-            const { token: newAccessToken, refreshToken: newRefreshToken } = data
+            const result = await refreshTokenApi({ accessToken, refreshToken })
+            const { token: newAccessToken, refreshToken: newRefreshToken } = result?.data || {}
 
             if (!newAccessToken || !newRefreshToken) {
                 throw new Error('Failed to refresh token: Missing new tokens in response')

@@ -70,10 +70,18 @@ export function getLeaveById(id) {
     return get(ROUTES.USERS.GET_LEAVE_BY_ID(id))
 }
 
-export function updateLeave(id, data) {
-    return put(ROUTES.USERS.UPDATE_LEAVE(id), data)
+export function addLeave(data, proceedUnpaid = false) {
+    if (proceedUnpaid) {
+        return post(ROUTES.USERS.ADD_UNPAID_LEAVE, data)
+    }
+
+    return post(ROUTES.USERS.ADD_LEAVE, data)
 }
 
-export function updateUnpaidLeave(id, data) {
-    return put(ROUTES.USERS.UPDATE_UNPAID_LEAVE(id), data)
+export function updateLeave(id, data, proceedUnpaid = false) {
+    if (proceedUnpaid) {
+        return put(ROUTES.USERS.UPDATE_UNPAID_LEAVE(id), data)
+    }
+
+    return put(ROUTES.USERS.UPDATE_LEAVE(id), data)
 }

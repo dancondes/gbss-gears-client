@@ -2,11 +2,21 @@ import React, { useCallback, useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Controller } from 'react-hook-form'
 
-const TypeaheadSelect = ({
+/**
+ * Free-text input with a suggestions dropdown.
+ *
+ * Unlike TypeaheadSelect (which only accepts a value matching one of its
+ * {value, label} options and reverts on blur if the typed text doesn't
+ * match a label), this component treats whatever the user types as the
+ * value at all times. `options` is a plain array of strings used only to
+ * speed up entry — picking a suggestion just fills the input with that
+ * string, and typing something not in the list is perfectly valid.
+ */
+const TypeaheadInput = ({
     name,
     label,
     options = [],
-    placeholder = 'Type to search...',
+    placeholder = 'Type or select...',
     register,
     control,
     validation,
@@ -20,14 +30,18 @@ const TypeaheadSelect = ({
     autoFocus = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
     const [filteredOptions, setFilteredOptions] = useState(options)
     const [highlightedIndex, setHighlightedIndex] = useState(-1)
     const [dropdownPosition, setDropdownPosition] = useState('bottom')
+    // Tracked separately from the `value` prop because when this component is
+    // wired up via react-hook-form's `control`, the live typed text lives on
+    // `field.value` (passed into renderContent), not on the outer `value` prop —
+    // so filtering can't rely on `value` alone or it never sees what's typed
+    // in Controller mode.
+    const [searchTerm, setSearchTerm] = useState(value || '')
     const wrapperRef = useRef(null)
     const inputRef = useRef(null)
     const listRef = useRef(null)
-    const [controlledValue, setControlledValue] = useState(value)
 
     // Check if field is required from validation rules or props
     const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
@@ -54,24 +68,29 @@ const TypeaheadSelect = ({
         }
     }, [isOpen])
 
-    // Filter options based on search term
+    // Filter options based on the current typed text
     useEffect(() => {
         const term = (searchTerm || '').trim().toLowerCase()
 
-        // If the trimmed search term is empty, show all options
         if (!term) {
             setFilteredOptions(options)
             setHighlightedIndex(-1)
             return
         }
 
-        const filtered = options.filter(option => {
-            const label = (option && option.label) ? String(option.label).toLowerCase() : ''
-            return label.includes(term)
-        })
+        const filtered = options.filter(option => String(option).toLowerCase().includes(term))
         setFilteredOptions(filtered)
         setHighlightedIndex(-1)
     }, [searchTerm, options])
+
+    // Keep searchTerm in sync when the value changes from outside (e.g. a
+    // form reset) in uncontrolled/plain value+onChange mode. In Controller
+    // mode this is handled inline where field.value is available (see render).
+    useEffect(() => {
+        if (!control) {
+            setSearchTerm(value || '')
+        }
+    }, [value, control])
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -83,19 +102,6 @@ const TypeaheadSelect = ({
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
-
-    // Update search term when value changes
-    useEffect(() => {
-        const currentValue = controlledValue || value
-        if (currentValue) {
-            const selectedOption = options.find(opt => opt.value === currentValue)
-            if (selectedOption) {
-                setSearchTerm(selectedOption.label)
-            }
-        } else {
-            setSearchTerm('')
-        }
-    }, [controlledValue, value, options])
 
     // Scroll highlighted option into view
     useEffect(() => {
@@ -111,15 +117,11 @@ const TypeaheadSelect = ({
         const newValue = e.target.value
         setSearchTerm(newValue)
         setIsOpen(true)
-
-        // Clear selection if input is cleared
-        if (!newValue) {
-            if (fieldOnChange) {
-                fieldOnChange('')
-            }
-            if (onChange) {
-                onChange('')
-            }
+        if (fieldOnChange) {
+            fieldOnChange(newValue)
+        }
+        if (onChange) {
+            onChange(newValue)
         }
     }
 
@@ -127,30 +129,29 @@ const TypeaheadSelect = ({
         setIsOpen(true)
     }
 
-    const handleInputBlur = (fieldOnChange, fieldValue) => {
-        // Small delay to allow button clicks to register
-        setTimeout(() => {
-            setIsOpen(false)
-
-            // If searchTerm doesn't match any option, restore the previous value or clear
-            const matchingOption = options.find(opt => opt.label === searchTerm)
-            if (!matchingOption) {
-                if (fieldValue) {
-                    // Restore the previous selected value
-                    const previousOption = options.find(opt => opt.value === fieldValue)
-                    if (previousOption) {
-                        setSearchTerm(previousOption.label)
-                    } else {
-                        setSearchTerm('')
-                    }
-                } else {
-                    setSearchTerm('')
-                }
-            }
-        }, 200)
+    const handleInputBlur = (fieldOnBlur) => {
+        // Small delay to allow option clicks to register.
+        // No reverting here — whatever was typed stays as-is.
+        setTimeout(() => setIsOpen(false), 200)
+        if (fieldOnBlur) {
+            fieldOnBlur()
+        }
     }
 
-    const handleKeyDown = (e) => {
+    const selectOption = (option, fieldOnChange) => {
+        setSearchTerm(option)
+        setIsOpen(false)
+        setHighlightedIndex(-1)
+        if (fieldOnChange) {
+            fieldOnChange(option)
+        }
+        if (onChange) {
+            onChange(option)
+        }
+        inputRef.current?.focus()
+    }
+
+    const handleKeyDown = (e, fieldOnChange) => {
         if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
             setIsOpen(true)
             e.preventDefault()
@@ -169,15 +170,12 @@ const TypeaheadSelect = ({
                 setHighlightedIndex(prev => (prev > 0 ? prev - 1 : 0))
                 break
             case 'Enter':
-                e.preventDefault()
                 if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-                    const option = filteredOptions[highlightedIndex]
-                    setSearchTerm(option.label)
-                    setIsOpen(false)
-                    setControlledValue(option.value)
-                    // We need access to fieldOnChange here, but it's not available
-                    // We'll handle this differently - trigger it through the blur handler
+                    e.preventDefault()
+                    selectOption(filteredOptions[highlightedIndex], fieldOnChange)
                 }
+                // If nothing is highlighted, Enter just submits/does nothing
+                // special — the typed text is already the value.
                 break
             case 'Escape':
                 setIsOpen(false)
@@ -188,28 +186,16 @@ const TypeaheadSelect = ({
         }
     }
 
-    const handleSelectOption = (option, fieldOnChange) => {
-        setSearchTerm(option.label)
-        setIsOpen(false)
-        setControlledValue(option.value)
-        fieldOnChange(option.value)
-        if (onChange) {
-            onChange(option.value, option)
-        }
-    }
-
     const handleClear = (e, fieldOnChange) => {
         e.preventDefault()
         e.stopPropagation()
         setSearchTerm('')
-        setControlledValue('')
         if (fieldOnChange) {
             fieldOnChange('')
         }
         if (onChange) {
             onChange('')
         }
-        // Set open state after a small delay to ensure it stays open
         setTimeout(() => {
             setIsOpen(true)
             inputRef.current?.focus()
@@ -217,34 +203,18 @@ const TypeaheadSelect = ({
     }
 
     const renderContent = (fieldValue, fieldOnChange, fieldOnBlur) => (
-        // NOTE: this wrapper is the positioning context for BOTH the
-        // clear/dropdown-toggle buttons AND the options list below. Keeping
-        // everything anchored to this single `relative` element (instead of
-        // splitting the dropdown out as a sibling) is what keeps the list
-        // aligned directly under/over the input instead of drifting relative
-        // to the outer label+field wrapper.
+        // Positioning context for both the clear/toggle buttons and the
+        // options list, so the dropdown stays anchored to the input.
         <div className="relative flex-1">
             <input
                 ref={inputRef}
                 type="text"
                 id={name}
-                value={searchTerm}
+                value={fieldValue || ''}
                 onChange={(e) => handleInputChange(e, fieldOnChange)}
                 onFocus={handleInputFocus}
-                onBlur={(e) => {
-                    handleInputBlur(fieldOnChange, fieldValue)
-                    if (fieldOnBlur) {
-                        fieldOnBlur(e)
-                    }
-                }}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-                        e.preventDefault()
-                        handleSelectOption(filteredOptions[highlightedIndex], fieldOnChange)
-                    } else {
-                        handleKeyDown(e)
-                    }
-                }}
+                onBlur={() => handleInputBlur(fieldOnBlur)}
+                onKeyDown={(e) => handleKeyDown(e, fieldOnChange)}
                 placeholder={placeholder}
                 disabled={disabled}
                 autoComplete="off"
@@ -256,7 +226,7 @@ const TypeaheadSelect = ({
 
             {/* Clear and Dropdown buttons */}
             <div className="absolute inset-y-0 right-0 flex items-center z-20">
-                {searchTerm && !disabled && (
+                {fieldValue && !disabled && (
                     <button
                         type="button"
                         onMouseDown={(e) => {
@@ -289,39 +259,33 @@ const TypeaheadSelect = ({
                 </button>
             </div>
 
-            {/* Dropdown list - now nested inside the same relative
-                wrapper as the input, so it anchors correctly below/above it */}
-            {isOpen && !disabled && (
+            {/* Suggestions list — hidden entirely when nothing matches the typed
+                text, rather than showing an empty "No matching suggestions" panel. */}
+            {isOpen && !disabled && filteredOptions.length > 0 && (
                 <div className={`absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto ${
                     dropdownPosition === 'top' ? 'bottom-full mb-1' : 'mt-1'
                 }`}>
-                    {filteredOptions.length > 0 ? (
-                        <ul ref={listRef} className="py-1">
-                            {filteredOptions.map((option, index) => (
-                                <li
-                                    key={option.value + '_' + option.label + '_' + index}
-                                    onMouseDown={(e) => {
-                                        e.preventDefault() // Prevent blur from firing
-                                        handleSelectOption(option, fieldOnChange)
-                                    }}
-                                    className={`px-3 py-2 cursor-pointer text-[13px] ${
-                                        highlightedIndex === index
-                                            ? 'bg-primary text-white'
-                                            : fieldValue === option.value
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-gray-900 hover:bg-gray-100'
-                                    }`}
-                                    onMouseEnter={() => setHighlightedIndex(index)}
-                                >
-                                    {option.label}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <div className="px-3 py-2 text-[13px] text-gray-500">
-                            No options found
-                        </div>
-                    )}
+                    <ul ref={listRef} className="py-1">
+                        {filteredOptions.map((option, index) => (
+                            <li
+                                key={option + '_' + index}
+                                onMouseDown={(e) => {
+                                    e.preventDefault() // Prevent blur from firing
+                                    selectOption(option, fieldOnChange)
+                                }}
+                                className={`px-3 py-2 cursor-pointer text-[13px] ${
+                                    highlightedIndex === index
+                                        ? 'bg-primary text-white'
+                                        : fieldValue === option
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-gray-900 hover:bg-gray-100'
+                                }`}
+                                onMouseEnter={() => setHighlightedIndex(index)}
+                            >
+                                {option}
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
         </div>
@@ -339,13 +303,8 @@ const TypeaheadSelect = ({
                 </label>
             )}
 
-            {/*
-                flex-col wrapper keeps the field control (input + dropdown) and
-                its error message stacked vertically and isolated from the
-                parent's layout. Without this, a parent using `flex items-center`
-                (common in horizontal label+field rows) pulls the error message
-                onto the same row as the field instead of letting it wrap below.
-            */}
+            {/* flex-col wrapper keeps the field control and its error message
+                stacked vertically, isolated from a parent's own flex layout. */}
             <div className="flex flex-col flex-1 min-w-0">
                 {control ? (
                     <Controller
@@ -353,9 +312,11 @@ const TypeaheadSelect = ({
                         control={control}
                         rules={validation}
                         render={({ field }) => {
-                            // Update controlled value when field value changes
+                            // Keep searchTerm in sync with field.value, since typing calls
+                            // field.onChange (updating field.value) and that's also how
+                            // external changes (form reset, setValue, etc.) show up here.
                             useEffect(() => {
-                                setControlledValue(field.value)
+                                setSearchTerm(field.value || '')
                             }, [field.value])
 
                             return renderContent(field.value, field.onChange, field.onBlur)
@@ -383,15 +344,10 @@ const TypeaheadSelect = ({
     )
 }
 
-TypeaheadSelect.propTypes = {
+TypeaheadInput.propTypes = {
     name: PropTypes.string.isRequired,
     label: PropTypes.string,
-    options: PropTypes.arrayOf(
-        PropTypes.shape({
-            value: PropTypes.string.isRequired,
-            label: PropTypes.string.isRequired,
-        })
-    ),
+    options: PropTypes.arrayOf(PropTypes.string),
     placeholder: PropTypes.string,
     register: PropTypes.func,
     control: PropTypes.object,
@@ -406,4 +362,4 @@ TypeaheadSelect.propTypes = {
     autoFocus: PropTypes.bool,
 }
 
-export default TypeaheadSelect
+export default TypeaheadInput

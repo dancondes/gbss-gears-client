@@ -6,6 +6,8 @@ import NavbarUserProfile from '../NavbarUserProfile'
 import MenuBarItem from './components/MenuBarItem'
 import { MessageModalContext } from '@/contexts/MessageModalContext'
 import { useNavigate } from 'react-router-dom'
+import useTabNavigation from '@/hooks/use-tab-navigation'
+import EvacuationButton from './components/EvacuationButton'
 
 // ---------------------------------------------------------------------------
 // MenuBar – the full horizontal menu bar
@@ -17,9 +19,12 @@ function MenuBar() {
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const messageModalContext = useContext(MessageModalContext)
     const user = useAuthStore((state) => state.user)
-    const fullName = user?.employeeInfo ? `${user.employeeInfo.firstname} ${user.employeeInfo.lastname}` : ''
+    const fullName = user?.employeeInfo ? `${user?.employeeInfo?.preferedName || user?.employeeInfo?.firstname} ${user?.employeeInfo?.lastname}` : ''
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
+    const { navigate: navigateTo } = useTabNavigation()
+    const canViewTeams = useAuthStore((state) => state.canViewTeams)
+    const canViewIT = useAuthStore((state) => state.canViewIT)
 
     const handleToggle = useCallback(function (index) {
         setOpenIndex(function (prev) {
@@ -66,6 +71,14 @@ function MenuBar() {
         setUserMenuOpen(false)
     }
 
+    function handleUserProfileClick() {
+        setUserMenuOpen(false)
+        navigateTo('/user/personal-details', {
+            id: 'Personal-Details',
+            title: 'Personal Details',
+        })
+    }
+
     if (!menuItems || menuItems.length === 0) return null
 
     return (
@@ -75,14 +88,6 @@ function MenuBar() {
                 <div className="flex justify-between items-center">
                     {/* Left side - Hamburger menu and Logo */}
                     <div className="flex items-center gap-4">
-                        {/* <button
-                            onClick={null}
-                            className="lg:hidden p-1 rounded text-white hover:bg-white/20 focus:outline-none"
-                        >
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button> */}
                         <img
                             src={gbss_logo_white}
                             alt="GBSS Logo"
@@ -100,16 +105,6 @@ function MenuBar() {
 
                     {/* Right side - User menu */}
                     <div className="flex items-center gap-2">
-                        {/* Mobile: Search icon button */}
-                        {/* <button
-                                    onClick={handleOpenMobileSearch}
-                                    className="md:hidden p-1 rounded text-white hover:bg-white/20 focus:outline-none"
-                                    aria-label="Open search"
-                                >
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button> */}
 
                         <NavbarNotifications
                         // notificationOpen={notificationOpen}
@@ -131,23 +126,36 @@ function MenuBar() {
                             onUserMenuToggle={handleUserMenuToggle}
                             onUserMenuClose={handleUserMenuClose}
                             onLogoutClick={handleLogoutClick}
+                            onProfileClick={handleUserProfileClick}
                         />
                     </div>
                 </div>
             </div>
-            <div className="flex items-center gap-0.5 px-2 py-1 border-b border-gray-200 bg-white">
-                {menuItems.map(function (item, index) {
-                    return (
-                        <MenuBarItem
-                            key={item.name ?? `icon-menu-${index}`}
-                            item={item}
-                            isOpen={openIndex === index}
-                            onToggle={function () { handleToggle(index) }}
-                            onClose={function () { handleClose(index) }}
-                        />
-                    )
-                })}
+            <div className="flex gap-10 justify-between px-2 py-1 border-b border-gray-200 bg-white">
+                <div className='flex items-center gap-0.5'>
+                    {menuItems.map(function (item, index) {
+                    if (item.name === 'Team' && !canViewTeams()) {
+                        return null
+                    }
+
+                    if (item.name === 'IT' && !canViewIT()) {
+                        return null
+                    }
+
+                        return (
+                            <MenuBarItem
+                                key={item.name ?? `icon-menu-${index}`}
+                                item={item}
+                                isOpen={openIndex === index}
+                                onToggle={function () { handleToggle(index) }}
+                                onClose={function () { handleClose(index) }}
+                            />
+                        )
+                    })}
+                </div>
+                <EvacuationButton />
             </div>
+
         </div>
     )
 }

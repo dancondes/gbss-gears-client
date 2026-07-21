@@ -11,6 +11,11 @@ import logger from '@/utilities/logger'
  * @param {string} config.valueKey - The key to use for option value (default: 'id')
  * @param {string} config.labelKey - The key to use for option label (default: 'description')
  * @param {Function} config.transform - Optional transform function to modify items before converting
+ * @param {string[]} config.includeFields - Optional array of field names to include as-is on each option object
+ * @param {string} [fieldForStringOnly] - Optional field name. When provided, the hook
+ *   ignores valueKey/labelKey/includeFields entirely and returns `options` as a plain
+ *   array of strings (deduped, empty/nullish values skipped) pulled from this field on
+ *   each item, instead of an array of { value, label } objects.
  * 
  * @returns {object} - { options, loading, error }
  * 
@@ -32,14 +37,29 @@ import logger from '@/utilities/logger'
  *   labelKey: 'description',
  *   transform: (items) => items.filter(item => item.isActive)
  * })
+ * 
+ * @example
+ * // With includeFields - adds extra fields to each option
+ * const { options: employees } = useFetchOptions(getAllEmployees, {
+ *   valueKey: 'empNo',
+ *   labelKey: 'description',
+ *   includeFields: ['departmentId', 'isActive']
+ * })
+ * // => [{ value: '001', label: 'John Doe', departmentId: 5, isActive: true }, ...]
+ * 
+ * @example
+ * // With fieldForStringOnly - returns a plain string array instead of { value, label } objects
+ * const { options: positions } = useFetchOptions(getAllEmployees, {}, 'position')
+ * // => ['Accountant', 'Engineer', 'Manager', ...]
  */
-export const useFetchOptions = (fetchFunction, config = {}) => {
+export const useFetchOptions = (fetchFunction, config = {}, fieldForStringOnly = null) => {
     const {
         valueKey = 'id',
         labelKey = 'description',
         transform = null,
         sort = true,
-        labelAsValue = false
+        labelAsValue = false,
+        includeFields = []
     } = config
 
     const [options, setOptions] = useState([])
@@ -59,29 +79,58 @@ export const useFetchOptions = (fetchFunction, config = {}) => {
                         result = transform(result)
                     }
 
-                    // sort by description
+                    // When returning strings only, sort/dedupe/build off fieldForStringOnly
+                    // instead of labelKey/valueKey.
+                    const sortKey = fieldForStringOnly || labelKey
+
+                    // sort by the relevant key
                     if (sort) {
                         result.sort((a, b) => {
-                            const labelA = a[labelKey]?.toUpperCase() || ''
-                            const labelB = b[labelKey]?.toUpperCase() || ''
+                            const labelA = a[sortKey]?.toUpperCase() || ''
+                            const labelB = b[sortKey]?.toUpperCase() || ''
                             if (labelA < labelB) return -1
                             if (labelA > labelB) return 1
                             return 0
                         })
                     }
 
-                    // Convert to options format
-                    const seen = new Set()
-                    const optionsList = result.reduce((acc, item) => {
-                        const value = item[labelAsValue ? labelKey : valueKey]
-                        // we want unique values when labelAsValue is true to avoid duplicate options with same label and value
-                        if (labelAsValue && seen.has(value)) return acc
-                        seen.add(value)
-                        acc.push({ value, label: item[labelKey] })
-                        return acc
-                    }, [])
+                    if (fieldForStringOnly) {
+                        // Plain array of unique, non-empty strings pulled from fieldForStringOnly
+                        const seen = new Set()
+                        const stringList = result.reduce((acc, item) => {
+                            const val = item[fieldForStringOnly]
+                            if (val === null || val === undefined || val === '') return acc
+                            if (seen.has(val)) return acc
+                            seen.add(val)
+                            acc.push(val)
+                            return acc
+                        }, [])
 
-                    setOptions(optionsList)
+                        setOptions(stringList)
+                    } else {
+                        // Convert to { value, label } options format
+                        const seen = new Set()
+                        const optionsList = result.reduce((acc, item) => {
+                            const value = item[labelAsValue ? labelKey : valueKey]
+                            // we want unique values when labelAsValue is true to avoid duplicate options with same label and value
+                            if (labelAsValue && seen.has(value)) return acc
+                            seen.add(value)
+
+                            const option = { value, label: item[labelKey] }
+
+                            // Include additional fields as-is if specified
+                            if (includeFields.length > 0) {
+                                includeFields.forEach((field) => {
+                                    option[field] = item[field]
+                                })
+                            }
+
+                            acc.push(option)
+                            return acc
+                        }, [])
+
+                        setOptions(optionsList)
+                    }
                 } else {
                     setOptions([])
                 }

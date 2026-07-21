@@ -3,28 +3,31 @@ import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
-import TypeaheadSelect from '@/components/form/TypeaheadSelect'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'react-toastify'
 import logger from '@/utilities/logger'
-import { fileLeave, updateLeave } from '@/services/leaves-service'
-import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
+import { getApprovers, useFetchLeaveTypeOptions } from '@/services/lookups-service'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { addLeave, updateLeave } from '@/services/user-service'
+import TypeaheadInput from '@/components/form/TypeaheadInput'
 
 const DEFAULT_FORM_VALUES = {
+    id: null,
     dateFrom: '',
     dateTo: '',
-    leaveType: '',
+    leaveTypeId: '',
     approvedBy: ''
 }
 
 function ApplicationLeaveFrom({
     selectedLeave = null,
     setSelectedLeave,
-    onSuccess = () => {}
+    onSuccess = () => { }
 }) {
-    const user = useAuthStore((state) => state.user)
     const { showConfirmationModal } = useConfirmationModal()
+    const { options: leaveTypeOptions } = useFetchLeaveTypeOptions()
+    const { options: approvedByOptions } = useFetchOptions(getApprovers, {}, 'name')
 
     const {
         register,
@@ -40,9 +43,10 @@ function ApplicationLeaveFrom({
     useEffect(() => {
         if (selectedLeave) {
             reset({
+                id: selectedLeave.id,
                 dateFrom: selectedLeave.startDate,
                 dateTo: selectedLeave.endDate,
-                leaveType: selectedLeave.leaveType,
+                leaveTypeId: selectedLeave.leaveTypeId,
                 approvedBy: selectedLeave.approvedBy
             })
         } else {
@@ -64,21 +68,38 @@ function ApplicationLeaveFrom({
         })
     }
 
-    async function handleSave(formData) {
+    async function confirmToProceedUnpaid(formData) {
+        showConfirmationModal({
+            title: selectedLeave ? 'Update Leave (Unpaid)' : 'File a Leave (Unpaid)',
+            message: 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?',
+            confirmText: 'Proceed',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+                handleSave(formData, true)
+            },
+        })
+    }
+
+    async function handleSave(formData, proceedUnpaid = false) {
         try {
+            const leaveId = formData.id
             const params = {
                 startDate: formData.dateFrom,
                 endDate: formData.dateTo,
-                leaveTypeId: 1, // TODO: update this to use the correct value once endpoint is available
-                comment: formData.approvedBy
+                leaveTypeId: formData.leaveTypeId,
+                comment: formData.approvedBy,
             }
-            const personId = user?.id
-            const result = await (selectedLeave ? updateLeave(personId, selectedLeave.id, params) : fileLeave(personId, params))
+
+            const result = await (leaveId ? updateLeave(leaveId, params, proceedUnpaid) : addLeave(params, proceedUnpaid))
             if (isResultSuccessful(result)) {
                 toast.success(selectedLeave ? 'Leave updated successfully.' : 'Leave filed successfully.')
                 setSelectedLeave(null)
                 reset(DEFAULT_FORM_VALUES)
                 onSuccess()
+            } else {
+                if (result?.message === 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?') {
+                    confirmToProceedUnpaid(formData)
+                }
             }
         } catch (error) {
             toast.error('Failed to save leave. Please try again.')
@@ -93,21 +114,6 @@ function ApplicationLeaveFrom({
     function handleReset() {
         reset(DEFAULT_FORM_VALUES)
     }
-
-    const leaveTypeOptions = [
-        { value: 'Annual-Paid', label: 'Annual-Paid' },
-        { value: 'Holiday-Paid', label: 'Holiday-Paid' },
-        { value: 'Half Day (AM) deducted from VL', label: 'Half Day (AM) deducted from VL' },
-        { value: 'Half Day (PM) deducted from VL', label: 'Half Day (PM) deducted from VL' },
-    ]
-
-    const approvedByOptions = [
-        { value: 'John Doe', label: 'John Doe' },
-        { value: 'Jane Smith', label: 'Jane Smith' },
-        { value: 'Lebron James', label: 'Lebron James' },
-        { value: 'Michael Jordan', label: 'Michael Jordan' },
-        { value: 'Kobe Bryant', label: 'Kobe Bryant' },
-    ]
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
@@ -146,17 +152,17 @@ function ApplicationLeaveFrom({
                 </div>
 
                 <FormSelect
-                    name='leaveType'
+                    name='leaveTypeId'
                     label='Leave Type'
                     register={register}
                     options={leaveTypeOptions}
-                    error={errors.leaveType?.message}
+                    error={errors.leaveTypeId?.message}
                     validation={{
                         required: 'Leave Type is required'
                     }}
                 />
 
-                <TypeaheadSelect
+                <TypeaheadInput
                     name='approvedBy'
                     label='Approved By'
                     control={control}
@@ -181,7 +187,7 @@ function ApplicationLeaveFrom({
                             type="button"
                             // onClick=
                             className="btn-danger py-1.5! px-4!"
-                    >
+                        >
                             Delete
                         </button>
                     )}

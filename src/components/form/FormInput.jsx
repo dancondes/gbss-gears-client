@@ -27,7 +27,7 @@ function runCustomValidation(validateRule, value) {
     return true
 }
 
-function validateStrictDateInput(value) {
+export function validateStrictDateInput(value) {
     if (value === null || value === undefined || String(value).trim() === '') {
         return true
     }
@@ -80,6 +80,8 @@ const FormInput = ({
     step,
     disabled = false,
     readonly = false,
+    autoFocus = false,
+    maxLength,
 }) => {
     const [showPassword, setShowPassword] = useState(false)
 
@@ -183,6 +185,8 @@ const FormInput = ({
                                     WebkitTextSecurity: 'disc',
                                     MozTextSecurity: 'disc'
                                 } : undefined}
+                                autoFocus={autoFocus}
+                                maxLength={maxLength}
                                 {...inputProps}
                             />
 
@@ -238,6 +242,8 @@ FormInput.propTypes = {
     step: PropTypes.string, // For number input step attribute
     disabled: PropTypes.bool, // For disabling the input,
     readonly: PropTypes.bool, // For read-only input
+    autoFocus: PropTypes.bool, // For auto-focusing the input
+    maxLength: PropTypes.number, // For maximum length of input
 }
 
 export default FormInput

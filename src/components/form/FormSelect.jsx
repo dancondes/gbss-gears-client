@@ -17,7 +17,8 @@ const FormSelect = ({
     onChange,
     required = false,
     noPlaceholder = false,
-    disabled = false
+    disabled = false,
+    autoFocus = false,
 }) => {
     const hasError = Boolean(error)
 
@@ -53,20 +54,21 @@ const FormSelect = ({
                         id={name}
                         name={name}
                         disabled={disabled}
-                        className={`appearance-none rounded relative block w-full min-w-[76px] px-2.5 py-1.5 pr-10 border disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${
+                        autoFocus={autoFocus}
+                        className={`appearance-none rounded relative block w-full min-w-19 px-2.5 py-1.5 pr-10 border disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed ${
                             hasError ? 'border-red-500' : 'border-tertiary'
                         } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] ${inputClassName}`}
                         {...selectProps}
                     >
 
                         {!noPlaceholder && <option value="">{placeholder}</option>}
-                        {options.map((option) => {
+                        {options.map((option, index) => {
                             // Support both string array and object array formats
                             const value = typeof option === 'string' ? option : option.value
                             const displayLabel = typeof option === 'string' ? option : option.label
 
                             return (
-                                <option key={value} value={value}>
+                                <option key={option.value + '_' + option.label + '_' + index} value={value}>
                                     {displayLabel}
                                 </option>
                             )
@@ -111,7 +113,8 @@ FormSelect.propTypes = {
     onChange: PropTypes.func, // For controlled component
     required: PropTypes.bool, // For required indicator when not using validation
     noPlaceholder: PropTypes.bool, // If true, do not render placeholder option
-    disabled: PropTypes.bool, // If true, disable the select field
+    disabled: PropTypes.bool, // If true, disable the select field,
+    autoFocus: PropTypes.bool, // If true, auto-focus the select field
 }
 
 export default FormSelect

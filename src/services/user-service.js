@@ -1,6 +1,5 @@
 import { ROUTES } from '@/constants/routes'
 import { get, put, post } from '@/utilities/api'
-import { useFetchOptions } from '@/hooks/use-fetch-options'
 
 
 export const getAllUsers = () => {
@@ -9,6 +8,10 @@ export const getAllUsers = () => {
 
 export const getUserById = (id) => {
     return get(ROUTES.USERS.GET_BY_ID(id))
+}
+
+export const createUser = (userData) => {
+    return post(ROUTES.USERS.CREATE, userData)
 }
 
 export const updateUser = (id, userData) => {
@@ -35,19 +38,50 @@ export function getCOE(type) {
     return post(ROUTES.USERS.COE(type), {}, { responseType: 'blob' })
 }
 
-/**
- * Custom hook to fetch user options for select/typeahead components
- * @returns {object} - Object containing options array, loading state, and error
- */
-export function useUserOptions(valueKey = 'userId') {
-    return useFetchOptions(getAllUsers, {
-        valueKey,
-        labelKey: 'name',
-        transform: (data) => data
-            .filter(user => user.firstName && user.lastName) // Filter out users with missing names
-            .map(user => ({
-                [valueKey]: valueKey === 'userId' ? user.userId?.toUpperCase() : user?.[valueKey],
-                name: `${user.firstName} ${user.lastName}`
-            }))
-    })
+export function getMyRequests(status, data) {
+    return post(ROUTES.USERS.MY_REQUESTS(status), data)
+}
+
+export function getTeamRequests(status, data) {
+    return post(ROUTES.USERS.TEAM_REQUESTS(status), data)
+}
+
+export function getTeamStatus() {
+    return get(ROUTES.USERS.TEAM_STATUS)
+}
+
+export function changePasswordPin(data) {
+    return put(ROUTES.USERS.CHANGE_PASSWORD_PIN, data)
+}
+
+export function getTeamLeaves() {
+    return get(ROUTES.USERS.TEAM_LEAVES)
+}
+
+export function getUpcomingLeaves() {
+    return get(ROUTES.USERS.UPCOMING_LEAVES)
+}
+
+export function getAllLeaves() {
+    return get(ROUTES.USERS.GET_ALL_LEAVES)
+}
+
+export function getLeaveById(id) {
+    return get(ROUTES.USERS.GET_LEAVE_BY_ID(id))
+}
+
+export function addLeave(data, proceedUnpaid = false) {
+    if (proceedUnpaid) {
+        return post(ROUTES.USERS.ADD_UNPAID_LEAVE, data)
+    }
+
+    return post(ROUTES.USERS.ADD_LEAVE, data)
+}
+
+export function updateLeave(id, data, proceedUnpaid = false) {
+    if (proceedUnpaid) {
+        return put(ROUTES.USERS.UPDATE_UNPAID_LEAVE(id), data)
+    }
+
+    return put(ROUTES.USERS.UPDATE_LEAVE(id), data)
 }

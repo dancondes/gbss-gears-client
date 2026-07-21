@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import Modal from '@/components/modals/Modal'
 import ConfirmationModal from '@/components/modals/ConfirmationModal'
 import BlobViewerModal from '@/components/modals/BlobViewerModal'
+import InputModal from '@/components/modals/InputModal'
 import { getFile } from '@/services/file-service'
 import { encodePaths } from '@/utilities/blob-path-encoder'
 
@@ -42,6 +43,24 @@ function getDefaultBlobViewerState() {
     return {
         isOpen: false,
         attachments: [],
+    }
+}
+
+function getDefaultInputModalState() {
+    return {
+        isOpen: false,
+        title: 'Input Required',
+        subtitle: null,
+        fields: [],
+        className: '',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
+        loading: false,
+        payload: null,
+        onConfirm: null,
+        onCancel: null,
+        onError: null,
+        closeOnConfirm: true,
     }
 }
 
@@ -106,6 +125,7 @@ export function MessageModalProvider({ children }) {
     const [modalState, setModalState] = useState(getDefaultMessageState)
     const [confirmationState, setConfirmationState] = useState(getDefaultConfirmationState)
     const [blobViewerState, setBlobViewerState] = useState(getDefaultBlobViewerState)
+    const [inputModalState, setInputModalState] = useState(getDefaultInputModalState)
 
     function hideMessageModal() {
         if (typeof modalState.onClose === 'function') {
@@ -200,6 +220,78 @@ export function MessageModalProvider({ children }) {
         }
 
         hideConfirmationModal()
+    }
+
+    function hideInputModal() {
+        setInputModalState(getDefaultInputModalState())
+    }
+
+    function showInputModal(options = {}) {
+        setInputModalState({
+            isOpen: true,
+            title: options.title || 'Input Required',
+            subtitle: options.subtitle || null,
+            fields: options.fields || [],
+            className: options.className || '',
+            confirmText: options.confirmText || 'Confirm',
+            cancelText: options.cancelText || 'Cancel',
+            loading: false,
+            payload: options.payload || null,
+            onConfirm: options.onConfirm || null,
+            onCancel: options.onCancel || null,
+            onError: options.onError || null,
+            closeOnConfirm: options.closeOnConfirm !== false,
+        })
+    }
+
+    async function handleConfirmInputModal(values) {
+        if (inputModalState.loading) return
+
+        if (typeof inputModalState.onConfirm !== 'function') {
+            hideInputModal()
+            return
+        }
+
+        try {
+            setInputModalState(function (previousState) {
+                return {
+                    ...previousState,
+                    loading: true,
+                }
+            })
+
+            await inputModalState.onConfirm(values, inputModalState.payload)
+
+            if (inputModalState.closeOnConfirm) {
+                hideInputModal()
+            } else {
+                setInputModalState(function (previousState) {
+                    return {
+                        ...previousState,
+                        loading: false,
+                    }
+                })
+            }
+        } catch (error) {
+            setInputModalState(function (previousState) {
+                return {
+                    ...previousState,
+                    loading: false,
+                }
+            })
+
+            if (typeof inputModalState.onError === 'function') {
+                inputModalState.onError(error, inputModalState.payload)
+            }
+        }
+    }
+
+    function handleCancelInputModal() {
+        if (typeof inputModalState.onCancel === 'function') {
+            inputModalState.onCancel(inputModalState.payload)
+        }
+
+        hideInputModal()
     }
 
     // not being used as of 2026/06/18 - we are now using showBlobViewerInNewWindow instead for better UX and as requested by users
@@ -299,6 +391,9 @@ export function MessageModalProvider({ children }) {
         showBlobViewerInNewWindow,
         hideBlobViewerModal,
         blobViewerModal: blobViewerState,
+        showInputModal,
+        hideInputModal,
+        inputModal: inputModalState,
     }
 
     return (
@@ -346,6 +441,20 @@ export function MessageModalProvider({ children }) {
                 isOpen={blobViewerState.isOpen}
                 onClose={hideBlobViewerModal}
                 attachments={blobViewerState.attachments}
+            />
+
+            <InputModal
+                isOpen={inputModalState.isOpen}
+                onClose={hideInputModal}
+                title={inputModalState.title}
+                subtitle={inputModalState.subtitle}
+                fields={inputModalState.fields}
+                className={inputModalState.className}
+                confirmText={inputModalState.confirmText}
+                cancelText={inputModalState.cancelText}
+                loading={inputModalState.loading}
+                onConfirm={handleConfirmInputModal}
+                onCancel={handleCancelInputModal}
             />
         </MessageModalContext.Provider>
     )

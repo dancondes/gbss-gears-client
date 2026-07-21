@@ -13,8 +13,6 @@ function SubmenuPanel({ items, isOpen, onClose }) {
     const { showMessageModal } = useMessageModal()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
     const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
-    const setChangePasswordModalOpen = useUIStore(state => state.setChangePasswordModalOpen)
-    const setChangePinModalOpen = useUIStore(state => state.setChangePinModalOpen)
 
     if (!isOpen || !items || items.length === 0) return null
 

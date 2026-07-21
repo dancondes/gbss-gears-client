@@ -9,9 +9,11 @@ function TimeInput({
     validation = {},
     disabled = false,
     // interval = 15, // no longer working as expected, so removed for now
+    showSeconds = false,
     className = '',
     labelClassName = '',
-    inputClassName = ''
+    inputClassName = '',
+    autoFocus = false,
 }) {
     // Check if field is required from validation rules or props
     const isRequired = typeof validation?.required === 'object' ? validation.required.value : validation?.required
@@ -37,10 +39,11 @@ function TimeInput({
                 <input
                     id={name}
                     type="time"
-                    // step={interval * 60}
+                    step={showSeconds ? 1 : undefined}
                     {...register(name, validation)}
                     disabled={disabled}
                     className={inputClass}
+                    autoFocus={autoFocus}
                 />
                 {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
             </div>
@@ -56,9 +59,11 @@ TimeInput.propTypes = {
     validation: PropTypes.object,
     disabled: PropTypes.bool,
     interval: PropTypes.number,
+    showSeconds: PropTypes.bool,
     className: PropTypes.string,
     labelClassName: PropTypes.string,
-    inputClassName: PropTypes.string
+    inputClassName: PropTypes.string,
+    autoFocus: PropTypes.bool, // Added autoFocus prop
 }
 
 export default TimeInput

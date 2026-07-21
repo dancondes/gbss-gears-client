@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Table from '@/components/Table'
-import ExportToExcel from '@/components/ExportToExcel'
 
 function LeaveCredits({
-    data = []
+    data = [],
+    isLoading = false
 }) {
 
     const columns = useMemo(() => [
@@ -13,7 +13,7 @@ function LeaveCredits({
             header: 'Name',
         },
         {
-            accessorKey: 'leaveType',
+            accessorKey: 'type',
             header: 'Type',
         },
         {
@@ -54,13 +54,15 @@ function LeaveCredits({
                     position: 'bottom-right',
                     buttonLabel: 'Download to Excel'
                 }}
+                isLoading={isLoading}
             />
         </div>
     )
 }
 
 LeaveCredits.propTypes = {
-    data: PropTypes.array.isRequired
+    data: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool,
 }
 
 export default LeaveCredits

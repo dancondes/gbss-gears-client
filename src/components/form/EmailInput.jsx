@@ -12,7 +12,8 @@ const EmailInput = ({
     showDomain = true,
     className = '',
     register,
-    validation = {}
+    validation = {},
+    autoFocus = false,
 }) => {
     const hasError = Boolean(error)
 
@@ -43,6 +44,7 @@ const EmailInput = ({
                         type={showDomain ? 'text' : 'email'}
                         autoComplete={autoComplete}
                         placeholder={placeholder}
+                        autoFocus={autoFocus}
                         className={`appearance-none rounded relative block w-full px-3 py-2 border ${hasError ? 'border-red-500' : 'border-tertiary'
                             } placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 sm:text-sm ${showDomain ? 'flex-1' : ''
                             } ${className}`}
@@ -70,7 +72,8 @@ EmailInput.propTypes = {
     domain: PropTypes.string,
     showDomain: PropTypes.bool,
     className: PropTypes.string,
-    validation: PropTypes.object
+    validation: PropTypes.object,
+    autoFocus: PropTypes.bool,
 }
 
 export default EmailInput

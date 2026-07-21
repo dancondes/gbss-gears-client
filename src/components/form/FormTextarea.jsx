@@ -18,6 +18,7 @@ const FormTextarea = ({
     required = false,
     disabled = false,
     readonly = false,
+    autoFocus = false,
 }) => {
     const hasError = Boolean(error)
 
@@ -55,6 +56,7 @@ const FormTextarea = ({
                     rows={rows}
                     disabled={disabled}
                     readOnly={readonly}
+                    autoFocus={autoFocus}
                     className={`appearance-none rounded relative block w-full px-2.5 py-1.5 placeholder:text-gray-400 border ${hasError ? 'border-red-500' : 'border-tertiary'} placeholder-gray-400 text-primary focus:outline-none focus:ring-secondary focus:border-secondary focus:z-10 text-[13px] resize-vertical ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} ${inputClassName}`}
                     {...textareaProps}
                 />
@@ -82,6 +84,7 @@ FormTextarea.propTypes = {
     required: PropTypes.bool, // For required indicator when not using validation
     disabled: PropTypes.bool,
     readonly: PropTypes.bool,
+    autoFocus: PropTypes.bool,
 }
 
 export default FormTextarea

@@ -16,7 +16,8 @@ const MultiSelectTypeahead = ({
     disabled = false,
     className = '',
     labelClassName = '',
-    inputClassName = ''
+    inputClassName = '',
+    autoFocus = false,
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
@@ -153,7 +154,7 @@ const MultiSelectTypeahead = ({
             <>
                 {/* Input area with pills */}
                 <div
-                    className={`flex flex-wrap items-center gap-1 min-h-[34px] px-2 py-1.5 pr-10 rounded border ${error ? 'border-red-500' : isOpen ? 'border-secondary' : 'border-tertiary'
+                    className={`flex flex-wrap items-center gap-1 min-h-8.5 px-2 py-1.5 pr-10 rounded border ${error ? 'border-red-500' : isOpen ? 'border-secondary' : 'border-tertiary'
                         } bg-white cursor-text ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     onClick={() => {
                         if (!disabled) {
@@ -199,6 +200,7 @@ const MultiSelectTypeahead = ({
                             onKeyDown={(e) => handleKeyDown(e, selectedValues, fieldOnChange)}
                             placeholder={selectedOptions.length === 0 ? placeholder : ''}
                             autoComplete="off"
+                            autoFocus={autoFocus}
                             className={`flex-1 min-w-20 outline-none text-[13px] text-primary placeholder-gray-400 bg-transparent ${inputClassName}`}
                         />
                     )}
@@ -393,7 +395,8 @@ MultiSelectTypeahead.propTypes = {
     disabled: PropTypes.bool,
     className: PropTypes.string,
     labelClassName: PropTypes.string,
-    inputClassName: PropTypes.string
+    inputClassName: PropTypes.string,
+    autoFocus: PropTypes.bool,
 }
 
 export default MultiSelectTypeahead

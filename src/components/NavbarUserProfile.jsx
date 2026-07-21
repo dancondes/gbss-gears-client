@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onUserMenuClose, onLogoutClick }) {
+function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onUserMenuClose, onLogoutClick, onProfileClick }) {
 
     if (!user) {
         return (
@@ -46,7 +46,7 @@ function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onU
                             <Link
                                 to="/profile"
                                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                                onClick={onUserMenuClose}
+                                onClick={onProfileClick}
                             >
                                 Your Profile
                             </Link>
@@ -79,6 +79,7 @@ NavbarUserProfile.propTypes = {
     onUserMenuToggle: PropTypes.func.isRequired,
     onUserMenuClose: PropTypes.func.isRequired,
     onLogoutClick: PropTypes.func.isRequired,
+    onProfileClick: PropTypes.func.isRequired,
 }
 
 export default NavbarUserProfile

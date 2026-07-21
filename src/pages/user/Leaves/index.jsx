@@ -4,88 +4,61 @@ import LeaveCredits from './components/LeaveCredits'
 import ApplicationLeaveFrom from './components/ApplicationLeaveForm'
 import VacationLeaveList from './components/VacationLeaveList'
 import SickLeaveList from './components/SickLeaveList'
-import TicketingModal from '@/pages/help/Ticketing/components/TicketingModal'
 import OpenTicketModal from './components/OpenTicketModal'
 import useSWR from 'swr'
-import { getFiledLeaves, getLeaveCredits } from '@/services/leaves-service'
+import { ddmmyyyyToIso } from '@/utilities/date-utilities'
+import { ENQUIRY_TYPE_ID_FOR_LEAVE, LEAVE_TYPE_OPTION_IDS } from '@/constants/database-id'
 import { useAuthStore } from '@/store'
-import { spliceDateFromTime } from '@/utilities/date-utilities'
+import { getAllLeaves } from '@/services/user-service'
+import { toast } from 'react-toastify'
 
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
-    const { data: leaveCreditsData, isValidating: isLeaveCreditsLoading, mutate: mutateLeaveCredits } = useSWR('/api/leave-credits', () => getLeaveCredits(user?.id))
-    const { data: filedLeavesData, isValidating: isFiledLeavesLoading, mutate: mutateFiledLeaves } = useSWR('/api/filed-leaves', () => getFiledLeaves(user?.id))
+    const { data: leavesData, isValidating, mutate } = useSWR(user?.userId ? ['/api/leave-credits', user?.userId] : null, fetchLeaveCreditsData)
+
+    async function fetchLeaveCreditsData() {
+        try {
+            const result = await getAllLeaves()
+            return result?.data || []
+        } catch {
+            return []
+        }
+    }
 
     // States
     const [selectedLeave, setSelectedLeave] = useState(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-
-    const vacationLeaveData = [
-        { id: 1, order: 1, workDate: '2024-01-01', description: 'Accrue VL Credit', value: 1.67, balance: 1.67 },
-        { id: 2, order: 2, workDate: '2024-02-01', description: 'Accrue VL Credit', value: 1.67, balance: 3.34 },
-        { id: 3, order: 3, workDate: '2024-03-01', description: 'Accrue VL Credit', value: 1.67, balance: 5.01 },
-        { id: 4, order: 4, workDate: '2024-04-01', description: 'Accrue VL Credit', value: 1.67, balance: 6.68 },
-        { id: 5, order: 5, workDate: '2024-05-01', description: 'Accrue VL Credit', value: 1.67, balance: 8.35 },
-        { id: 6, order: 6, workDate: '2024-06-01', description: 'Accrue VL Credit', value: 1.67, balance: 10.02 },
-        { id: 7, order: 7, workDate: '2024-07-01', description: 'Accrue VL Credit', value: 1.67, balance: 11.69 },
-        { id: 8, order: 8, workDate: '2024-08-01', description: 'Accrue VL Credit', value: 1.67, balance: 13.36 },
-        { id: 9, order: 9, workDate: '2024-09-01', description: 'Accrue VL Credit', value: 1.67, balance: 15.03 },
-        { id: 10, order: 10, workDate: '2024-10-01', description: 'Accrue VL Credit', value: 1.67, balance: 16.70 },
-    ]
-
-    const sickLeaveData = [
-        { id: 1, order: 1, workDate: '2024-01-01', description: 'Accrue SL Credit', value: 0.58, balance: 0.58 },
-        { id: 2, order: 2, workDate: '2024-02-01', description: 'Accrue SL Credit', value: 0.58, balance: 1.16 },
-        { id: 3, order: 3, workDate: '2024-03-01', description: 'Accrue SL Credit', value: 0.58, balance: 1.74 },
-        { id: 4, order: 4, workDate: '2024-04-01', description: 'Accrue SL Credit', value: 0.58, balance: 2.32 },
-        { id: 5, order: 5, workDate: '2024-05-01', description: 'Accrue SL Credit', value: 0.58, balance: 2.90 },
-        { id: 6, order: 6, workDate: '2024-06-01', description: 'Accrue SL Credit', value: 0.58, balance: 3.48 },
-        { id: 7, order: 7, workDate: '2024-07-01', description: 'Accrue SL Credit', value: 0.58, balance: 4.06 },
-        { id: 8, order: 8, workDate: '2024-08-01', description: 'Accrue SL Credit', value: 0.58, balance: 4.64 },
-        { id: 9, order: 9, workDate: '2024-09-01', description: 'Accrue SL Credit', value: 0.58, balance: 5.22 },
-        { id: 10, order: 10, workDate: '2024-10-01', description: 'Accrue SL Credit', value: 0.58, balance: 5.80 },
-        { id: 1, order: 1, workDate: '2024-01-01', description: 'Accrue SL Credit', value: 0.58, balance: 0.58 },
-        { id: 2, order: 2, workDate: '2024-02-01', description: 'Accrue SL Credit', value: 0.58, balance: 1.16 },
-        { id: 3, order: 3, workDate: '2024-03-01', description: 'Accrue SL Credit', value: 0.58, balance: 1.74 },
-        { id: 4, order: 4, workDate: '2024-04-01', description: 'Accrue SL Credit', value: 0.58, balance: 2.32 },
-        { id: 5, order: 5, workDate: '2024-05-01', description: 'Accrue SL Credit', value: 0.58, balance: 2.90 },
-        { id: 6, order: 6, workDate: '2024-06-01', description: 'Accrue SL Credit', value: 0.58, balance: 3.48 },
-        { id: 7, order: 7, workDate: '2024-07-01', description: 'Accrue SL Credit', value: 0.58, balance: 4.06 },
-        { id: 8, order: 8, workDate: '2024-08-01', description: 'Accrue SL Credit', value: 0.58, balance: 4.64 },
-        { id: 9, order: 9, workDate: '2024-09-01', description: 'Accrue SL Credit', value: 0.58, balance: 5.22 },
-        { id: 10, order: 10, workDate: '2024-10-01', description: 'Accrue SL Credit', value: 0.58, balance: 5.80 },
-    ]
 
     function handeLeaveSelect(leave) {
+        if (!LEAVE_TYPE_OPTION_IDS.includes(leave.leaveTypeId)) {
+            toast.error('This leave type is not supported for editing.')
+            setSelectedLeave(null)
+            return
+        }
+
         setSelectedLeave({
             id: leave.leaveId,
-            startDate: spliceDateFromTime(leave.startDate),
-            endDate: spliceDateFromTime(leave.endDate),
-            leaveType: leave.leaveType,
+            startDate: ddmmyyyyToIso(leave.startDate),
+            endDate: ddmmyyyyToIso(leave.endDate),
+            leaveTypeId: leave.leaveTypeId,
             approvedBy: leave.approvedBy
         })
-    }
-
-    function handleMutate() {
-        mutateLeaveCredits()
-        mutateFiledLeaves()
     }
 
     return (
         <PageTemplate
             title="Leaves"
-            rightSide={<OpenTicketModal setIsOpen={setIsModalOpen} />}
-            mutate={handleMutate}
+            subtitle="Manage your leaves and view your leave history"
+            rightSide={<OpenTicketModal concernLabel="Leaves" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_LEAVE }} />}
+            mutate={mutate}
         >
             {/* 1st Row */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4">
                 {/* Leave Credits */}
                 <div className="col-span-1 sm:col-span-3">
                     <LeaveCredits
-                        leavesCreditsData={leaveCreditsData}
-                        isLeaveCreditsLoading={isLeaveCreditsLoading}
-                        filedLeavesData={filedLeavesData}
-                        isFiledLeavesLoading={isFiledLeavesLoading}
+                        leavesCreditsData={leavesData?.leaveCredits || []}
+                        isLoading={isValidating}
+                        filedLeavesData={leavesData?.filedLeaves || []}
                         handeLeaveSelect={handeLeaveSelect}
                     />
                 </div>
@@ -94,9 +67,9 @@ export default function Leaves() {
                 <div className="col-span-1 sm:col-span-2">
                     <ApplicationLeaveFrom
                         selectedLeave={selectedLeave}
-                        isLoading={isFiledLeavesLoading}
+                        isLoading={isValidating}
                         setSelectedLeave={setSelectedLeave}
-                        onSuccess={handleMutate}
+                        onSuccess={mutate}
                     />
                 </div>
             </div>
@@ -111,28 +84,20 @@ export default function Leaves() {
                     {/* Vacation Leave */}
                     <div className="col-span-1 sm:col-span-1">
                         <VacationLeaveList
-                            data={vacationLeaveData}
+                            data={leavesData?.vlHistory || []}
+                            isLoading={isValidating}
                         />
                     </div>
 
                     {/* Sick Leave */}
                     <div className="col-span-1 sm:col-span-1">
                         <SickLeaveList
-                            data={sickLeaveData}
+                            data={leavesData?.slHistory || []}
+                            isLoading={isValidating}
                         />
                     </div>
                 </div>
             </div>
-
-            {isModalOpen && (
-                <TicketingModal
-                    defaultValues={{
-                        ticketType: 'Leave',
-                    }}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
         </PageTemplate>
     )
 }

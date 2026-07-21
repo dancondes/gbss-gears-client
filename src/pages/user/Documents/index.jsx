@@ -7,6 +7,8 @@ import useDownloadFileButton from '@/hooks/use-download-file-button'
 import { updatePathFor201Files } from '@/utilities/file-utilities'
 import { getUserDocuments } from '@/services/user-service'
 import useSWR from 'swr'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_HR } from '@/constants/database-id'
 
 function Documents() {
 
@@ -74,14 +76,15 @@ function Documents() {
 
     return (
         <PageTemplate
-            title="201 Files"
+            title="Documents"
             subtitle="View and download your documents"
             mutate={mutate}
+            rightSide={<OpenTicketModal concernLabel="Documents" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_HR }} />}
         >
             <div className="p-1 sm:p-3">
                 <Table
                     columns={columns}
-                    data={data}
+                    data={data || []}
                     enablePagination={false}
                     enableSorting={true}
                     noDataLabel="No documents found"

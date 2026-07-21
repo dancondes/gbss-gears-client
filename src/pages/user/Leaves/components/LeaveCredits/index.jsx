@@ -5,10 +5,9 @@ import FiledLeaves from './FiledLeaves'
 
 function LeaveCredits({
     leavesCreditsData,
-    isLeaveCreditsLoading,
     filedLeavesData,
-    isFiledLeavesLoading,
-    handeLeaveSelect
+    handeLeaveSelect,
+    isLoading
 }) {
 
     const columns = useMemo(() => ([
@@ -17,7 +16,7 @@ function LeaveCredits({
             header: 'Year',
         },
         {
-            accessorKey: 'leaveType',
+            accessorKey: 'type',
             header: 'Type',
         },
         {
@@ -31,7 +30,7 @@ function LeaveCredits({
             type: 'decimal'
         },
         {
-            accessorKey: 'prevBalance',
+            accessorKey: 'previousBalance',
             header: 'Prev. Balance',
             type: 'decimal'
         },
@@ -58,13 +57,13 @@ function LeaveCredits({
                 data={leavesCreditsData}
                 enablePagination={false}
                 maxHeight={150}
-                defaultSorting={[{ id: 'year', desc: true }]}
-                isLoading={isLeaveCreditsLoading}
+                defaultSorting={[{ id: 'fiscalYear', desc: true }]}
+                isLoading={isLoading}
             />
 
             <FiledLeaves
                 data={filedLeavesData}
-                isLoading={isFiledLeavesLoading}
+                isLoading={isLoading}
                 handeLeaveSelect={handeLeaveSelect}
             />
         </div>
@@ -73,10 +72,9 @@ function LeaveCredits({
 
 LeaveCredits.propTypes = {
     leavesCreditsData: PropTypes.array.isRequired,
-    isLeaveCreditsLoading: PropTypes.bool.isRequired,
     filedLeavesData: PropTypes.array.isRequired,
-    isFiledLeavesLoading: PropTypes.bool.isRequired,
-    handeLeaveSelect: PropTypes.func.isRequired
+    handeLeaveSelect: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool.isRequired
 }
 
 export default LeaveCredits

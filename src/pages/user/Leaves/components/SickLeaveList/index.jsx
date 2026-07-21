@@ -2,11 +2,11 @@ import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Table from '@/components/Table'
 
-function SickLeaveList({data}) {
+function SickLeaveList({ data, isLoading }) {
 
     const columns = useMemo(() => ([
         {
-            accessorKey: 'order',
+            accessorKey: 'sortOrder',
             header: 'S.Order',
         },
         {
@@ -41,14 +41,16 @@ function SickLeaveList({data}) {
                 data={data}
                 enablePagination={false}
                 maxHeight={300}
-                defaultSorting={[{id: 'order', desc: true}]}
+                defaultSorting={[{ id: 'sortOrder', desc: true }]}
+                isLoading={isLoading}
             />
         </div>
     )
 }
 
 SickLeaveList.propTypes = {
-    data: PropTypes.array.isRequired
+    data: PropTypes.array.isRequired,
+    isLoading: PropTypes.bool
 }
 
 export default SickLeaveList

@@ -12,21 +12,20 @@ function FiledLeaves({
         {
             accessorKey: 'startDate',
             header: 'Start Date',
-            type: 'date',
+            // type: 'date',
         },
         {
             accessorKey: 'endDate',
             header: 'End Date',
-            type: 'date',
+            // type: 'date',
         },
         {
-            accessorKey: 'comment',
+            accessorKey: 'approvedBy',
             header: 'Approved By',
         },
         {
-            accessorKey: 'description',
+            accessorKey: 'leaveTypeDescription',
             header: 'Description',
-            cell: () => ('HARDCODED. NO AVAILABLE DATA')
         }
     ]), [])
 

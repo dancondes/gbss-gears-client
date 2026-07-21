@@ -113,6 +113,7 @@ const Login = () => {
                                     validation={{
                                         required: 'Username is required',
                                     }}
+                                    autoFocus
                                 />
 
                                 {/* Password */}
@@ -146,11 +147,11 @@ const Login = () => {
 
                                 <div></div>
 
-                                <div className="text-sm">
+                                {/* <div className="text-sm">
                                     <Link to="/forgot-password" className="font-medium text-primary hover:text-secondary">
                                         Forgot password?
                                     </Link>
-                                </div>
+                                </div> */}
                             </div>
 
                             {/* Submit Button */}

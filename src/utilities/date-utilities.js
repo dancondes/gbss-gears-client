@@ -277,3 +277,17 @@ export function to24HourTime(dateString) {
 
     return `${String(hours).padStart(2, '0')}:${minutes}:${seconds}`
 }
+
+/**
+ * Convert a "DD/MM/YYYY" string to "YYYY-MM-DD".
+ * @param {string} dateString - Date like "22/05/2026"
+ * @returns {string} Date like "2026-05-22", or "-" if invalid
+ */
+export function ddmmyyyyToIso(dateString) {
+    if (!dateString) return '-'
+
+    const [dd, mm, yyyy] = dateString.split('/')
+    if (!dd || !mm || !yyyy) return '-'
+
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`
+}

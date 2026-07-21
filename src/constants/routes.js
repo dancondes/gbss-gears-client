@@ -36,6 +36,7 @@ export const ROUTES = {
         EMPLOYEE_LIST: '/Lookups/employee-list',
         ENQUIRY_TYPES: '/Lookups/enquiry-types',
         ROLES: '/Lookups/roles',
+        LEAVE_TYPES: '/Lookups/leave-types',
     },
     USERS: {
         GET_BY_ID: (id) => `/User/${id}`,
@@ -52,7 +53,7 @@ export const ROUTES = {
         PAYSLIP: '/User/Payslip',
         COE: (type) => `/User/COE/${type}`,
         MY_REQUESTS: (status) => `/User/my-requests/${status}`,
-        GET_ALL_LEAVES: '',
+        GET_ALL_LEAVES: '/User/leave',
         GET_LEAVE_BY_ID: (id) => `/User/leave/${id}`,
         UPDATE_LEAVE: (id) => `/User/leave/${id}/update`,
         UPDATE_UNPAID_LEAVE: (id) => `/User/leave/${id}/update/proceedUnpaid`,

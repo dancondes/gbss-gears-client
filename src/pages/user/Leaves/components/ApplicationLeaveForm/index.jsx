@@ -9,21 +9,30 @@ import { toast } from 'react-toastify'
 import logger from '@/utilities/logger'
 import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
+import { getApprovers, useFetchLeaveTypeOptions } from '@/services/lookups-service'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { updateLeave } from '@/services/user-service'
 
 const DEFAULT_FORM_VALUES = {
+    id: null,
     dateFrom: '',
     dateTo: '',
-    leaveType: '',
+    leaveTypeId: '',
     approvedBy: ''
 }
 
 function ApplicationLeaveFrom({
     selectedLeave = null,
     setSelectedLeave,
-    onSuccess = () => {}
+    onSuccess = () => { }
 }) {
     const user = useAuthStore((state) => state.user)
     const { showConfirmationModal } = useConfirmationModal()
+    const { options: leaveTypeOptions } = useFetchLeaveTypeOptions()
+    const { options: approvedByOptions } = useFetchOptions(getApprovers, {
+        valueKey: 'name',
+        labelKey: 'name',
+    })
 
     const {
         register,
@@ -39,9 +48,10 @@ function ApplicationLeaveFrom({
     useEffect(() => {
         if (selectedLeave) {
             reset({
+                id: selectedLeave.id,
                 dateFrom: selectedLeave.startDate,
                 dateTo: selectedLeave.endDate,
-                leaveType: selectedLeave.leaveType,
+                leaveTypeId: selectedLeave.leaveTypeId,
                 approvedBy: selectedLeave.approvedBy
             })
         } else {
@@ -65,14 +75,15 @@ function ApplicationLeaveFrom({
 
     async function handleSave(formData) {
         try {
+            const leaveId = formData.id
             const params = {
                 startDate: formData.dateFrom,
                 endDate: formData.dateTo,
-                leaveTypeId: 1, // TODO: update this to use the correct value once endpoint is available
-                comment: formData.approvedBy
+                leaveTypeId: formData.leaveTypeId,
+                comment: formData.approvedBy,
             }
-            const personId = user?.id
-            const result = [] // await (selectedLeave ? updateLeave(personId, selectedLeave.id, params) : fileLeave(personId, params))
+            
+            const result = await (leaveId ? updateLeave(leaveId, params) : updateLeave())
             if (isResultSuccessful(result)) {
                 toast.success(selectedLeave ? 'Leave updated successfully.' : 'Leave filed successfully.')
                 setSelectedLeave(null)
@@ -92,21 +103,6 @@ function ApplicationLeaveFrom({
     function handleReset() {
         reset(DEFAULT_FORM_VALUES)
     }
-
-    const leaveTypeOptions = [
-        { value: 'Annual-Paid', label: 'Annual-Paid' },
-        { value: 'Holiday-Paid', label: 'Holiday-Paid' },
-        { value: 'Half Day (AM) deducted from VL', label: 'Half Day (AM) deducted from VL' },
-        { value: 'Half Day (PM) deducted from VL', label: 'Half Day (PM) deducted from VL' },
-    ]
-
-    const approvedByOptions = [
-        { value: 'John Doe', label: 'John Doe' },
-        { value: 'Jane Smith', label: 'Jane Smith' },
-        { value: 'Lebron James', label: 'Lebron James' },
-        { value: 'Michael Jordan', label: 'Michael Jordan' },
-        { value: 'Kobe Bryant', label: 'Kobe Bryant' },
-    ]
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
@@ -145,20 +141,20 @@ function ApplicationLeaveFrom({
                 </div>
 
                 <FormSelect
-                    name='leaveType'
+                    name='leaveTypeId'
                     label='Leave Type'
                     register={register}
                     options={leaveTypeOptions}
-                    error={errors.leaveType?.message}
+                    error={errors.leaveTypeId?.message}
                     validation={{
                         required: 'Leave Type is required'
                     }}
                 />
 
-                <TypeaheadSelect
+                <FormSelect
                     name='approvedBy'
                     label='Approved By'
-                    control={control}
+                    register={register}
                     options={approvedByOptions}
                     error={errors.approvedBy?.message}
                     validation={{
@@ -180,7 +176,7 @@ function ApplicationLeaveFrom({
                             type="button"
                             // onClick=
                             className="btn-danger py-1.5! px-4!"
-                    >
+                        >
                             Delete
                         </button>
                     )}

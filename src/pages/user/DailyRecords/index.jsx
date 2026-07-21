@@ -7,7 +7,8 @@ import { useAuthStore } from '@/store'
 import { getTimeEntriesById } from '@/services/event-service'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getLogTypes } from '@/services/lookups-service'
-import { toast } from 'react-toastify'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_TIME_AMEND } from '@/constants/database-id'
 
 function DailyRecords() {
     const user = useAuthStore((state) => state.user)
@@ -41,9 +42,6 @@ function DailyRecords() {
                 setIsSearching(true)
                 const result = await fetchTimeEntries()
                 mutate(result, false)
-            } catch {
-                mutate([], false)
-                toast.error('Failed to fetch time logs. Please try again.')
             } finally {
                 setIsSearching(false)
             }
@@ -94,6 +92,7 @@ function DailyRecords() {
             title="Daily Records"
             subtitle="View your daily clock-in and clock-out records"
             mutate={mutate}
+            rightSide={<OpenTicketModal concernLabel="Time Entry" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_TIME_AMEND }} />}
         >
             <div className="p-1 sm:p-3">
                 {/* Time Logs Table */}

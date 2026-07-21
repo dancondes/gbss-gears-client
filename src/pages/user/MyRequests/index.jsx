@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
@@ -14,7 +14,12 @@ const DEFAUL_STATUS = 3 // For Approval
 
 function MyRequests() {
     const user = useAuthStore((state) => state.user)
-    const [filters, setFilters] = useState({
+    // const [filters, setFilters] = useState({
+    //     dateFrom: currentDate,
+    //     dateTo: currentDate,
+    //     status: DEFAUL_STATUS,
+    // })
+    const filters = useRef({
         dateFrom: currentDate,
         dateTo: currentDate,
         status: DEFAUL_STATUS,
@@ -22,11 +27,12 @@ function MyRequests() {
 
     async function fetchMyRequests() {
         try {
+            const currentFilter = filters.current
             const params = {
-                dateFrom: filters.dateFrom,
-                dateTo: filters.dateTo,
+                dateFrom: currentFilter.dateFrom,
+                dateTo: currentFilter.dateTo,
             }
-            const result = await getMyRequests(filters.status ?? 0, params)
+            const result = await getMyRequests(currentFilter.status ?? 0, params)
             return result?.data || []
         } catch {
             return []
@@ -36,11 +42,14 @@ function MyRequests() {
     const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchMyRequests)
 
     async function handleSearch(newFilters) {
-        setFilters({
+        const mappedFilters = {
             dateFrom: newFilters.dateFrom || currentDate,
             dateTo: newFilters.dateTo || currentDate,
             status: newFilters.status ?? DEFAUL_STATUS,
-        })
+        }
+        filters.current = mappedFilters
+        const result = await fetchMyRequests()
+        mutate(result, false)
     }
 
     const columns = useMemo(

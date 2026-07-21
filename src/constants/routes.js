@@ -45,12 +45,19 @@ export const ROUTES = {
         CREATE: '/User/create',
         UPDATE: (id) => `/User/${id}/update`,
 
+        // Own User Data
         GET_WORKSCHED: (empNo) => `/User/WorkSched/${empNo}`,
         GET_DOCUMENTS: '/User/documents',
         UPDATE_PERSONAL_DETAILS: '/User/personal-details/update',
         PAYSLIP: '/User/Payslip',
         COE: (type) => `/User/COE/${type}`,
         MY_REQUESTS: (status) => `/User/my-requests/${status}`,
+        GET_ALL_LEAVES: '',
+        GET_LEAVE_BY_ID: (id) => `/User/leave/${id}`,
+        UPDATE_LEAVE: (id) => `/User/leave/${id}/update`,
+        UPDATE_UNPAID_LEAVE: (id) => `/User/leave/${id}/update/proceedUnpaid`,
+
+        // Teams
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,
         TEAM_STATUS: '/User/team-status',
         CHANGE_PASSWORD_PIN: '/User/password-pin/update',

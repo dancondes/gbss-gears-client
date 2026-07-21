@@ -61,3 +61,19 @@ export function getTeamLeaves() {
 export function getUpcomingLeaves() {
     return get(ROUTES.USERS.UPCOMING_LEAVES)
 }
+
+export function getAllLeaves() {
+    return get(ROUTES.USERS.GET_ALL_LEAVES)
+}
+
+export function getLeaveById(id) {
+    return get(ROUTES.USERS.GET_LEAVE_BY_ID(id))
+}
+
+export function updateLeave(id, data) {
+    return put(ROUTES.USERS.UPDATE_LEAVE(id), data)
+}
+
+export function updateUnpaidLeave(id, data) {
+    return put(ROUTES.USERS.UPDATE_UNPAID_LEAVE(id), data)
+}

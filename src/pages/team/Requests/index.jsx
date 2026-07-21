@@ -10,30 +10,37 @@ import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import logger from '@/utilities/logger'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { toast } from 'react-toastify'
 import useSWR from 'swr'
 
 const currentDate = getCurrentDate()
+const DEFAUL_STATUS = 3 // For Approval
 
 export default function Requests() {
     const { showConfirmationModal } = useConfirmationModal()
     const { showInputModal } = useInputModal()
     const { options: employeeOptions } = useFetchEmployeeOptions()
     const user = useAuthStore((state) => state.user)
-    const [filters, setFilters] = useState({
+    // const [filters, setFilters] = useState({
+    //     dateFrom: currentDate,
+    //     dateTo: currentDate,
+    //     status: 3,
+    // })
+    const filters = useRef({
         dateFrom: currentDate,
         dateTo: currentDate,
-        status: 3,
+        status: DEFAUL_STATUS,
     })
 
     async function fetchTeamRequests() {
         try {
+            const currentFilter = filters.current
             const params = {
-                dateFrom: filters.dateFrom,
-                dateTo: filters.dateTo,
+                dateFrom: currentFilter.dateFrom,
+                dateTo: currentFilter.dateTo,
             }
-            const result = await getTeamRequests(filters.status || 4, params)
+            const result = await getTeamRequests(currentFilter.status || DEFAUL_STATUS, params)
             return result?.data || []
         } catch {
             return []
@@ -170,12 +177,15 @@ export default function Requests() {
         }
     ], [])
 
-    function handleSearch(serverFilters) {
-        setFilters({
+    async function handleSearch(serverFilters) {
+        const mappedFilters = {
             dateFrom: serverFilters.dateFrom || currentDate,
             dateTo: serverFilters.dateTo || currentDate,
             status: serverFilters.status || 3,
-        })
+        }
+        filters.current = mappedFilters
+        const result = await fetchTeamRequests()
+        mutate(result, false)
     }
 
     return (

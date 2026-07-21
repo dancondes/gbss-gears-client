@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import logger from '@/utilities/logger'
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import useSWR from 'swr'
 
@@ -22,6 +22,8 @@ export default function Requests() {
     const { showInputModal } = useInputModal()
     const { options: employeeOptions } = useFetchEmployeeOptions()
     const user = useAuthStore((state) => state.user)
+    const [status, setStatus] = useState(DEFAUL_STATUS)
+    const [isLoading, setIsLoading] = useState(false)
     // const [filters, setFilters] = useState({
     //     dateFrom: currentDate,
     //     dateTo: currentDate,
@@ -35,6 +37,7 @@ export default function Requests() {
 
     async function fetchTeamRequests() {
         try {
+            setIsLoading(true)
             const currentFilter = filters.current
             const params = {
                 dateFrom: currentFilter.dateFrom,
@@ -44,10 +47,12 @@ export default function Requests() {
             return result?.data || []
         } catch {
             return []
+        } finally {
+            setIsLoading(false)
         }
     }
 
-    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-requests', user?.userId, filters] : null, fetchTeamRequests)
+    const { data, mutate } = useSWR(user?.userId ? ['team-requests', user?.userId, filters] : null, fetchTeamRequests)
 
     function showReasonForRejectionModal(request) {
         showInputModal({
@@ -96,86 +101,86 @@ export default function Requests() {
         }
     }
 
-    const columns = useMemo(() => [
-        // {
-        //     accessorKey: 'pid',
-        //     header: 'PID',
-        // },
-        {
-            accessorKey: 'name',
-            header: 'Name',
-        },
-        {
-            accessorKey: 'workDate',
-            header: 'Work Date',
-            // type: 'date',
-        },
-        {
-            accessorKey: 'logTime',
-            header: 'LogTime',
-            type: 'time',
-        },
-        {
-            accessorKey: 'amendmentOn',
-            header: 'Amendment On',
-            // type: 'date',
-        },
-        {
-            accessorKey: 'requestedTime',
-            header: 'Requested Time',
-            type: 'time',
-        },
-        {
-            accessorKey: 'comment',
-            header: 'Comment',
-        },
-        {
-            accessorKey: 'status',
-            header: 'Status',
-        },
-        // {
-        //     accessorKey: 'rid',
-        //     header: 'RID',
-        // },
-        {
-            accessorKey: 'reason',
-            header: 'Reason',
-        },
-        {
-            id: 'action',
-            header: 'Action',
-            cell: ({ row }) => {
-                const request = row.original
-                if (request.status === 'For Approval') {
-                    return (
-                        <div className="flex gap-2">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    showReasonForRejectionModal(request)
-                                }}
-                                className="btn-danger py-2! text-xs!"
-                                title="Disapprove request"
-                            >
-                                Disapprove
-                            </button>
-
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleApproveClick(request)
-                                }}
-                                className="btn-primary py-1! text-xs!"
-                                title="Approve request"
-                            >
-                                Approve
-                            </button>
-                        </div>
-                    )
-                }
+    const columns = useMemo(() => {
+        const baseColumns = [
+            {
+                accessorKey: 'name',
+                header: 'Name',
+            },
+            {
+                accessorKey: 'workDate',
+                header: 'Work Date',
+            },
+            {
+                accessorKey: 'logTime',
+                header: 'LogTime',
+                type: 'time',
+            },
+            {
+                accessorKey: 'amendmentOn',
+                header: 'Amendment On',
+            },
+            {
+                accessorKey: 'requestedTime',
+                header: 'Requested Time',
+                type: 'time',
+            },
+            {
+                accessorKey: 'comment',
+                header: 'Comment',
+            },
+            {
+                accessorKey: 'status',
+                header: 'Status',
             }
+        ]
+
+        if (status == 0 || status == 2) { // if status is All or Rejected, add Reason column
+            baseColumns.push({
+                accessorKey: 'reason',
+                header: 'Reason',
+            })
         }
-    ], [])
+
+        if (status == 0 || status == 3) { // if status is All or For Approval, add Action column
+            baseColumns.push({
+                id: 'action',
+                header: 'Action',
+                cell: ({ row }) => {
+                    const request = row.original
+                    if (request.status === 'For Approval') {
+                        return (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        showReasonForRejectionModal(request)
+                                    }}
+                                    className="btn-danger py-2! text-xs!"
+                                    title="Disapprove request"
+                                >
+                                    Disapprove
+                                </button>
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleApproveClick(request)
+                                    }}
+                                    className="btn-primary py-1! text-xs!"
+                                    title="Approve request"
+                                >
+                                    Approve
+                                </button>
+                            </div>
+                        )
+                    }
+                }
+            })
+        }
+
+        return baseColumns
+    }, [status])
 
     async function handleSearch(serverFilters) {
         const mappedFilters = {
@@ -183,6 +188,7 @@ export default function Requests() {
             dateTo: serverFilters.dateTo || currentDate,
             status: serverFilters.status || 3,
         }
+        setStatus(mappedFilters.status)
         filters.current = mappedFilters
         const result = await fetchTeamRequests()
         mutate(result, false)
@@ -220,7 +226,7 @@ export default function Requests() {
                             value: 3, // For Approval
                         }
                     }}
-                    isLoading={isValidating}
+                    isLoading={isLoading}
                     onSearch={handleSearch}
                 />
             </div>

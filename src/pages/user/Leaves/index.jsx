@@ -7,9 +7,10 @@ import SickLeaveList from './components/SickLeaveList'
 import OpenTicketModal from './components/OpenTicketModal'
 import useSWR from 'swr'
 import { ddmmyyyyToIso } from '@/utilities/date-utilities'
-import { ENQUIRY_TYPE_ID_FOR_LEAVE } from '@/constants/database-id'
+import { ENQUIRY_TYPE_ID_FOR_LEAVE, LEAVE_TYPE_OPTION_IDS } from '@/constants/database-id'
 import { useAuthStore } from '@/store'
 import { getAllLeaves } from '@/services/user-service'
+import { toast } from 'react-toastify'
 
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
@@ -28,11 +29,17 @@ export default function Leaves() {
     const [selectedLeave, setSelectedLeave] = useState(null)
 
     function handeLeaveSelect(leave) {
+        if (!LEAVE_TYPE_OPTION_IDS.includes(leave.leaveTypeId)) {
+            toast.error('This leave type is not supported for editing.')
+            setSelectedLeave(null)
+            return
+        }
+
         setSelectedLeave({
             id: leave.leaveId,
             startDate: ddmmyyyyToIso(leave.startDate),
             endDate: ddmmyyyyToIso(leave.endDate),
-            leaveTypeId: 1, //leave.leaveType,
+            leaveTypeId: leave.leaveTypeId,
             approvedBy: leave.approvedBy
         })
     }

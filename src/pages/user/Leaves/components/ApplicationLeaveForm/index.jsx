@@ -3,15 +3,14 @@ import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
-import TypeaheadSelect from '@/components/form/TypeaheadSelect'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'react-toastify'
 import logger from '@/utilities/logger'
-import { useAuthStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
 import { getApprovers, useFetchLeaveTypeOptions } from '@/services/lookups-service'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
-import { updateLeave } from '@/services/user-service'
+import { addLeave, updateLeave } from '@/services/user-service'
+import TypeaheadInput from '@/components/form/TypeaheadInput'
 
 const DEFAULT_FORM_VALUES = {
     id: null,
@@ -26,13 +25,9 @@ function ApplicationLeaveFrom({
     setSelectedLeave,
     onSuccess = () => { }
 }) {
-    const user = useAuthStore((state) => state.user)
     const { showConfirmationModal } = useConfirmationModal()
     const { options: leaveTypeOptions } = useFetchLeaveTypeOptions()
-    const { options: approvedByOptions } = useFetchOptions(getApprovers, {
-        valueKey: 'name',
-        labelKey: 'name',
-    })
+    const { options: approvedByOptions } = useFetchOptions(getApprovers, {}, 'name')
 
     const {
         register,
@@ -73,7 +68,19 @@ function ApplicationLeaveFrom({
         })
     }
 
-    async function handleSave(formData) {
+    async function confirmToProceedUnpaid(formData) {
+        showConfirmationModal({
+            title: selectedLeave ? 'Update Leave (Unpaid)' : 'File a Leave (Unpaid)',
+            message: 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?',
+            confirmText: 'Proceed',
+            cancelText: 'Cancel',
+            onConfirm: () => {
+                handleSave(formData, true)
+            },
+        })
+    }
+
+    async function handleSave(formData, proceedUnpaid = false) {
         try {
             const leaveId = formData.id
             const params = {
@@ -82,13 +89,17 @@ function ApplicationLeaveFrom({
                 leaveTypeId: formData.leaveTypeId,
                 comment: formData.approvedBy,
             }
-            
-            const result = await (leaveId ? updateLeave(leaveId, params) : updateLeave())
+
+            const result = await (leaveId ? updateLeave(leaveId, params, proceedUnpaid) : addLeave(params, proceedUnpaid))
             if (isResultSuccessful(result)) {
                 toast.success(selectedLeave ? 'Leave updated successfully.' : 'Leave filed successfully.')
                 setSelectedLeave(null)
                 reset(DEFAULT_FORM_VALUES)
                 onSuccess()
+            } else {
+                if (result?.message === 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?') {
+                    confirmToProceedUnpaid(formData)
+                }
             }
         } catch (error) {
             toast.error('Failed to save leave. Please try again.')
@@ -151,10 +162,10 @@ function ApplicationLeaveFrom({
                     }}
                 />
 
-                <FormSelect
+                <TypeaheadInput
                     name='approvedBy'
                     label='Approved By'
-                    register={register}
+                    control={control}
                     options={approvedByOptions}
                     error={errors.approvedBy?.message}
                     validation={{

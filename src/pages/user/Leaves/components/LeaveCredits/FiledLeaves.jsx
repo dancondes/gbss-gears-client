@@ -24,7 +24,7 @@ function FiledLeaves({
             header: 'Approved By',
         },
         {
-            accessorKey: 'type',
+            accessorKey: 'leaveTypeDescription',
             header: 'Description',
         }
     ]), [])

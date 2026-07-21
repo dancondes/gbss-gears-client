@@ -6,25 +6,29 @@ import { getTimeEntries } from '@/services/event-service'
 import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useAuthStore, useTabStore } from '@/store'
 import { getCurrentDate } from '@/utilities/date-utilities'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import useSWR from 'swr'
 
 export default function Records() {
     const currentDate = getCurrentDate()
     const user = useAuthStore((state) => state.user)
     const activeTabId = useTabStore((state) => state.activeTabId)
-    const [filters, setFilters] = useState({
-        dateFrom: currentDate,
-        dateTo: currentDate
-    })
+    // const [filters, setFilters] = useState({
+    //     dateFrom: currentDate,
+    //     dateTo: currentDate
+    // })
     const { options: logTypeOptions } = useFetchOptions(getLogTypes, {
         valueKey: 'definition',
         labelKey: 'definition'
     })
+    const filters = useRef({
+        dateFrom: currentDate,
+        dateTo: currentDate
+    })
 
     async function fetchTeamRecords() {
         try {
-            const result = await getTimeEntries(filters)
+            const result = await getTimeEntries(filters.current)
             return result?.data?.map(log => ({
                 ...log,
                 name: `${log?.firstname} ${log?.lastname}`,
@@ -34,7 +38,7 @@ export default function Records() {
         }
     }
 
-    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchTeamRecords)
+    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters.current] : null, fetchTeamRecords)
     const { options: employeeOptions } = useFetchEmployeeOptions()
 
     useEffect(() => {
@@ -72,8 +76,9 @@ export default function Records() {
             dateFrom: serverFilters.dateFrom || currentDate,
             dateTo: serverFilters.dateTo || currentDate,
         }
-
-        setFilters(mappedFilters)
+        filters.current = mappedFilters
+        const result = await fetchTeamRecords()
+        mutate(result, false)
     }
 
     return (

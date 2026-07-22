@@ -6,19 +6,17 @@ import logger from '@/utilities/logger'
 import { triggerEvacuation } from '@/services/event-service'
 
 const DEFAULT_SITES = [
-    { id: '20F Three NEO', label: '20F Three NEO' },
-    { id: '7F Floor PhilPlans Corporate Center', label: '7F Floor PhilPlans Corporate Center' },
+    { id: 'Three NEO', label: '20F Three NEO' },
+    { id: 'PhilPlans', label: '7F Floor PhilPlans Corporate Center' },
 ]
 
 const EvacuationButton = () => {
     const [isOpen, setIsOpen] = useState(false)
 
-    async function handleSend(selectedLocations) {
+    async function handleSend(location) {
         try {
-            for (const location of selectedLocations) {
-                await triggerEvacuation(location)
-                toast.success(`Evacuation triggered for ${location}`)
-            }
+            await triggerEvacuation(location)
+            toast.success(`Evacuation triggered for ${location}`)
         } catch (error) {
             toast.error('Failed to trigger evacuation. Please try again.')
             logger.error('Evacuation trigger failed:', error)

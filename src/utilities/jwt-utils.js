@@ -101,3 +101,7 @@ export function getTimeUntilExpiration(token) {
 export function getPIN(token) {
     return decodeJWT(token)?.PNo || null
 }
+
+export function canUserTriggerEvacuation(token) {
+    return decodeJWT(token)?.hasEvacButton || false
+}

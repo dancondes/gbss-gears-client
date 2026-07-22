@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
@@ -29,6 +29,7 @@ function ApplicationLeaveFrom({
     setSelectedLeave,
     onSuccess = () => { }
 }) {
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const { showConfirmationModal } = useConfirmationModal()
     const { showMessageModal } = useMessageModal()
     const { options: leaveTypeOptions } = useFetchLeaveTypeOptions()
@@ -89,6 +90,7 @@ function ApplicationLeaveFrom({
 
     async function handleSave(formData, proceedUnpaid = false) {
         try {
+            setIsSubmitting(true)
             const leaveId = formData.id
             const params = {
                 startDate: formData.dateFrom,
@@ -105,11 +107,11 @@ function ApplicationLeaveFrom({
                 onSuccess()
             } else if (result?.message === 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?') {
                 confirmToProceedUnpaid(formData)
-            // } else if (result?.message === 'Invalid Holiday Leave: The selected dates do not include an official holiday.') {
-            //     showMessageModal('The selected dates do not include an official holiday.', {
-            //         type: 'info',
-            //         title: 'Invalid Holiday Leave',
-            //     })
+                // } else if (result?.message === 'Invalid Holiday Leave: The selected dates do not include an official holiday.') {
+                //     showMessageModal('The selected dates do not include an official holiday.', {
+                //         type: 'info',
+                //         title: 'Invalid Holiday Leave',
+                //     })
             } else {
                 showMessageModal(result?.message || 'An error occurred.', {
                     type: 'info',
@@ -119,6 +121,8 @@ function ApplicationLeaveFrom({
         } catch (error) {
             toast.error('Failed to save leave. Please try again.')
             logger.error('Failed to save leave:', error)
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -143,6 +147,7 @@ function ApplicationLeaveFrom({
 
     async function confirmDeleteLeave(leaveId) {
         try {
+            setIsSubmitting(true)
             const result = await deleteLeave(leaveId)
 
             if (isResultSuccessful(result)) {
@@ -157,6 +162,8 @@ function ApplicationLeaveFrom({
         } catch (error) {
             toast.error('Failed to delete leave. Please try again.')
             logger.error('Failed to delete leave:', error)
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -169,95 +176,97 @@ function ApplicationLeaveFrom({
                 {selectedLeave ? 'Edit an Existing Leave' : 'Plot a New Leave'}
             </p>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <FormInput
-                        name='dateFrom'
-                        label='Date From'
-                        type='date'
+            <fieldset disabled={isSubmitting}>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <FormInput
+                            name='dateFrom'
+                            label='Date From'
+                            type='date'
+                            register={register}
+                            error={errors.dateFrom?.message}
+                            validation={{
+                                required: 'Date From is required',
+                                validate: (value) => {
+
+                                    if (value && value <= currentDate) {
+                                        return 'Future date required — past or current dates aren\'t allowed'
+                                    }
+                                },
+                                onChange: (e) => {
+                                    const dateFrom = e.target.value
+                                    const dateTo = getValues('dateTo')
+
+                                    if (!dateTo || dateFrom > dateTo) {
+                                        setValue('dateTo', dateFrom)
+                                    }
+                                }
+                            }}
+                            className="mb-0!"
+                        />
+
+                        <FormInput
+                            name='dateTo'
+                            label='Date To'
+                            type='date'
+                            register={register}
+                            error={errors.dateTo?.message}
+                            validation={{
+                                required: 'Date To is required'
+                            }}
+                            className="mb-0!"
+                        />
+                    </div>
+
+                    <FormSelect
+                        name='leaveTypeId'
+                        label='Leave Type'
                         register={register}
-                        error={errors.dateFrom?.message}
+                        options={leaveTypeOptions}
+                        error={errors.leaveTypeId?.message}
                         validation={{
-                            required: 'Date From is required',
-                            validate: (value) => {
-
-                                if (value && value <= currentDate) {
-                                    return 'Future date required — past or current dates aren\'t allowed'
-                                }
-                            },
-                            onChange: (e) => {
-                                const dateFrom = e.target.value
-                                const dateTo = getValues('dateTo')
-
-                                if (!dateTo || dateFrom > dateTo) {
-                                    setValue('dateTo', dateFrom)
-                                }
-                            }
+                            required: 'Leave Type is required'
                         }}
-                        className="mb-0!"
                     />
 
-                    <FormInput
-                        name='dateTo'
-                        label='Date To'
-                        type='date'
-                        register={register}
-                        error={errors.dateTo?.message}
+                    <TypeaheadInput
+                        name='approvedBy'
+                        label='Approved By'
+                        control={control}
+                        options={approvedByOptions}
+                        error={errors.approvedBy?.message}
                         validation={{
-                            required: 'Date To is required'
+                            required: 'Approved By is required'
                         }}
-                        className="mb-0!"
                     />
-                </div>
 
-                <FormSelect
-                    name='leaveTypeId'
-                    label='Leave Type'
-                    register={register}
-                    options={leaveTypeOptions}
-                    error={errors.leaveTypeId?.message}
-                    validation={{
-                        required: 'Leave Type is required'
-                    }}
-                />
-
-                <TypeaheadInput
-                    name='approvedBy'
-                    label='Approved By'
-                    control={control}
-                    options={approvedByOptions}
-                    error={errors.approvedBy?.message}
-                    validation={{
-                        required: 'Approved By is required'
-                    }}
-                />
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-end gap-2 mt-4">
-                    <button
-                        type="button"
-                        onClick={selectedLeave ? handleCancel : handleReset}
-                        className="btn-white py-1.5! px-4!"
-                    >
-                        {selectedLeave ? 'Cancel' : 'Reset'}
-                    </button>
-                    {selectedLeave && (
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end gap-2 mt-4">
                         <button
                             type="button"
-                            onClick={handleDelete}
-                            className="btn-danger py-1.5! px-4!"
+                            onClick={selectedLeave ? handleCancel : handleReset}
+                            className="btn-white py-1.5! px-4!"
                         >
-                            Delete
+                            {selectedLeave ? 'Cancel' : 'Reset'}
                         </button>
-                    )}
-                    <button
-                        type="submit"
-                        className="btn-primary py-1.5! px-4!"
-                    >
-                        Save
-                    </button>
-                </div>
-            </form>
+                        {selectedLeave && (
+                            <button
+                                type="button"
+                                onClick={handleDelete}
+                                className="btn-danger py-1.5! px-4!"
+                            >
+                                Delete
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            className="btn-primary py-1.5! px-4!"
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Save'}
+                        </button>
+                    </div>
+                </form>
+            </fieldset>
         </div>
     )
 }

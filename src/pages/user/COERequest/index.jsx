@@ -83,7 +83,7 @@ function COERequests({
             isOpen={isOpen}
             onClose={handleClose}
             title="COE Request"
-            size="md"
+            size="sm"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <FormSelect

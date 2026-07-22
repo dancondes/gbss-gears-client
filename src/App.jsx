@@ -26,10 +26,10 @@ const App = () => {
                 closeButton
                 toastOptions={{
                     classNames: {
-                        error: '!ring-2 !ring-red-600 !text-red-600',
-                        success: '!ring-2 !ring-primary !text-primary',
-                        warning: '!ring-2 !ring-yellow-600 !text-yellow-600',
-                        info: '!ring-2 !ring-blue-600 !text-blue-600',
+                        error: '!ring-1 !ring-red-600 !text-red-600',
+                        success: '!ring-1 !ring-primary !text-primary',
+                        warning: '!ring-1 !ring-yellow-600 !text-yellow-600',
+                        info: '!ring-1 !ring-blue-600 !text-blue-600',
                         closeButton: '!bg-white !border-gray-300 !text-gray-700',
                     },
                 }}

@@ -22,33 +22,41 @@ const App = () => {
     return (
         <MessageModalProvider>
             <Toaster
-                duration={4000}
-                // richColors
+                duration={5000}
                 closeButton
+                toastOptions={{
+                    classNames: {
+                        error: '!ring-2 !ring-red-600 !text-red-600',
+                        success: '!ring-2 !ring-primary !text-primary',
+                        warning: '!ring-2 !ring-yellow-600 !text-yellow-600',
+                        info: '!ring-2 !ring-blue-600 !text-blue-600',
+                        closeButton: '!bg-white !border-gray-300 !text-gray-700',
+                    },
+                }}
             />
-            <SWRConfig value={{ ...swrConfig, fetcher: defaultFetcher }}>
-                <ErrorBoundary>
-                    <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                            {/* Routes without Layout */}
-                            <Route path="/login" element={<Login />} />
-                            {/* <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <SWRConfig value={{ ...swrConfig, fetcher: defaultFetcher }}>
+                        <ErrorBoundary>
+                            <Suspense fallback={<PageLoader />}>
+                                <Routes>
+                                    {/* Routes without Layout */}
+                                    <Route path="/login" element={<Login />} />
+                                    {/* <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password" element={<ResetPassword />} />
                             <Route path="/reset-password/:encryptedEmail" element={<ResetPassword />} /> */}
-                            <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
+                                    <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
 
-                            <Route
-                                path="*"
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout />
-                                    </ProtectedRoute>
-                                }
-                            />
-                        </Routes>
-                    </Suspense>
-                </ErrorBoundary>
-            </SWRConfig>
+                                    <Route
+                                        path="*"
+                                        element={
+                                            <ProtectedRoute>
+                                                <Layout />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                </Routes>
+                            </Suspense>
+                        </ErrorBoundary>
+                    </SWRConfig>
         </MessageModalProvider>
     )
 }

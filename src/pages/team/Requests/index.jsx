@@ -11,7 +11,7 @@ import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import logger from '@/utilities/logger'
 import React, { useMemo, useRef, useState } from 'react'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import useSWR from 'swr'
 
 const currentDate = getCurrentDate()

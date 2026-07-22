@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { getFile } from '@/services/file-service'
 import { downloadFile } from '@/utilities/file-utilities'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 
 function useDownloadFileButton(options = {}) {

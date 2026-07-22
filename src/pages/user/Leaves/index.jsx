@@ -6,11 +6,13 @@ import VacationLeaveList from './components/VacationLeaveList'
 import SickLeaveList from './components/SickLeaveList'
 import OpenTicketModal from './components/OpenTicketModal'
 import useSWR from 'swr'
-import { ddmmyyyyToIso } from '@/utilities/date-utilities'
+import { ddmmyyyyToIso, getCurrentDate } from '@/utilities/date-utilities'
 import { ENQUIRY_TYPE_ID_FOR_LEAVE, LEAVE_TYPE_OPTION_IDS } from '@/constants/database-id'
 import { useAuthStore } from '@/store'
 import { getAllLeaves } from '@/services/user-service'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
+
+const currentDate = getCurrentDate()
 
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
@@ -29,8 +31,14 @@ export default function Leaves() {
     const [selectedLeave, setSelectedLeave] = useState(null)
 
     function handeLeaveSelect(leave) {
+        if (currentDate >= ddmmyyyyToIso(leave.startDate) || currentDate >= ddmmyyyyToIso(leave.endDate)) {
+            toast.error("You can't edit a leave request from a past or current date. Please submit a support ticket for assistance.")
+            setSelectedLeave(null)
+            return
+        }
+
         if (!LEAVE_TYPE_OPTION_IDS.includes(leave.leaveTypeId)) {
-            toast.error('This leave type is not supported for editing.')
+            toast.error('This leave type is not supported for editing. Please submit a support ticket for assistance.')
             setSelectedLeave(null)
             return
         }

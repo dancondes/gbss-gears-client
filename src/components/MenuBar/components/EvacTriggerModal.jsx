@@ -22,7 +22,11 @@ const EvacTriggerModal = ({ isOpen, onClose, sites, onSend }) => {
         if (selectedSites.length === 0 || isSending) return
         setIsSending(true)
         try {
-            await onSend(selectedSites)
+            if (selectedSites.length === 2) {
+                await onSend('All')
+            } else if (selectedSites.length === 1) {
+                await onSend(selectedSites[0])
+            }
             setSelectedSites([])
             onClose()
         } finally {

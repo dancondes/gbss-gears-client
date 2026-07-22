@@ -22,6 +22,9 @@ export const ROUTES = {
         // Time Amendment
         CREATE_TIME_AMENDMENT: '/Event/time-amend/create',
         TIME_AMEND_APPROVAL: (id, status) => `/Event/time-amend/approval/${id}/${status}`,
+
+        // Evacuation
+        TRIGGER_EVACUATION: (location) => `/Event/trigger-evacuation/${location}`,
     },
     FILE: {
         DOWNLOAD: (path) => `/File/download?blobName=${encodeURIComponent(path)}`,
@@ -59,6 +62,7 @@ export const ROUTES = {
         ADD_UNPAID_LEAVE: '/User/leave/add/proceedUnpaid',
         UPDATE_LEAVE: (id) => `/User/leave/${id}/update`,
         UPDATE_UNPAID_LEAVE: (id) => `/User/leave/${id}/update/proceedUnpaid`,
+        DELETE_LEAVE: (id) => `/User/leave/${id}/delete`,
 
         // Teams
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,

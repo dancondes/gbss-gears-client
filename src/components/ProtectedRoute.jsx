@@ -6,7 +6,7 @@ import { getUserById } from '@/services/user-service'
 import { getTimeUntilExpiration, getUserIdFromToken, isTokenExpired, shouldRefreshToken } from '@/utilities/jwt-utils'
 import Spinner from './Spinner'
 import SessionExpiredModal from './modals/SessionExpiredModal'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 import { useRefreshToken } from '@/hooks/use-refresh-token'
 

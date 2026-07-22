@@ -14,48 +14,49 @@ const PageLoader = () => <Spinner />
 // Auth pages - not lazy loaded for faster initial access
 import Login from '@/pages/auth/Login'
 import ViewDocumentPage from './pages/other/ViewDocumentPage'
-import { ToastContainer } from 'react-toastify'
+import { Toaster } from 'sonner'
 // import ResetPassword from '@/pages/auth/ResetPassword'
 // import ForgotPassword from '@/pages/auth/ForgotPassword'
 
 const App = () => {
     return (
         <MessageModalProvider>
-            <ToastContainer
-                position="bottom-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
+            <Toaster
+                duration={5000}
+                closeButton
+                toastOptions={{
+                    classNames: {
+                        error: '!ring-1 !ring-red-600 !text-red-600',
+                        success: '!ring-1 !ring-primary !text-primary',
+                        warning: '!ring-1 !ring-yellow-600 !text-yellow-600',
+                        info: '!ring-1 !ring-blue-600 !text-blue-600',
+                        closeButton: '!bg-white !border-gray-300 !text-gray-700',
+                    },
+                }}
             />
-            <SWRConfig value={{ ...swrConfig, fetcher: defaultFetcher }}>
-                <ErrorBoundary>
-                    <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                            {/* Routes without Layout */}
-                            <Route path="/login" element={<Login />} />
-                            {/* <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <SWRConfig value={{ ...swrConfig, fetcher: defaultFetcher }}>
+                        <ErrorBoundary>
+                            <Suspense fallback={<PageLoader />}>
+                                <Routes>
+                                    {/* Routes without Layout */}
+                                    <Route path="/login" element={<Login />} />
+                                    {/* <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password" element={<ResetPassword />} />
                             <Route path="/reset-password/:encryptedEmail" element={<ResetPassword />} /> */}
-                            <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
+                                    <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
 
-                            <Route
-                                path="*"
-                                element={
-                                    <ProtectedRoute>
-                                        <Layout />
-                                    </ProtectedRoute>
-                                }
-                            />
-                        </Routes>
-                    </Suspense>
-                </ErrorBoundary>
-            </SWRConfig>
+                                    <Route
+                                        path="*"
+                                        element={
+                                            <ProtectedRoute>
+                                                <Layout />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                </Routes>
+                            </Suspense>
+                        </ErrorBoundary>
+                    </SWRConfig>
         </MessageModalProvider>
     )
 }

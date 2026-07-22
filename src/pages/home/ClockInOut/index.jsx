@@ -14,7 +14,7 @@ import logger from '@/utilities/logger'
 import { useAuthStore } from '@/store'
 import LocationModal from './components/LocationModal'
 import { createTimeEntry, getTimeEntriesById } from '@/services/event-service'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import OvertimeConfirmation from './components/OvertimeConfirmation'
@@ -38,6 +38,7 @@ function ClockInOut() {
     const [isSubmitting, setIsSubmitting] = useState(null)
     const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false)
     const [isFetchingEntries, setIsFetchingEntries] = useState(false)
+    const isAlertActiveRef = useRef(false)
 
     // Start
     const [checkInTime, setCheckInTime] = useState(null)
@@ -151,6 +152,9 @@ function ClockInOut() {
     const alertAudioRef = useRef(null)
 
     function playAlertSound() {
+        if (isAlertActiveRef.current) return // already alerting, ignore duplicate call
+        isAlertActiveRef.current = true
+
         const audio = new Audio(LunchOverSound)
         alertAudioRef.current = audio
         audio.play().catch((err) => logger.error('Audio playback blocked:', err))
@@ -161,6 +165,7 @@ function ClockInOut() {
                 alertAudioRef.current.currentTime = 0
                 alertAudioRef.current = null
             }
+            isAlertActiveRef.current = false
         }
 
         showConfirmationModal({

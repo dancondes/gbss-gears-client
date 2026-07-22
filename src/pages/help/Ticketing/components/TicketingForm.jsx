@@ -9,7 +9,7 @@ import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { createTicket, createTimeAmendment, getTimeEntriesById } from '@/services/event-service'
 import { getEnquiryTypes, getLogTypes } from '@/services/lookups-service'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useNotificationStore } from '@/store'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-utilities'
 // import { createTicket } from '@/services/ticketing-service'
@@ -17,15 +17,17 @@ import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 
-const DEFAULT_FORM_VALUES = {
-    ticketType: '',
-    description: '',
-    amendDate: getCurrentDate(),
-    amendTime: getCurrentTime(true),
-    amendType: '',
-    location: ''
+function generateDefaultValues() {
+    return {
+        ticketType: '',
+        description: '',
+        amendDate: getCurrentDate(),
+        amendTime: getCurrentTime(true),
+        amendType: '',
+        location: ''
+    }
 }
 
 export default function TicketingForm({
@@ -42,9 +44,9 @@ export default function TicketingForm({
         // setError,
     } = useForm({
         defaultValues: defaultValues ? {
-            ...DEFAULT_FORM_VALUES,
+            ...generateDefaultValues(),
             ...defaultValues,
-        } : DEFAULT_FORM_VALUES,
+        } : generateDefaultValues(),
     })
     const { showConfirmationModal } = useConfirmationModal()
     const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes, {
@@ -62,6 +64,7 @@ export default function TicketingForm({
     const isTimeAmendment = watchedTicketType == TIME_AMENDMENT_ENQUIRY_TYPE_ID
     const isCheckInLogType = isTimeAmendment && watchedLogType == 'I'
     const user = useAuthStore(state => state.user)
+    const addNotification = useNotificationStore((state) => state.addNotification)
 
     // States
     const [filesToUpload, setFilesToUpload] = useState([])
@@ -70,9 +73,9 @@ export default function TicketingForm({
 
     useEffect(() => {
         reset(defaultValues ? {
-            ...DEFAULT_FORM_VALUES,
+            ...generateDefaultValues(),
             ...defaultValues,
-        } : DEFAULT_FORM_VALUES)
+        } : generateDefaultValues())
     }, [typeOptions])
 
     useEffect(() => {
@@ -102,10 +105,18 @@ export default function TicketingForm({
         })
     }
 
+    function handleReset() {
+        reset(generateDefaultValues())
+        setFilesToUpload([])
+        setUploading(false)
+        onCancel?.()
+    }
+
     async function handleSave(data) {
         function formatDateTimeForAPI(date, time) {
             return `${date}T${time}`
         }
+        const optionSelected = typeOptions.find(option => option.value == data.ticketType)
         try {
             setUploading(true)
             const params = isTimeAmendment ? {
@@ -121,37 +132,38 @@ export default function TicketingForm({
 
             if (isTimeAmendment) {
                 const existingEntry = timeEntries.find(entry => entry.logTypeCode === data.amendType)
-                // if (!existingEntry) {
-                //     setError('amendType', {
-                //         type: 'manual',
-                //         message: `No existing time entry found for this log type on ${formatDate(data.amendDate)}. Please check your entries and try again.`
-                //     })
-                //     return
-                // }
-
                 params.logTime = existingEntry ? formatDateTimeForAPI(data.amendDate, to24HourTime(existingEntry.worktime)) : null
             }
+
+            // auto close the form after successful submission
+            toast.success('Submitting ticket. Don\'t refresh or close the page until you see a success message.')
+            handleReset()
 
             const result = await (isTimeAmendment ? createTimeAmendment(params, filesToUpload) : createTicket(params, filesToUpload))
 
             if (result == 'New ticket has been added to the system!' || isResultSuccessful(result)) {
-                toast.success('Ticket submitted successfully!')
-                reset({
-                    ticketType: '',
-                    description: '',
-                    amendDate: getCurrentDate(),
-                    amendTime: getCurrentTime(true),
-                    amendType: '',
-                    location: ''
+                addNotification({
+                    type: 'success',
+                    title: 'Ticket Submitted',
+                    message: `Your${optionSelected ? ' ' + optionSelected?.label : ''} ticket has been submitted successfully.`,
+                    showToast: true,
                 })
-                setFilesToUpload([]) // Clear the file dropzone
-                if (onCancel) onCancel() // Close the form after successful submission
             } else {
-                toast.error('Failed to submit ticket. Please try again later.')
+                addNotification({
+                    type: 'error',
+                    title: 'Ticket Submission Failed',
+                    message: `An error occurred while submitting your${optionSelected ? ' ' + optionSelected?.label : ''} ticket. Please try again later.`,
+                    showToast: true,
+                })
                 logger.error('Error submitting ticket:', result)
             }
         } catch (error) {
-            toast.error('Failed to submit ticket. Please try again later.')
+            addNotification({
+                type: 'error',
+                title: 'Ticket Submission Failed',
+                message: `An error occurred while submitting your${optionSelected ? ' ' + optionSelected?.label : ''} ticket. Please try again later.`,
+                showToast: true,
+            })
             logger.error('Error submitting ticket:', error)
         } finally {
             setUploading(false)

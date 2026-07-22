@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useContext } from 'react'
-import { useAuthStore, useFormsMenuStore } from '@/store'
+import React, { useState, useCallback, useContext, useRef, useEffect } from 'react'
+import { useAuthStore, useFormsMenuStore, useNotificationStore } from '@/store'
 import { gbss_logo_white } from '@/assets/images'
 import NavbarNotifications from '../NavbarNotifications'
 import NavbarUserProfile from '../NavbarUserProfile'
@@ -25,6 +25,45 @@ function MenuBar() {
     const { navigate: navigateTo } = useTabNavigation()
     const canViewTeams = useAuthStore((state) => state.canViewTeams)
     const canViewIT = useAuthStore((state) => state.canViewIT)
+
+    const [notificationOpen, setNotificationOpen] = useState(false)
+
+    const [isBellShaking, setIsBellShaking] = useState(false)
+    const [justOpenedNotificationIds, setJustOpenedNotificationIds] = useState([])
+    const previousLatestNotificationIdRef = useRef(null)
+    const notifications = useNotificationStore(function (state) { return state.notifications })
+    const unreadCount = useNotificationStore(function (state) { return state.unreadCount })
+    const markAllAsRead = useNotificationStore(function (state) { return state.markAllAsRead })
+    const clearNotifications = useNotificationStore(function (state) { return state.clearNotifications })
+
+
+    useEffect(function () {
+        if (!Array.isArray(notifications) || notifications.length === 0) {
+            previousLatestNotificationIdRef.current = null
+            return
+        }
+
+        const latestNotificationId = notifications[0].id
+
+        if (!previousLatestNotificationIdRef.current) {
+            previousLatestNotificationIdRef.current = latestNotificationId
+            return
+        }
+
+        if (previousLatestNotificationIdRef.current !== latestNotificationId) {
+            previousLatestNotificationIdRef.current = latestNotificationId
+            setIsBellShaking(true)
+
+            const timerId = window.setTimeout(function () {
+                setIsBellShaking(false)
+            }, 650)
+
+            return function () {
+                window.clearTimeout(timerId)
+            }
+        }
+    }, [notifications])
+
 
     const handleToggle = useCallback(function (index) {
         setOpenIndex(function (prev) {
@@ -79,6 +118,71 @@ function MenuBar() {
         })
     }
 
+    // notifs
+    function handleNotificationToggle() {
+        setUserMenuOpen(false)
+
+        setNotificationOpen(function (previousValue) {
+            const nextValue = !previousValue
+
+            if (nextValue) {
+                const unreadNotificationIds = notifications
+                    .filter(function (notification) { return !notification.isRead })
+                    .map(function (notification) { return notification.id })
+
+                setJustOpenedNotificationIds(unreadNotificationIds)
+                markAllAsRead()
+            } else {
+                setJustOpenedNotificationIds([])
+            }
+
+            return nextValue
+        })
+    }
+
+    function handleNotificationClose() {
+        setNotificationOpen(false)
+        setJustOpenedNotificationIds([])
+    }
+
+    function handleClearNotifications() {
+        clearNotifications()
+    }
+
+    function getNotificationAccentClass(type) {
+        if (type === 'success') {
+            return 'bg-secondary'
+        }
+
+        if (type === 'warn') {
+            return 'bg-warning'
+        }
+
+        if (type === 'error') {
+            return 'bg-danger'
+        }
+
+        return 'bg-primary'
+    }
+
+    function formatNotificationTimestamp(timestamp) {
+        if (!timestamp) {
+            return ''
+        }
+
+        const parsedDate = new Date(timestamp)
+        if (Number.isNaN(parsedDate.getTime())) {
+            return ''
+        }
+
+        return parsedDate.toLocaleString([], {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        })
+    }
+
     if (!menuItems || menuItems.length === 0) return null
 
     return (
@@ -107,16 +211,16 @@ function MenuBar() {
                     <div className="flex items-center gap-2">
 
                         <NavbarNotifications
-                        // notificationOpen={notificationOpen}
-                        // onNotificationToggle={handleNotificationToggle}
-                        // onNotificationClose={handleNotificationClose}
-                        // isBellShaking={isBellShaking}
-                        // unreadCount={unreadCount}
-                        // notifications={notifications}
-                        // onClearNotifications={handleClearNotifications}
-                        // justOpenedNotificationIds={justOpenedNotificationIds}
-                        // getNotificationAccentClass={getNotificationAccentClass}
-                        // formatNotificationTimestamp={formatNotificationTimestamp}
+                            notificationOpen={notificationOpen}
+                            onNotificationToggle={handleNotificationToggle}
+                            onNotificationClose={handleNotificationClose}
+                            isBellShaking={isBellShaking}
+                            unreadCount={unreadCount}
+                            notifications={notifications}
+                            onClearNotifications={handleClearNotifications}
+                            justOpenedNotificationIds={justOpenedNotificationIds}
+                            getNotificationAccentClass={getNotificationAccentClass}
+                            formatNotificationTimestamp={formatNotificationTimestamp}
                         />
 
                         <NavbarUserProfile
@@ -134,13 +238,13 @@ function MenuBar() {
             <div className="flex gap-10 justify-between px-2 py-1 border-b border-gray-200 bg-white">
                 <div className='flex items-center gap-0.5'>
                     {menuItems.map(function (item, index) {
-                    if (item.name === 'Team' && !canViewTeams()) {
-                        return null
-                    }
+                        if (item.name === 'Team' && !canViewTeams()) {
+                            return null
+                        }
 
-                    if (item.name === 'IT' && !canViewIT()) {
-                        return null
-                    }
+                        if (item.name === 'IT' && !canViewIT()) {
+                            return null
+                        }
 
                         return (
                             <MenuBarItem

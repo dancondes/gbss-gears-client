@@ -142,22 +142,33 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Success */
-.Toastify__progress-bar--success,
-.Toastify__progress-bar--bg.Toastify__progress-bar--success {
-    background: var(--primary) !important;
+@keyframes notificationBellShake {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    20% {
+        transform: rotate(15deg);
+    }
+
+    40% {
+        transform: rotate(-12deg);
+    }
+
+    60% {
+        transform: rotate(10deg);
+    }
+
+    80% {
+        transform: rotate(-8deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
 }
 
-.Toastify__toast--success .Toastify__toast-icon svg {
-    fill: var(--primary);
-}
-
-/* Error */
-.Toastify__progress-bar--error,
-.Toastify__progress-bar--bg.Toastify__progress-bar--error {
-    background: var(--danger);
-}
-
-.Toastify__toast--error .Toastify__toast-icon svg {
-    fill: var(--danger);
+.animate-notificationBellShake {
+    animation: notificationBellShake 0.65s ease-in-out;
+    transform-origin: top center;
 }

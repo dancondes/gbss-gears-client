@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { toast } from 'sonner'
 import { downloadFile } from '@/utilities/file-utilities'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useNotificationStore } from '@/store'
 import { getCOE } from '@/services/user-service'
 
 const FORMAT_OPTIONS = [
@@ -21,6 +21,7 @@ function COERequests({
 
     const { showConfirmationModal } = useConfirmationModal()
     const user = useAuthStore((state) => state.user)
+    const addNotification = useNotificationStore((state) => state.addNotification)
 
     const {
         register,
@@ -60,7 +61,13 @@ function COERequests({
             const response = await getCOE(data.format)
             const filename = `Certificate of Employment${data.format == 1 ? '' : ' with Compensation'} - ${generateNameForFilename(user?.employeeInfo)}.pdf`
             downloadFile(response, filename)
-            toast.success('COE request successful. The file has been downloaded.')
+            addNotification({
+                type: 'success',
+                title: `COE${data.format == 1 ? '' : ' with Compensation'}`,
+                message: `COE for ${user?.employeeInfo ? `${user?.employeeInfo.firstname} ${user?.employeeInfo.lastname}` : 'the employee'} has been downloaded. Check your downloads folder.`,
+                showToast: true,
+            })
+            // toast.success('COE request successful. The file has been downloaded.')
 
         } catch (error) {
             toast.error(error.message || 'An error occurred while processing your request. Please try again later.')

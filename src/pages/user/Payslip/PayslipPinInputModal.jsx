@@ -61,7 +61,7 @@ function PayslipPinInputModal({
             isOpen={isOpen}
             onClose={handleClose}
             title="View Payslip"
-            size="md"
+            size="sm"
             showCloseButton={showCloseButton}
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -72,6 +72,8 @@ function PayslipPinInputModal({
                     register={register}
                     validation={{ required: 'Please enter your PIN' }}
                     error={errors.pin?.message}
+                    inputClassName="tracking-[0.5em]"
+                    maxLength={4}
                     autoFocus
                 />
 

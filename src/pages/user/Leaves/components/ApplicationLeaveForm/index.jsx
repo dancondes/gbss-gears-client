@@ -11,6 +11,8 @@ import { getApprovers, useFetchLeaveTypeOptions } from '@/services/lookups-servi
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { addLeave, updateLeave } from '@/services/user-service'
 import TypeaheadInput from '@/components/form/TypeaheadInput'
+import { getCurrentDate } from '@/utilities/date-utilities'
+import useMessageModal from '@/hooks/use-message-modal'
 
 const DEFAULT_FORM_VALUES = {
     id: null,
@@ -20,12 +22,15 @@ const DEFAULT_FORM_VALUES = {
     approvedBy: ''
 }
 
+const currentDate = getCurrentDate()
+
 function ApplicationLeaveFrom({
     selectedLeave = null,
     setSelectedLeave,
     onSuccess = () => { }
 }) {
     const { showConfirmationModal } = useConfirmationModal()
+    const { showMessageModal } = useMessageModal()
     const { options: leaveTypeOptions } = useFetchLeaveTypeOptions()
     const { options: approvedByOptions } = useFetchOptions(getApprovers, {}, 'name')
 
@@ -34,7 +39,9 @@ function ApplicationLeaveFrom({
         formState: { errors },
         handleSubmit,
         control,
-        reset
+        reset,
+        getValues,
+        setValue
     } = useForm({
         defaultValues: DEFAULT_FORM_VALUES,
         mode: 'onBlur',
@@ -96,10 +103,18 @@ function ApplicationLeaveFrom({
                 setSelectedLeave(null)
                 reset(DEFAULT_FORM_VALUES)
                 onSuccess()
+            } else if (result?.message === 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?') {
+                confirmToProceedUnpaid(formData)
+            // } else if (result?.message === 'Invalid Holiday Leave: The selected dates do not include an official holiday.') {
+            //     showMessageModal('The selected dates do not include an official holiday.', {
+            //         type: 'info',
+            //         title: 'Invalid Holiday Leave',
+            //     })
             } else {
-                if (result?.message === 'No enough leave credits available. The selected leave will be recorded as Unpaid Leave. Do you want to proceed?') {
-                    confirmToProceedUnpaid(formData)
-                }
+                showMessageModal(result?.message || 'An error occurred.', {
+                    type: 'info',
+                    title: 'Unable to Save'
+                })
             }
         } catch (error) {
             toast.error('Failed to save leave. Please try again.')
@@ -133,7 +148,21 @@ function ApplicationLeaveFrom({
                         register={register}
                         error={errors.dateFrom?.message}
                         validation={{
-                            required: 'Date From is required'
+                            required: 'Date From is required',
+                            validate: (value) => {
+
+                                if (value && value <= currentDate) {
+                                    return 'Future date required — past or current dates aren\'t allowed'
+                                }
+                            },
+                            onChange: (e) => {
+                                const dateFrom = e.target.value
+                                const dateTo = getValues('dateTo')
+
+                                if (!dateTo || dateFrom > dateTo) {
+                                    setValue('dateTo', dateFrom)
+                                }
+                            }
                         }}
                         className="mb-0!"
                     />
@@ -143,9 +172,9 @@ function ApplicationLeaveFrom({
                         label='Date To'
                         type='date'
                         register={register}
-                        error={errors.dateFrom?.message}
+                        error={errors.dateTo?.message}
                         validation={{
-                            required: 'Date From is required'
+                            required: 'Date To is required'
                         }}
                         className="mb-0!"
                     />

@@ -62,6 +62,7 @@ export const ROUTES = {
         ADD_UNPAID_LEAVE: '/User/leave/add/proceedUnpaid',
         UPDATE_LEAVE: (id) => `/User/leave/${id}/update`,
         UPDATE_UNPAID_LEAVE: (id) => `/User/leave/${id}/update/proceedUnpaid`,
+        DELETE_LEAVE: (id) => `/User/leave/${id}/delete`,
 
         // Teams
         TEAM_REQUESTS: (status) => `/User/team-requests/${status}`,

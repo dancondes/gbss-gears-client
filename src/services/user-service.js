@@ -1,5 +1,5 @@
 import { ROUTES } from '@/constants/routes'
-import { get, put, post } from '@/utilities/api'
+import { get, put, post, del } from '@/utilities/api'
 
 
 export const getAllUsers = () => {
@@ -84,4 +84,8 @@ export function updateLeave(id, data, proceedUnpaid = false) {
     }
 
     return put(ROUTES.USERS.UPDATE_LEAVE(id), data)
+}
+
+export function deleteLeave(id) {
+    return del(ROUTES.USERS.DELETE_LEAVE(id))
 }

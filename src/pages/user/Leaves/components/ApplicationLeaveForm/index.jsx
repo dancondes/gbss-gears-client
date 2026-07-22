@@ -9,7 +9,7 @@ import logger from '@/utilities/logger'
 import { isResultSuccessful } from '@/utilities'
 import { getApprovers, useFetchLeaveTypeOptions } from '@/services/lookups-service'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
-import { addLeave, updateLeave } from '@/services/user-service'
+import { addLeave, deleteLeave, updateLeave } from '@/services/user-service'
 import TypeaheadInput from '@/components/form/TypeaheadInput'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import useMessageModal from '@/hooks/use-message-modal'
@@ -130,6 +130,36 @@ function ApplicationLeaveFrom({
         reset(DEFAULT_FORM_VALUES)
     }
 
+    function handleDelete() {
+        if (!selectedLeave) return
+        showConfirmationModal({
+            title: 'Delete Leave',
+            variant: 'danger',
+            message: 'Are you sure you want to delete this leave?',
+            confirmText: 'Delete',
+            onConfirm: () => confirmDeleteLeave(selectedLeave.id)
+        })
+    }
+
+    async function confirmDeleteLeave(leaveId) {
+        try {
+            const result = await deleteLeave(leaveId)
+
+            if (isResultSuccessful(result)) {
+                setSelectedLeave(null)
+                reset(DEFAULT_FORM_VALUES)
+                onSuccess()
+                toast.success('Leave deleted successfully.')
+            } else {
+                toast.error(result?.message || 'Failed to delete leave. Please try again.')
+                logger.error('Failed to delete leave:', result?.message)
+            }
+        } catch (error) {
+            toast.error('Failed to delete leave. Please try again.')
+            logger.error('Failed to delete leave:', error)
+        }
+    }
+
     return (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
             <h2 className="text-md font-bold text-primary uppercase trakcking-widest">
@@ -214,7 +244,7 @@ function ApplicationLeaveFrom({
                     {selectedLeave && (
                         <button
                             type="button"
-                            // onClick=
+                            onClick={handleDelete}
                             className="btn-danger py-1.5! px-4!"
                         >
                             Delete

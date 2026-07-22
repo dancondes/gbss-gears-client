@@ -5,7 +5,7 @@ import Alert from './Alert'
 import Table from './Table'
 import Modal from './modals/Modal'
 import FormActionButtons from './FormActionButtons'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 import { getAlertMessageForAddAndSave } from '@/utilities/text-utilities'
 

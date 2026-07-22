@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Modal from '@/components/modals/Modal'
 import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import FormInput from '@/components/form/FormInput'
 import useTabNavigation from '@/hooks/use-tab-navigation'
@@ -61,7 +61,7 @@ function PayslipPinInputModal({
             isOpen={isOpen}
             onClose={handleClose}
             title="View Payslip"
-            size="md"
+            size="sm"
             showCloseButton={showCloseButton}
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -72,6 +72,8 @@ function PayslipPinInputModal({
                     register={register}
                     validation={{ required: 'Please enter your PIN' }}
                     error={errors.pin?.message}
+                    inputClassName="tracking-[0.5em]"
+                    maxLength={4}
                     autoFocus
                 />
 

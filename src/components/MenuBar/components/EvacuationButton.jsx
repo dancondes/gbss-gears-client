@@ -1,17 +1,26 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import EvacTriggerModal from './EvacTriggerModal'
+import { toast } from 'sonner'
+import logger from '@/utilities/logger'
+import { triggerEvacuation } from '@/services/event-service'
 
 const DEFAULT_SITES = [
-    { id: '20f-three-neo', label: '20F Three NEO' },
-    { id: '7f-philplans', label: '7F Floor PhilPlans Corporate Center' },
+    { id: 'Three NEO', label: '20F Three NEO' },
+    { id: 'PhilPlans', label: '7F Floor PhilPlans Corporate Center' },
 ]
 
 const EvacuationButton = () => {
     const [isOpen, setIsOpen] = useState(false)
 
-    const handleSend = async (selectedSiteIds) => {
-        console.log('Evacuation triggered for sites:', selectedSiteIds)
+    async function handleSend(location) {
+        try {
+            await triggerEvacuation(location)
+            toast.success(`Evacuation triggered for ${location}`)
+        } catch (error) {
+            toast.error('Failed to trigger evacuation. Please try again.')
+            logger.error('Evacuation trigger failed:', error)
+        }
     }
 
     return (

@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { create } from 'zustand'
 
 const NOTIFICATION_STORAGE_KEY = 'gears_notifications'
@@ -166,6 +167,10 @@ const useNotificationStore = create(function (set) {
                 createdAt: notification?.createdAt || new Date().toISOString(),
                 isRead: false,
             })
+
+            if (notification?.showToast) {
+                toast[nextNotification.type](notification?.message || '')
+            }
 
             set(function (state) {
                 const notifications = pruneAndSortNotifications([nextNotification, ...state.notifications])

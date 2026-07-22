@@ -68,3 +68,7 @@ export function createTimeAmendment(ticketData, files = [], onUploadProgress = n
 export function timeAmendApproval(id, status, reasonString) {
     return post(ROUTES.EVENT.TIME_AMEND_APPROVAL(id, status), reasonString)
 }
+
+export function triggerEvacuation(location) {
+    return post(ROUTES.EVENT.TRIGGER_EVACUATION(location))
+}

@@ -6,7 +6,7 @@ import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 
 export const PASSWORD_REQUIREMENTS = [
     {

@@ -18,7 +18,7 @@ function PageTemplate({
     return (
         <div className="container mx-auto p-2 sm:px-4 lg:px-6">
             <div className="flex flex-col sm:flex-row items-start sm:justify-between sm:items-center mb-2">
-                <div className="">
+                <div className={rightSide ? 'mb-2 sm:mb-0' : ''}>
                     <div className="flex items-center gap-1">
                         <h1 className="text-xl font-bold text-primary">{title?.toUpperCase()}</h1>
                         {mutate && (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import useIsTabActive from '@/hooks/use-is-tab-active'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 
 function useProfileData({ rowId, fetchFn, isNewMode = false, onFetchSuccess, entityName = 'record' }) {

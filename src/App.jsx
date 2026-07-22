@@ -14,24 +14,17 @@ const PageLoader = () => <Spinner />
 // Auth pages - not lazy loaded for faster initial access
 import Login from '@/pages/auth/Login'
 import ViewDocumentPage from './pages/other/ViewDocumentPage'
-import { ToastContainer } from 'react-toastify'
+import { Toaster } from 'sonner'
 // import ResetPassword from '@/pages/auth/ResetPassword'
 // import ForgotPassword from '@/pages/auth/ForgotPassword'
 
 const App = () => {
     return (
         <MessageModalProvider>
-            <ToastContainer
-                position="bottom-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
+            <Toaster
+                duration={4000}
+                // richColors
+                closeButton
             />
             <SWRConfig value={{ ...swrConfig, fetcher: defaultFetcher }}>
                 <ErrorBoundary>

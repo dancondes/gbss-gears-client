@@ -17,7 +17,7 @@ import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 
 const DEFAULT_FORM_VALUES = {
     ticketType: '',

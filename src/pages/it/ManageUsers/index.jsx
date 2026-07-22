@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import { createUser, getAllUsers, updateUser } from '@/services/user-service'
 import { getRoles, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
-import { toast } from 'react-toastify'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/store'
 import { useRefreshToken } from '@/hooks/use-refresh-token'
 

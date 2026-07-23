@@ -63,8 +63,8 @@ function COERequests({
             downloadFile(response, filename)
             addNotification({
                 type: 'success',
-                title: `COE${data.format == 1 ? '' : ' with Compensation'}`,
-                message: `COE for ${user?.employeeInfo ? `${user?.employeeInfo.firstname} ${user?.employeeInfo.lastname}` : 'the employee'} has been downloaded. Check your downloads folder.`,
+                title: `COE Downloaded`,
+                message: `Your COE${data.format == 1 ? '' : ' with Compensation'} has been downloaded. Check your downloads folder.`,
                 showToast: true,
             })
             // toast.success('COE request successful. The file has been downloaded.')

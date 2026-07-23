@@ -1,69 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import useTabNavigation from '@/hooks/use-tab-navigation'
-import { useUIStore } from '@/store'
-import useMessageModal from '@/hooks/use-message-modal'
+import useMenuItemClick from '@/hooks/use-menu-item-click'
 
 // ---------------------------------------------------------------------------
 // SubmenuPanel – the dropdown panel that appears below a top-level menu item
 // ---------------------------------------------------------------------------
 
 function SubmenuPanel({ items, isOpen, onClose }) {
-    const { navigate } = useTabNavigation()
-    const { showMessageModal } = useMessageModal()
-    const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
-    const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
-
     if (!isOpen || !items || items.length === 0) return null
-
-    function handleItemClick(item) {
-        onClose()
-
-        switch (item.action) {
-            case 'coe-request':
-                setCOERequestModalOpen(true)
-                return
-            case 'payslip-request':
-                setPayslipPinModalOpen(true)
-                return
-            case 'user-guide':
-                showMessageModal('This feature is not yet ready.', {
-                    type: 'info',
-                    title: 'User Guide',
-                })
-                return
-            case 'change-password':
-                navigate('/user/personal-details', {
-                    id: 'Personal-Details',
-                    label: 'Personal Details',
-                    state: { goToChangePassword: true },
-                })
-                return
-            case 'change-pin':
-                navigate('/user/personal-details', {
-                    id: 'Personal-Details',
-                    label: 'Personal Details',
-                    state: { goToChangePin: true },
-                })
-                return
-        }
-
-        if (item.url) {
-            window.open(item.url, '_blank', 'noopener,noreferrer')
-            return
-        }
-
-        if (item.path) {
-            navigate(item.path, {
-                id: item.id,
-                label: item.tabName || item.name,
-            })
-        }
-
-        if (item.action && typeof item.action === 'function') {
-            item.action()
-        }
-    }
+    const handleItemClick = useMenuItemClick(onClose)
 
     return (
         <div className="absolute left-0 top-full mt-0.5 z-50 min-w-50 rounded-md border border-gray-200 bg-white py-1 shadow-lg">

@@ -8,7 +8,7 @@ import { getPayslip } from '@/services/user-service'
 import logger from '@/utilities/logger'
 import { toast } from 'sonner'
 import { downloadFile } from '@/utilities/file-utilities'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useNotificationStore } from '@/store'
 import PayslipPinInputModal from './PayslipPinInputModal'
 import OpenTicketModal from '../Leaves/components/OpenTicketModal'
 import { ENQUIRY_TYPE_ID_FOR_PAYROLL } from '@/constants/database-id'
@@ -16,6 +16,7 @@ import { ENQUIRY_TYPE_ID_FOR_PAYROLL } from '@/constants/database-id'
 function Payslip() {
     const user = useAuthStore((state) => state.user)
     const [showPinInputModal, setShowPinInputModal] = useState(!user?.payslipPinVerified)
+    const addNotification = useNotificationStore((state) => state.addNotification)
 
     async function fetchPayslipPeriods() {
         try {
@@ -65,10 +66,21 @@ function Payslip() {
             const result = await getPayslip(data)
             const filename = `${user?.employeeInfo?.empNo}_${data?.payPeriod}_Payslip.pdf`
             downloadFile(result, filename)
-            toast.success('Payslip request successful. The document will be downloaded automatically.')
+            addNotification({
+                type: 'success',
+                title: 'Payslip Downloaded',
+                message: `Your payslip for ${data?.payPeriod} has been downloaded. Check your downloads folder.`,
+                showToast: true,
+            })
+            
         } catch (error) {
             logger.error('Error downloading payslip:', error)
-            toast.error('Failed to download payslip. Please try again later.')
+            addNotification({
+                type: 'error',
+                title: 'Payslip Download Failed',
+                message: error?.message || 'An error occurred while downloading your payslip. Please try again later.',
+                showToast: true,
+            })
         }
     }
 

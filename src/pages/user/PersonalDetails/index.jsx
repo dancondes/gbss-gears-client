@@ -24,6 +24,7 @@ function PersonalDetails() {
 
     const changePasswordRef = useRef(null)
     const changePinRef = useRef(null)
+    const editInputRef = useRef(null)
 
     useEffect(() => {
         const activeTab = getActiveTab()
@@ -46,6 +47,12 @@ function PersonalDetails() {
             })
         }
     }, [user])
+
+    useEffect(() => {
+        if (editingField) {
+            editInputRef.current?.focus()
+        }
+    }, [editingField])
 
     const fields = useMemo(
         () => [
@@ -86,8 +93,9 @@ function PersonalDetails() {
                 header: 'FIELD',
                 cell: (info) => {
                     const row = info.row.original
+                    const isActive = editingField === row.fieldKey
                     return (
-                        <span className="inline-flex items-center gap-1.5">
+                        <span className={`inline-flex items-center gap-1.5 ${isActive ? 'font-semibold text-primary' : ''}`}>
                             {info.getValue()}
                             {row.editable && (
                                 <svg
@@ -100,8 +108,7 @@ function PersonalDetails() {
                                     strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    className="text-gray-400"
-                                    title='Editable field'
+                                    className={isActive ? 'text-primary' : 'text-gray-400'}
                                 >
                                     <title>Editable field</title>
                                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -115,15 +122,15 @@ function PersonalDetails() {
             {
                 accessorKey: 'value',
                 header: 'VALUES',
-                cell: (info) => info.getValue()
+                cell: (info) => info.getValue() || <span className="text-gray-300">—</span>
             }
         ],
-        []
+        [editingField]
     )
 
     function handleFieldClick(field) {
         setEditingField(field.key)
-        setEditValue(personalDetails[field.key])
+        setEditValue(personalDetails[field.key] || '')
     }
 
     function handleRowClick(rowData) {
@@ -177,6 +184,11 @@ function PersonalDetails() {
         setEditingField(null)
     }
 
+    function handleKeyDown(e) {
+        if (e.key === 'Enter') handleUpdate()
+        if (e.key === 'Escape') handleCancel()
+    }
+
     return (
         <div>
             <PageTemplate
@@ -202,43 +214,88 @@ function PersonalDetails() {
 
                         {/* Right side - Action Panel */}
                         <div className="lg:w-80">
-                            <div className="bg-primary/10 rounded shadow-sm border border-primary/50 p-6">
-                                <h2 className="text-lg font-bold text-primary mb-4">Action</h2>
+                            <div className="sticky top-4 rounded-xl border border-gray-200 bg-white shadow-sm">
+                                <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="text-primary"
+                                    >
+                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                        <path d="m15 5 4 4" />
+                                    </svg>
+                                    <h2 className="text-sm font-semibold text-gray-800">Edit field</h2>
+                                </div>
 
-                                {editingField ? (
-                                    <>
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <div className="px-4 py-4">
+                                    {editingField ? (
+                                        <>
+                                            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-gray-400">
                                                 {fields.find(f => f.key === editingField)?.label}
                                             </label>
                                             <input
+                                                ref={editInputRef}
                                                 type="text"
                                                 value={editValue}
                                                 onChange={(e) => setEditValue(e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                                                autoFocus
+                                                onKeyDown={handleKeyDown}
+                                                disabled={isSaving}
+                                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none ring-primary/30 transition-shadow focus:border-primary focus:ring-2"
                                             />
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={handleUpdate}
-                                                disabled={isSaving}
-                                                className="flex-1 px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-dark-primary transition-colors cursor-pointer"
+
+                                            <div className="mt-4 flex gap-2">
+                                                <button
+                                                    onClick={handleUpdate}
+                                                    disabled={isSaving}
+                                                    className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-dark-primary disabled:opacity-50 cursor-pointer"
+                                                >
+                                                    {isSaving ? 'Saving…' : 'Save'}
+                                                </button>
+                                                <button
+                                                    onClick={handleCancel}
+                                                    disabled={isSaving}
+                                                    className="flex-1 rounded-md border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2 py-4 text-center">
+                                            {/* <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="1.75"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="text-gray-300"
                                             >
-                                                {isSaving ? 'Saving...' : 'Save'}
-                                            </button>
-                                            <button
-                                                onClick={handleCancel}
-                                                disabled={isSaving}
-                                                className="flex-1 px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded hover:bg-gray-400 transition-colors cursor-pointer"
-                                            >
-                                                Cancel
-                                            </button>
+                                                <path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74" />
+                                                <path d="M17 13.5V9a2 2 0 1 0-4 0v.5" />
+                                                <path d="M13 9V7a2 2 0 1 0-4 0v6.5" />
+                                                <path d="M5 15c-.6-1.2-1-1.9-1-3a2 2 0 1 1 4 0" />
+                                                <path d="M4.5 15.5c-.9 2.5.5 6.5 5.5 6.5h1c4 0 6-2.5 6-6v-4" />
+                                            </svg> */}
+                                            <p className="text-sm text-gray-500">
+                                                Click a row to edit it.
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                Only fields with a <span className="whitespace-nowrap">pencil icon</span> can be edited.
+                                            </p>
                                         </div>
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-gray-600">Click on an editable field to edit</p>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -6,13 +6,14 @@ import { getTimeEntries } from '@/services/event-service'
 import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useAuthStore, useTabStore } from '@/store'
 import { getCurrentDate } from '@/utilities/date-utilities'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import useSWR from 'swr'
 
 export default function Records() {
     const currentDate = getCurrentDate()
     const user = useAuthStore((state) => state.user)
     const activeTabId = useTabStore((state) => state.activeTabId)
+    const [isLoading, setIsLoading] = useState(false)
     // const [filters, setFilters] = useState({
     //     dateFrom: currentDate,
     //     dateTo: currentDate
@@ -28,6 +29,7 @@ export default function Records() {
 
     async function fetchTeamRecords() {
         try {
+            setIsLoading(true)
             const result = await getTimeEntries(filters.current)
             return result?.data?.map(log => ({
                 ...log,
@@ -35,10 +37,12 @@ export default function Records() {
             })) || []
         } catch {
             return []
+        } finally {
+            setIsLoading(false)
         }
     }
 
-    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters.current] : null, fetchTeamRecords)
+    const { data, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters.current] : null, fetchTeamRecords)
     const { options: employeeOptions } = useFetchEmployeeOptions()
 
     useEffect(() => {
@@ -93,7 +97,7 @@ export default function Records() {
                     data={data || []}
                     enableSorting={true}
                     pageSize={50}
-                    isLoading={isValidating}
+                    isLoading={isLoading}
                     onSearch={handleSearch}
                     exportToExcel={{
                         fileName: 'Time Logs',

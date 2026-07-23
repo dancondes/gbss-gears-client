@@ -15,10 +15,12 @@ const EvacuationButton = () => {
 
     async function handleSend(location) {
         try {
+            toast.success(`Sending evacuation trigger for ${location}. Do not refresh or close the page until you see a success message.`)
+            setIsOpen(false)
             await triggerEvacuation(location)
             toast.success(`Evacuation triggered for ${location}`)
         } catch (error) {
-            toast.error('Failed to trigger evacuation. Please try again.')
+            toast.error(error?.message || 'Failed to trigger evacuation. Please try again.')
             logger.error('Evacuation trigger failed:', error)
         }
     }

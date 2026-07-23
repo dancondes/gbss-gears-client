@@ -116,7 +116,8 @@ function MenuBar() {
         setUserMenuOpen(false)
     }
 
-    function handleUserProfileClick() {
+    function handleUserProfileClick(e) {
+        e.preventDefault()
         setUserMenuOpen(false)
         navigateTo('/user/personal-details', {
             id: 'Personal-Details',

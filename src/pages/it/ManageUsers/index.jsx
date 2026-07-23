@@ -25,6 +25,7 @@ export default function ManageUsers() {
                 username: user.username,
                 name: `${user?.employeeInfo.firstname} ${user?.employeeInfo.lastname}`,
                 role: user.role,
+                hasEvac: user?.hasEvac || false,
             }))
         } catch {
             return []
@@ -61,6 +62,7 @@ export default function ManageUsers() {
             roleId: data.roleId,
             password: data.password?.trim() || '',
             pin: data.pin?.trim() || '',
+            hasEvac: data.hasEvac || false,
             personId: id ? undefined : data.personId // Only include personId when creating a new user
         }
 
@@ -78,6 +80,7 @@ export default function ManageUsers() {
             username: row.username,
             roleId: row.role?.id,
             personId: row.personId,
+            hasEvac: row.hasEvac || false,
         }
     }
 

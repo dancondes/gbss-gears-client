@@ -8,6 +8,7 @@ import { MessageModalContext } from '@/contexts/MessageModalContext'
 import { useNavigate } from 'react-router-dom'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import EvacuationButton from './components/EvacuationButton'
+import { canUserTriggerEvacuation } from '@/utilities/jwt-utils'
 
 // ---------------------------------------------------------------------------
 // MenuBar – the full horizontal menu bar
@@ -19,6 +20,7 @@ function MenuBar() {
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const messageModalContext = useContext(MessageModalContext)
     const user = useAuthStore((state) => state.user)
+    const token = useAuthStore((state) => state.token)
     const fullName = user?.employeeInfo ? `${user?.employeeInfo?.preferedName || user?.employeeInfo?.firstname} ${user?.employeeInfo?.lastname}` : ''
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
@@ -257,7 +259,10 @@ function MenuBar() {
                         )
                     })}
                 </div>
-                <EvacuationButton />
+
+                {(canUserTriggerEvacuation(token) && user?.hasEvac) && (
+                    <EvacuationButton />
+                )}
             </div>
 
         </div>

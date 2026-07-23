@@ -48,6 +48,15 @@ function UserForm({
                     error={errors.roleId?.message}
                     className="mb-0!"
                 />
+
+                <FormInput
+                    name="hasEvac"
+                    label="Can Access Evacuation Button?"
+                    type="checkbox"
+                    register={register}
+                    error={errors.hasEvac?.message}
+                    className="mb-0! mt-2!"
+                />
             </div>
 
             <hr className="my-4 border-t border-gray-200" />

@@ -9,15 +9,19 @@ import { useNavigate } from 'react-router-dom'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import EvacuationButton from './components/EvacuationButton'
 import { canUserTriggerEvacuation } from '@/utilities/jwt-utils'
+import HamburgerButton from '../HamburgerButton'
+import MobileNavDrawer from '../MobileNavDrawer'
 
 // ---------------------------------------------------------------------------
-// MenuBar – the full horizontal menu bar
+// MenuBar – the full horizontal menu bar (desktop) / hamburger + drawer (mobile)
 // ---------------------------------------------------------------------------
 
 function MenuBar() {
     const menuItems = useFormsMenuStore(function (state) { return state.menuItems })
     const [openIndex, setOpenIndex] = useState(null)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const hamburgerButtonRef = useRef(null)
     const messageModalContext = useContext(MessageModalContext)
     const user = useAuthStore((state) => state.user)
     const token = useAuthStore((state) => state.token)
@@ -151,6 +155,14 @@ function MenuBar() {
         clearNotifications()
     }
 
+    function handleMobileMenuToggle() {
+        setMobileMenuOpen(function (prev) { return !prev })
+    }
+
+    function handleMobileMenuClose() {
+        setMobileMenuOpen(false)
+    }
+
     function getNotificationAccentClass(type) {
         if (type === 'success') {
             return 'bg-secondary'
@@ -187,13 +199,16 @@ function MenuBar() {
 
     if (!menuItems || menuItems.length === 0) return null
 
+    const canEvacuate = canUserTriggerEvacuation(token) && user?.hasEvac
+
     return (
         <div>
             {/* Top bar with logo and user menu */}
             <div className="bg-primary px-4 py-1.5">
                 <div className="flex justify-between items-center">
-                    {/* Left side - Hamburger menu and Logo */}
+                    {/* Left side - Hamburger menu (mobile) and Logo */}
                     <div className="flex items-center gap-4">
+                        <HamburgerButton ref={hamburgerButtonRef} isOpen={mobileMenuOpen} onClick={handleMobileMenuToggle} />
                         <img
                             src={gbss_logo_white}
                             alt="GBSS Logo"
@@ -237,7 +252,9 @@ function MenuBar() {
                     </div>
                 </div>
             </div>
-            <div className="flex gap-10 justify-between px-2 py-1 border-b border-gray-200 bg-white">
+
+            {/* Desktop dropdown menu row – hidden below md, hamburger/drawer take over */}
+            <div className="hidden md:flex gap-10 justify-between px-2 py-1 border-b border-gray-200 bg-white">
                 <div className='flex items-center gap-0.5'>
                     {menuItems.map(function (item, index) {
                         if (item.name === 'Team' && !canViewTeams()) {
@@ -260,10 +277,21 @@ function MenuBar() {
                     })}
                 </div>
 
-                {(canUserTriggerEvacuation(token) && user?.hasEvac) && (
+                {canEvacuate && (
                     <EvacuationButton />
                 )}
             </div>
+
+            {/* Mobile slide-in drawer – mirrors the same menuItems as an accordion */}
+            <MobileNavDrawer
+                isOpen={mobileMenuOpen}
+                onClose={handleMobileMenuClose}
+                menuItems={menuItems}
+                canViewTeams={canViewTeams}
+                canViewIT={canViewIT}
+                evacuationSlot={canEvacuate ? <EvacuationButton /> : null}
+                triggerRef={hamburgerButtonRef}
+            />
 
         </div>
     )

@@ -260,7 +260,7 @@ function MenuBar() {
                     })}
                 </div>
 
-                {canUserTriggerEvacuation(token) && (
+                {(canUserTriggerEvacuation(token) && user?.hasEvac) && (
                     <EvacuationButton />
                 )}
             </div>

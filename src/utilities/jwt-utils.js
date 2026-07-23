@@ -103,5 +103,5 @@ export function getPIN(token) {
 }
 
 export function canUserTriggerEvacuation(token) {
-    return decodeJWT(token)?.hasEvacButton || false
+    return decodeJWT(token)?.Evac == "True" || false
 }

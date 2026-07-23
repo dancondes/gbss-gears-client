@@ -11,6 +11,7 @@ import { useMessage } from '@/hooks/use-message'
 import { login as loginUser } from '@/services/auth-service'
 import { getUserIdFromToken } from '@/utilities/jwt-utils'
 import { isResultSuccessful } from '@/utilities'
+import AcronymBreakdown from '@/components/AcronymBreakdown'
 
 const Login = () => {
     const navigate = useNavigate()
@@ -69,7 +70,18 @@ const Login = () => {
                 {/* Left Side - Logo & Branding (hidden on mobile, visible on md+) */}
                 <CompanyBrand
                     title="Welcome to GEARS"
-                    description="Employee Time In & Out System"
+                    // description="Employee Time In & Out System"
+                    extra={
+                        <AcronymBreakdown
+                            items={[
+                                { letter: 'GBSS' },
+                                { letter: 'Employee' },
+                                { letter: 'Attendance' },
+                                { letter: 'Recording' },
+                                { letter: 'System' },
+                            ]}
+                        />
+                    }
                 />
 
                 {/* Right Side - Login Form */}

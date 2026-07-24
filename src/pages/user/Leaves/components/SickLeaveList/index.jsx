@@ -32,7 +32,7 @@ function SickLeaveList({ data, isLoading }) {
 
     return (
         <div>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+            <h2 className="text-sm font-semibold text-primary uppercase mb-1">
                 Sick Leave
             </h2>
 

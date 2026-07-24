@@ -32,7 +32,7 @@ function VacationLeaveList({ data, isLoading }) {
 
     return (
         <div>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+            <h2 className="text-sm font-semibold text-primary uppercase mb-1">
                 Vacation Leave
             </h2>
 

@@ -9,6 +9,7 @@ import { getUserDocuments } from '@/services/user-service'
 import useSWR from 'swr'
 import OpenTicketModal from '../Leaves/components/OpenTicketModal'
 import { ENQUIRY_TYPE_ID_FOR_HR } from '@/constants/database-id'
+import CopyableText from '@/components/CopyableText'
 
 function Documents() {
 
@@ -39,6 +40,10 @@ function Documents() {
             {
                 accessorKey: 'filename',
                 header: 'File',
+                cell: ({ getValue }) => {
+                    const value = getValue()
+                    return <CopyableText text={value} className="text-sm text-gray-700" />
+                }
             },
             {
                 accessorKey: 'submissionDate',

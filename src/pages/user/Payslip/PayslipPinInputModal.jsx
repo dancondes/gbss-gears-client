@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store'
 import FormInput from '@/components/form/FormInput'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import { getPIN } from '@/utilities/jwt-utils'
+import { MAX_PIN_LENGTH } from '@/constants/password-validation'
 
 
 function PayslipPinInputModal({
@@ -73,7 +74,7 @@ function PayslipPinInputModal({
                     validation={{ required: 'Please enter your PIN' }}
                     error={errors.pin?.message}
                     inputClassName="tracking-[0.5em]"
-                    maxLength={4}
+                    maxLength={MAX_PIN_LENGTH}
                     autoFocus
                 />
 

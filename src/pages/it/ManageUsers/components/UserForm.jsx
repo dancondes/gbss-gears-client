@@ -4,7 +4,7 @@ import FormInput from '@/components/form/FormInput'
 import FormSelect from '@/components/form/FormSelect'
 import TypeaheadSelect from '@/components/form/TypeaheadSelect'
 import { PASSWORD_REQUIREMENTS } from '@/pages/home/ChangePassword'
-import { PIN_PATTERN } from '@/pages/home/ChangePin'
+import { MAX_PIN_LENGTH, PIN_PATTERN, PIN_PATTERN_MESSAGE } from '@/constants/password-validation'
 
 function UserForm({
     isAddMode,
@@ -95,18 +95,18 @@ function UserForm({
                     register={register}
                     error={errors.pin?.message}
                     className="sm:col-span-2 mb-0!"
+                    maxLength={MAX_PIN_LENGTH}
                     validation={{
                         required: { value: isAddMode, message: 'PIN is required when creating a new user' },
                         pattern: {
                             value: PIN_PATTERN,
-                            message: 'Pin must be exactly 4 digits',
+                            message: PIN_PATTERN_MESSAGE,
                         },
                         onChange: (e) => {
                             // Only allow digits to be entered
                             const value = e.target.value
                             e.target.value = value.replace(/\D/g, '')
                         },
-                        maxLength: { value: 4, message: 'Pin must be exactly 4 digits' },
                     }}
                 />
             </div>

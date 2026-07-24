@@ -7,8 +7,9 @@ import useMenuItemClick from '@/hooks/use-menu-item-click'
 // ---------------------------------------------------------------------------
 
 function SubmenuPanel({ items, isOpen, onClose }) {
-    if (!isOpen || !items || items.length === 0) return null
     const handleItemClick = useMenuItemClick(onClose)
+    
+    if (!isOpen || !items || items.length === 0) return null
 
     return (
         <div className="absolute left-0 top-full mt-0.5 z-50 min-w-50 rounded-md border border-gray-200 bg-white py-1 shadow-lg">

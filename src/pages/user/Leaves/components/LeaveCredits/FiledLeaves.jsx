@@ -12,12 +12,12 @@ function FiledLeaves({
         {
             accessorKey: 'startDate',
             header: 'Start Date',
-            // type: 'date',
+            type: 'date',
         },
         {
             accessorKey: 'endDate',
             header: 'End Date',
-            // type: 'date',
+            type: 'date',
         },
         {
             accessorKey: 'approvedBy',
@@ -31,9 +31,10 @@ function FiledLeaves({
 
     return (
         <div className="mt-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase mb-1">
+            <h2 className="text-sm font-bold text-primary uppercase mb-0!">
                 Filed Leaves
             </h2>
+            <p className='text-xs text-gray-500 mb-1'>Select a row to edit</p>
 
             <Table
                 columns={columns}

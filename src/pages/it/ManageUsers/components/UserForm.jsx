@@ -102,11 +102,6 @@ function UserForm({
                             value: PIN_PATTERN,
                             message: PIN_PATTERN_MESSAGE,
                         },
-                        onChange: (e) => {
-                            // Only allow digits to be entered
-                            const value = e.target.value
-                            e.target.value = value.replace(/\D/g, '')
-                        },
                     }}
                 />
             </div>

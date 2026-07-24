@@ -73,7 +73,7 @@ export default function ChangePin() {
                                     New Pin
                                 </h4>
                                 <p className="text-xs text-gray-500">
-                                    Must be exactly 4 digits
+                                    {PIN_PATTERN_MESSAGE}
                                 </p>
                             </div>
                         </div>
@@ -83,7 +83,7 @@ export default function ChangePin() {
                                 type="password"
                                 label="New Pin"
                                 name="newPin"
-                                placeholder="••••"
+                                // placeholder="••••"
                                 register={register}
                                 inputClassName="tracking-[0.5em]"
                                 maxLength={MAX_PIN_LENGTH}
@@ -100,10 +100,10 @@ export default function ChangePin() {
                                 type="password"
                                 label="Confirm Pin"
                                 name="confirmNewPin"
-                                placeholder="••••"
+                                // placeholder="••••"
                                 register={register}
                                 inputClassName="tracking-[0.5em]"
-                                maxLength={4}
+                                maxLength={MAX_PIN_LENGTH}
                                 validation={{
                                     required: 'Please confirm your new pin',
                                     validate: (value) =>
@@ -119,7 +119,7 @@ export default function ChangePin() {
                                 disabled={isSubmitting}
                                 className="btn-primary w-full sm:w-auto"
                             >
-                                {isSubmitting ? 'Saving...' : 'Change Pin'}
+                                {isSubmitting ? 'Saving...' : 'Change PIN'}
                             </button>
                         </div>
                     </div>

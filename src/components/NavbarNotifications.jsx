@@ -38,7 +38,7 @@ function NavbarNotifications({
                         onClick={onNotificationClose}
                     ></div>
 
-                    <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-gray-300 ring-opacity-5 z-20 overflow-hidden">
+                    <div className="origin-top-right absolute -right-18 sm:right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-gray-300 ring-opacity-5 z-20 overflow-hidden">
                         <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-semibold text-gray-800">Notifications</p>

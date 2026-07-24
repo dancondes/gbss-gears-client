@@ -19,8 +19,8 @@ export const PASSWORD_VALIDATION = {
 }
 
 // PIN
-export const MAX_PIN_LENGTH = 15
+export const MAX_PIN_LENGTH = 10
 
-export const PIN_PATTERN = /^.{4,15}$/
+export const PIN_PATTERN = /^.{4,10}$/
 
-export const PIN_PATTERN_MESSAGE = 'PIN must be 4 to 15 characters long'
+export const PIN_PATTERN_MESSAGE = 'PIN must be 4 to 10 characters long'

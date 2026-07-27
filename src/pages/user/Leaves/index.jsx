@@ -1,5 +1,5 @@
 import PageTemplate from '@/components/PageTemplate'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import LeaveCredits from './components/LeaveCredits'
 import ApplicationLeaveFrom from './components/ApplicationLeaveForm'
 import VacationLeaveList from './components/VacationLeaveList'
@@ -17,6 +17,7 @@ const currentDate = getCurrentDate()
 export default function Leaves() {
     const user = useAuthStore((state) => state.user)
     const { data: leavesData, isValidating, mutate } = useSWR(user?.userId ? ['/api/leave-credits', user?.userId] : null, fetchLeaveCreditsData)
+    const formRef = useRef(null)
 
     async function fetchLeaveCreditsData() {
         try {
@@ -49,6 +50,9 @@ export default function Leaves() {
             return
         }
 
+        // scroll to the leave form section
+        formRef.current.scrollIntoView({ behavior: 'smooth' })
+
         setSelectedLeave({
             id: leave.leaveId,
             startDate: leave.startDate,
@@ -78,7 +82,7 @@ export default function Leaves() {
                 </div>
 
                 {/* Leave From */}
-                <div className="col-span-1 sm:col-span-2">
+                <div ref={formRef} className="col-span-1 sm:col-span-2">
                     <ApplicationLeaveFrom
                         selectedLeave={selectedLeave}
                         isLoading={isValidating}

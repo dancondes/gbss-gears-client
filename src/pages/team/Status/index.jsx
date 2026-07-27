@@ -1,10 +1,10 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
+import useRefetchOnTabActive from '@/hooks/use-refresh-tab-on-tab-active'
 import { getTeamStatus } from '@/services/user-service'
-import { useTabStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import useSWR from 'swr'
 
 export default function Status() {
@@ -24,7 +24,6 @@ export default function Status() {
     ], [])
 
     const { data, isValidating, mutate } = useSWR('team-status', fetchTeamStatus)
-    const activeTabId = useTabStore((state) => state.activeTabId)
 
     async function fetchTeamStatus() {
         try {
@@ -35,11 +34,7 @@ export default function Status() {
         }
     }
 
-    useEffect(() => {
-        if (activeTabId === 'Team-Status') {
-            mutate()
-        }
-    }, [mutate, activeTabId])
+    useRefetchOnTabActive('Team-Status', mutate)
 
     return (
         <PageTemplate

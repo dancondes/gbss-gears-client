@@ -2,17 +2,17 @@ import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
+import useRefetchOnTabActive from '@/hooks/use-refresh-tab-on-tab-active'
 import { getTimeEntries } from '@/services/event-service'
 import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
-import { useAuthStore, useTabStore } from '@/store'
+import { useAuthStore } from '@/store'
 import { getCurrentDate } from '@/utilities/date-utilities'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import useSWR from 'swr'
 
 export default function Records() {
     const currentDate = getCurrentDate()
     const user = useAuthStore((state) => state.user)
-    const activeTabId = useTabStore((state) => state.activeTabId)
     const [isLoading, setIsLoading] = useState(false)
     // const [filters, setFilters] = useState({
     //     dateFrom: currentDate,
@@ -45,11 +45,7 @@ export default function Records() {
     const { data, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters.current] : null, fetchTeamRecords)
     const { options: employeeOptions } = useFetchEmployeeOptions()
 
-    useEffect(() => {
-        if (activeTabId === 'Team-Records') {
-            mutate()
-        }
-    }, [user?.userId, mutate, activeTabId])
+    useRefetchOnTabActive('Team-Records', mutate)
 
     const columns = useMemo(() => [
         {

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
@@ -14,6 +14,7 @@ const DEFAUL_STATUS = 3 // For Approval
 
 function MyRequests() {
     const user = useAuthStore((state) => state.user)
+    const [isLoading, setIsLoading] = useState(false)
     // const [filters, setFilters] = useState({
     //     dateFrom: currentDate,
     //     dateTo: currentDate,
@@ -27,6 +28,7 @@ function MyRequests() {
 
     async function fetchMyRequests() {
         try {
+            setIsLoading(true)
             const currentFilter = filters.current
             const params = {
                 dateFrom: currentFilter.dateFrom,
@@ -36,10 +38,12 @@ function MyRequests() {
             return result?.data || []
         } catch {
             return []
+        } finally {
+            setIsLoading(false)
         }
     }
 
-    const { data, isValidating, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchMyRequests)
+    const { data, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters] : null, fetchMyRequests)
 
     async function handleSearch(newFilters) {
         const mappedFilters = {
@@ -117,7 +121,7 @@ function MyRequests() {
                             noAll: true
                         }
                     }}
-                    isLoading={isValidating}
+                    isLoading={isLoading}
                     onSearch={handleSearch}
                 />
             </div>

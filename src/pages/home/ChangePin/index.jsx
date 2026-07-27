@@ -1,5 +1,6 @@
 import FormInput from '@/components/form/FormInput'
 import PageTemplate from '@/components/PageTemplate'
+import { MAX_PIN_LENGTH, PIN_PATTERN, PIN_PATTERN_MESSAGE } from '@/constants/password-validation'
 import { useRefreshToken } from '@/hooks/use-refresh-token'
 import { changePasswordPin } from '@/services/user-service'
 import { isResultSuccessful } from '@/utilities'
@@ -8,8 +9,6 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-
-export const PIN_PATTERN = /^\d{4}$/
 
 function LockIcon({ className }) {
     return (
@@ -74,7 +73,7 @@ export default function ChangePin() {
                                     New Pin
                                 </h4>
                                 <p className="text-xs text-gray-500">
-                                    Must be exactly 4 digits
+                                    {PIN_PATTERN_MESSAGE}
                                 </p>
                             </div>
                         </div>
@@ -84,15 +83,15 @@ export default function ChangePin() {
                                 type="password"
                                 label="New Pin"
                                 name="newPin"
-                                placeholder="••••"
+                                // placeholder="••••"
                                 register={register}
                                 inputClassName="tracking-[0.5em]"
-                                maxLength={4}
+                                maxLength={MAX_PIN_LENGTH}
                                 validation={{
                                     required: 'New pin is required',
                                     pattern: {
                                         value: PIN_PATTERN,
-                                        message: 'Pin must be exactly 4 digits',
+                                        message: PIN_PATTERN_MESSAGE,
                                     },
                                 }}
                                 error={errors.newPin?.message}
@@ -101,10 +100,10 @@ export default function ChangePin() {
                                 type="password"
                                 label="Confirm Pin"
                                 name="confirmNewPin"
-                                placeholder="••••"
+                                // placeholder="••••"
                                 register={register}
                                 inputClassName="tracking-[0.5em]"
-                                maxLength={4}
+                                maxLength={MAX_PIN_LENGTH}
                                 validation={{
                                     required: 'Please confirm your new pin',
                                     validate: (value) =>
@@ -120,7 +119,7 @@ export default function ChangePin() {
                                 disabled={isSubmitting}
                                 className="btn-primary w-full sm:w-auto"
                             >
-                                {isSubmitting ? 'Saving...' : 'Change Pin'}
+                                {isSubmitting ? 'Saving...' : 'Change PIN'}
                             </button>
                         </div>
                     </div>

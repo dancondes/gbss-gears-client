@@ -21,6 +21,12 @@ export default function Leaves() {
     async function fetchLeaveCreditsData() {
         try {
             const result = await getAllLeaves()
+            const updatedFiledLeaves = result?.data?.filedLeaves?.map((leave) => ({
+                ...leave,
+                startDate: ddmmyyyyToIso(leave.startDate),
+                endDate: ddmmyyyyToIso(leave.endDate)
+            }))
+            result.data.filedLeaves = updatedFiledLeaves
             return result?.data || []
         } catch {
             return []
@@ -31,7 +37,7 @@ export default function Leaves() {
     const [selectedLeave, setSelectedLeave] = useState(null)
 
     function handeLeaveSelect(leave) {
-        if (currentDate >= ddmmyyyyToIso(leave.startDate) || currentDate >= ddmmyyyyToIso(leave.endDate)) {
+        if (currentDate >= leave.startDate || currentDate >= leave.endDate) {
             toast.error("You can't edit a leave request from a past or current date. Please submit a support ticket for assistance.")
             setSelectedLeave(null)
             return
@@ -45,8 +51,8 @@ export default function Leaves() {
 
         setSelectedLeave({
             id: leave.leaveId,
-            startDate: ddmmyyyyToIso(leave.startDate),
-            endDate: ddmmyyyyToIso(leave.endDate),
+            startDate: leave.startDate,
+            endDate: leave.endDate,
             leaveTypeId: leave.leaveTypeId,
             approvedBy: leave.approvedBy
         })

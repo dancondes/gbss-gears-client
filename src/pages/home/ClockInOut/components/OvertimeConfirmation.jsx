@@ -2,6 +2,25 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Modal from '@/components/modals/Modal'
 
+function ClockIcon() {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 3" />
+        </svg>
+    )
+}
+
 function OvertimeConfirmation({
     isOpen,
     onClose,
@@ -11,45 +30,50 @@ function OvertimeConfirmation({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            size="md"
+            size="lg"
             title="Overtime Confirmation"
         >
-            <div>
-                <div className="flex gap-3">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="shrink-0 text-yellow-500"
-                    >
-                        <path d="M12 2 1 21h22L12 2Zm0 3.83L19.53 19H4.47L12 5.83ZM11 10v4h2v-4h-2Zm0 6v2h2v-2h-2Z" />
-                    </svg>
+            <div className="flex flex-col gap-5">
+                <div className="flex gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                        <ClockIcon />
+                    </div>
 
-                    <div className="flex flex-col gap-3 text-sm">
+                    <div className="flex flex-col gap-4 pt-1 text-sm text-gray-600">
                         <p>
                             The system has now enabled the functionality to log Overtime hours. If you need to record Overtime, please ensure it is entered in the system promptly.
                         </p>
 
-                        <div>
-                            <p className="font-semibold">Key points to remember:</p>
-                            <ol className="list-decimal list-inside">
-                                <li>Overtime can only be entered after performing the checkout process.</li>
-                                <li>Ensure all Overtime hours are logged same day within the timeframe for accurate tracking and processing.</li>
-                            </ol>
+                        <div className="flex flex-col gap-2.5 rounded-xl bg-gray-50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                Key points to remember
+                            </p>
+                            <div className="flex flex-col gap-2.5">
+                                <div className="flex items-start gap-2.5">
+                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                                    <p className="text-gray-700">
+                                        Overtime can only be entered after performing the checkout process.
+                                    </p>
+                                </div>
+                                <div className="flex items-start gap-2.5">
+                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                                    <p className="text-gray-700">
+                                        Ensure all Overtime hours are logged same day within the timeframe for accurate tracking and processing.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <p>Please adhere to these guidelines to ensure smooth and accurate Overtime reporting.</p>
                     </div>
                 </div>
 
-                <div className="flex justify-end border-t border-gray-200 px-4 pt-3 mt-4">
+                <div className="flex justify-end border-t border-gray-100 pt-4">
                     <button
                         className="btn-primary"
                         onClick={onOkay}
                     >
-                        OK
+                        Okay
                     </button>
                 </div>
             </div>

@@ -1,13 +1,14 @@
 // use-menu-item-click.js
 import useTabNavigation from './use-tab-navigation'
 import useMessageModal from './use-message-modal'
-import { useUIStore } from '@/store'
+import { useTabStore, useUIStore } from '@/store'
 
 function useMenuItemClick(onClose) {
     const { navigate } = useTabNavigation()
     const { showMessageModal } = useMessageModal()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
     const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
+    const tabs = useTabStore(state => state.tabs)
 
     function handleItemClick(item) {
         onClose?.()
@@ -17,6 +18,14 @@ function useMenuItemClick(onClose) {
                 setCOERequestModalOpen(true)
                 return
             case 'payslip-request':
+                // navigate to the payslip page if the tab is already open, otherwise show the PIN modal for verification
+                if (tabs.some(tab => tab.id === 'Payslip')) {
+                    navigate('/user/payslip', {
+                        id: 'Payslip',
+                        label: 'Payslip',
+                    })
+                    return
+                }
                 setPayslipPinModalOpen(true)
                 return
             case 'user-guide':

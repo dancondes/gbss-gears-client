@@ -5,7 +5,6 @@ import FormInput from '@/components/form/FormInput'
 import Alert from '@/components/Alert'
 import CompanyBrand from '@/components/CompanyBrand'
 import DevelopmentBanner from '@/components/DevelopmentBanner'
-import { gbss_logo } from '@/assets/images'
 import { useAuthStore } from '@/store'
 import { useMessage } from '@/hooks/use-message'
 import { login as loginUser } from '@/services/auth-service'
@@ -13,11 +12,43 @@ import { getUserIdFromToken } from '@/utilities/jwt-utils'
 import { isResultSuccessful } from '@/utilities'
 import AcronymBreakdown from '@/components/AcronymBreakdown'
 
+// Small inline icons — kept dependency-free rather than pulling in an icon library
+const ClockIcon = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 3" />
+    </svg>
+)
+
+const EyeIcon = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+)
+
+const EyeOffIcon = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-10.5-7-10.5-7a19.13 19.13 0 0 1 4.22-5.15M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 10.5 7 10.5 7a19.2 19.2 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+        <path d="M1 1l22 22" />
+    </svg>
+)
+
+const brandItems = [
+    { letter: 'GBSS' },
+    { letter: 'Employee' },
+    { letter: 'Attendance' },
+    { letter: 'Recording' },
+    { letter: 'System' },
+]
+
 const Login = () => {
     const navigate = useNavigate()
     const token = useAuthStore((state) => state.token)
     const [formError, setFormError] = useMessage()
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [now, setNow] = useState(new Date())
 
     const {
         register,
@@ -36,6 +67,11 @@ const Login = () => {
         }
     }, [token, navigate])
 
+    // Running timestamp — small, functional nod to what an attendance system is for
+    useEffect(function () {
+        const timer = setInterval(() => setNow(new Date()), 1000)
+        return () => clearInterval(timer)
+    }, [])
 
     async function onSubmit(data) {
         setFormError('')
@@ -63,136 +99,132 @@ const Login = () => {
         }
     }
 
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const dateString = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })
+
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="flex min-h-screen flex-col bg-white">
             <DevelopmentBanner />
-            <div className="flex flex-1">
-                {/* Left Side - Logo & Branding (hidden on mobile, visible on md+) */}
-                <CompanyBrand
-                    title="Welcome to GEARS"
-                    // description="Employee Time In & Out System"
-                    extra={
-                        <AcronymBreakdown
-                            items={[
-                                { letter: 'GBSS' },
-                                { letter: 'Employee' },
-                                { letter: 'Attendance' },
-                                { letter: 'Recording' },
-                                { letter: 'System' },
-                            ]}
-                        />
-                    }
-                />
+
+            <div className="flex min-h-0 flex-1">
+                {/* Left Side - Branding panel (desktop only) */}
+                <div className="hidden md:flex md:w-1/2 lg:w-3/5">
+                    <CompanyBrand
+                        variant="panel"
+                        title="Welcome to GEARS"
+                        extra={<AcronymBreakdown items={brandItems} />}
+                    />
+                </div>
 
                 {/* Right Side - Login Form */}
-                <div className="flex-1 flex items-center justify-center bg-white px-4 sm:px-6 lg:px-8 py-12 border-l border-gray-200">
-                    <div className="max-w-md w-full space-y-8">
-                        {/* Mobile Logo (visible only on mobile) */}
-                        <div className="md:hidden text-center mb-8">
-                            <img
-                                src={gbss_logo}
-                                alt="GBSS Logo"
-                                className="mx-auto h-16 w-auto"
-                            />
-                        </div>
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                    {/* Decorative background — desktop only; on mobile the card banner already carries the brand color */}
+                    <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block">
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-white to-secondary/5" />
+                        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-secondary/10 blur-3xl" />
+                        <div className="absolute -bottom-28 -left-16 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+                    </div>
 
-                        {/* Form Header */}
-                        <div>
-                            <h2 className="text-center text-3xl font-extrabold text-primary">
-                                Sign in to your account
-                            </h2>
-                            <p className="mt-2 text-center text-sm text-tertiary">
-                                Enter your credentials to continue
-                            </p>
-                        </div>
+                    {/* Scrollable content area — the card stays reachable on short viewports */}
+                    <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-4 py-6 sm:px-6 sm:py-10 lg:px-10">
+                        <div className="w-full max-w-md">
+                            <div className="overflow-hidden rounded-2xl bg-white shadow-xl shadow-primary/10 ring-1 ring-primary/5 sm:rounded-3xl md:shadow-xl md:shadow-primary/5">
 
-                        {/* Error Message */}
-                        {formError && (
-                            <Alert text={formError} type="error" />
-                        )}
-
-                        {/* Login Form */}
-                        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
-                            <div className="space-y-4">
-                                {/* Username */}
-                                <FormInput
-                                    name="username"
-                                    placeholder="yourname"
-                                    label="Username"
-                                    autoComplete="username"
-                                    error={errors.username?.message}
-                                    register={register}
-                                    validation={{
-                                        required: 'Username is required',
-                                    }}
-                                    autoFocus
-                                />
-
-                                {/* Password */}
-                                <FormInput
-                                    name="password"
-                                    type="password"
-                                    placeholder="Password"
-                                    label="Password"
-                                    autoComplete="current-password"
-                                    error={errors.password?.message}
-                                    register={register}
-                                    validation={{
-                                        required: 'Password is required'
-                                    }}
-                                />
-                            </div>
-
-                            {/* Remember Me & Forgot Password */}
-                            <div className="flex items-center justify-between">
-                                {/* <div className="flex items-center">
-                                    <input
-                                        id="remember-me"
-                                        name="remember-me"
-                                        type="checkbox"
-                                        className="h-4 w-4 text-primary focus:ring-secondary border-tertiary rounded"
+                                {/* Full-bleed color banner — mobile & tablet only, replaces the old floating logo */}
+                                <div className="md:hidden">
+                                    <CompanyBrand
+                                        variant="compact"
+                                        title="GEARS"
+                                        description="GBSS Employee Attendance Recording System"
                                     />
-                                    <label htmlFor="remember-me" className="ml-2 block text-sm text-tertiary cursor-pointer">
-                                        Remember me
-                                    </label>
-                                </div> */}
+                                </div>
 
-                                <div></div>
+                                <div className="px-6 py-8 sm:px-10 sm:py-10">
+                                    {/* Running timestamp */}
+                                    <div className="mb-6 flex items-center justify-center gap-2 text-xs font-medium text-tertiary">
+                                        <ClockIcon className="h-3.5 w-3.5" />
+                                        <span className="tabular-nums">{timeString}</span>
+                                        <span className="text-gray-300">•</span>
+                                        <span>{dateString}</span>
+                                    </div>
 
-                                {/* <div className="text-sm">
-                                    <Link to="/forgot-password" className="font-medium text-primary hover:text-secondary">
-                                        Forgot password?
-                                    </Link>
-                                </div> */}
+                                    {/* Form Header */}
+                                    <div className="mb-8 text-center">
+                                        <h2 className="text-2xl font-bold tracking-tight text-primary sm:text-[28px]">
+                                            Sign in
+                                        </h2>
+                                        <p className="mt-2 text-sm text-tertiary">
+                                            Enter your credentials to continue
+                                        </p>
+                                    </div>
+
+                                    {/* Error Message */}
+                                    {formError && (
+                                        <div className="mb-6">
+                                            <Alert text={formError} type="error" />
+                                        </div>
+                                    )}
+
+                                    {/* Login Form */}
+                                    <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+                                        {/* Username */}
+                                        <FormInput
+                                            name="username"
+                                            placeholder="yourname"
+                                            label="Username"
+                                            autoComplete="username"
+                                            error={errors.username?.message}
+                                            register={register}
+                                            validation={{
+                                                required: 'Username is required',
+                                            }}
+                                            autoFocus
+                                        />
+
+                                        {/* Password */}
+                                        <div className="relative">
+                                            <FormInput
+                                                name="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Password"
+                                                label="Password"
+                                                autoComplete="current-password"
+                                                error={errors.password?.message}
+                                                register={register}
+                                                validation={{
+                                                    required: 'Password is required'
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword((v) => !v)}
+                                                className="absolute right-3 top-9.5 text-tertiary transition-colors hover:text-primary cursor-pointer"
+                                                tabIndex={-1}
+                                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                            >
+                                                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+
+                                        {/* Submit Button */}
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-primary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:opacity-50 cursor-pointer"
+                                        >
+                                            {loading && (
+                                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                            )}
+                                            {loading ? 'Signing in…' : 'Sign in'}
+                                        </button>
+                                    </form>
+
+                                    {/* Footer */}
+                                    <p className="mt-8 text-center text-xs text-tertiary">
+                                        © {new Date().getFullYear()} GBSS. All rights reserved.
+                                    </p>
+                                </div>
                             </div>
-
-                            {/* Submit Button */}
-                            <div>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-secondary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 transition-colors cursor-pointer"
-                                >
-                                    {loading ? 'Signing in...' : 'Sign In'}
-                                </button>
-                            </div>
-                        </form>
-
-                        {/* Register Link */}
-                        {/* <div className="text-center">
-                            <p className="text-sm text-tertiary">
-                                New employee?{' '}
-                                <Link to="/register" className="font-medium text-primary hover:underline">
-                                    Register here
-                                </Link>
-                            </p>
-                        </div> */}
-
-                        {/* Footer */}
-                        <div className="text-center">
-                            <p className="text-xs text-tertiary">
-                                © {new Date().getFullYear()} GBSS. All rights reserved.
-                            </p>
                         </div>
                     </div>
                 </div>

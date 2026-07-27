@@ -205,7 +205,7 @@ function MenuBar() {
     return (
         <div>
             {/* Top bar with logo and user menu */}
-            <div className="bg-primary px-4 py-1.5">
+            <div className="bg-linear-to-br from-primary to-secondary px-4 py-1.5">
                 <div className="flex justify-between items-center">
                     {/* Left side - Hamburger menu (mobile) and Logo */}
                     <div className="flex items-center gap-4">

@@ -1,10 +1,10 @@
 import PageTemplate from '@/components/PageTemplate'
 import Table from '@/components/Table'
 import { LOCATION_OPTIONS } from '@/constants'
+import useRefetchOnTabActive from '@/hooks/use-refresh-tab-on-tab-active'
 import { getTeamStatus } from '@/services/user-service'
-import { useTabStore } from '@/store'
 import { formatArrayOfStringsAsSelectOptions } from '@/utilities'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import useSWR from 'swr'
 
 export default function Status() {
@@ -16,6 +16,20 @@ export default function Status() {
         {
             accessorKey: 'status',
             header: 'Status',
+            cell: ({ getValue }) => {
+                const status = getValue()
+                const colors = {
+                    ONLINE: 'bg-green-500',
+                    OFFLINE: 'bg-red-500',
+                    'ON BREAK': 'bg-yellow-500',
+                }
+                return (
+                    <div className="flex items-center gap-1.5">
+                        <span className={`inline-block w-2 h-2 rounded-full ${colors[status] ?? 'bg-gray-400'}`} />
+                        <span>{status}</span>
+                    </div>
+                )
+            },
         },
         {
             accessorKey: 'location',
@@ -24,7 +38,6 @@ export default function Status() {
     ], [])
 
     const { data, isValidating, mutate } = useSWR('team-status', fetchTeamStatus)
-    const activeTabId = useTabStore((state) => state.activeTabId)
 
     async function fetchTeamStatus() {
         try {
@@ -35,11 +48,7 @@ export default function Status() {
         }
     }
 
-    useEffect(() => {
-        if (activeTabId === 'Team-Status') {
-            mutate()
-        }
-    }, [mutate, activeTabId])
+    useRefetchOnTabActive('Team-Status', mutate)
 
     return (
         <PageTemplate

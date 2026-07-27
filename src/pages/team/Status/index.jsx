@@ -16,6 +16,20 @@ export default function Status() {
         {
             accessorKey: 'status',
             header: 'Status',
+            cell: ({ getValue }) => {
+                const status = getValue()
+                const colors = {
+                    ONLINE: 'bg-green-500',
+                    OFFLINE: 'bg-red-500',
+                    'ON BREAK': 'bg-yellow-500',
+                }
+                return (
+                    <div className="flex items-center gap-1.5">
+                        <span className={`inline-block w-2 h-2 rounded-full ${colors[status] ?? 'bg-gray-400'}`} />
+                        <span>{status}</span>
+                    </div>
+                )
+            },
         },
         {
             accessorKey: 'location',

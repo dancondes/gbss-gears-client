@@ -59,6 +59,18 @@ function ClockInOut() {
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
 
+    // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
+    const isBeforeNoonManila = () => {
+        const manilaHour = Number(
+            new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Manila',
+                hour: 'numeric',
+                hour12: false,
+            }).format(new Date())
+        )
+        return manilaHour < 12
+    }
+
     const isFieldDisabled = useCallback((field) => {
         // disable all fields if user has already checked out
         if (checkOutTime) {
@@ -95,7 +107,7 @@ function ClockInOut() {
                 return false // no more validations for Lunch — user can take lunch anytime after check-in
 
             case 'break2Out':
-                return combinedOut || !lunchOut // no Break 2 if user has already taken the combined break or hasn't taken lunch yet
+                return combinedOut || !lunchOut || isBeforeNoonManila() // no Break 2 if user has already taken the combined break, hasn't taken lunch yet, or it's earlier than 12:00 PM Manila time
 
             case 'combinedOut':
                 return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
@@ -313,7 +325,7 @@ function ClockInOut() {
     return (
         <PageTemplate
             title="Clock In/Out"
-            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : 'Log your work hours and breaks'}
+            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : checkOutTime ? 'You\'re checked out for the day. All fields are now disabled.' : 'Log your work hours and breaks'}
             rightSide={(
                 <RunningTime />
             )}

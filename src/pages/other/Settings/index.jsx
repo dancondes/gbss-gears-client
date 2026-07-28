@@ -13,8 +13,8 @@ function Settings() {
     const [showAlertForLunchBreak, setShowAlertForLunchBreak] = useState(false)
 
     useEffect(() => {
-        window.showAlertForLunchBreak = () => setShowAlertForLunchBreak(true)
-        return () => { delete window.showAlertForLunchBreak }
+        window.showToggleAlertForLunchBreak = () => setShowAlertForLunchBreak(true)
+        return () => { delete window.showToggleAlertForLunchBreak }
     }, [])
 
     return (

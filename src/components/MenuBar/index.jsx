@@ -85,10 +85,14 @@ function MenuBar() {
 
     function handleUserProfileItemClick(e, item) {
         e?.preventDefault?.()
+        setUserMenuOpen(false)
 
         switch (item) {
             case 'profile':
-                handleUserProfileClick()
+                navigateTo('/user/personal-details', {
+                    id: 'Personal-Details',
+                    label: 'Personal Details',
+                })
                 break
             case 'logout':
                 handleLogoutClick()
@@ -96,7 +100,7 @@ function MenuBar() {
             case 'settings':
                 navigateTo('/settings', {
                     id: 'Settings',
-                    title: 'Settings',
+                    label: 'Settings',
                 })
                 break
             default:
@@ -110,7 +114,6 @@ function MenuBar() {
     }
 
     function handleLogoutClick() {
-        setUserMenuOpen(false)
         if (messageModalContext && typeof messageModalContext.showConfirmationModal === 'function') {
             messageModalContext.showConfirmationModal({
                 title: 'Sign Out',
@@ -137,13 +140,6 @@ function MenuBar() {
         setUserMenuOpen(false)
     }
 
-    function handleUserProfileClick() {
-        setUserMenuOpen(false)
-        navigateTo('/user/personal-details', {
-            id: 'Personal-Details',
-            title: 'Personal Details',
-        })
-    }
 
     // notifs
     function handleNotificationToggle() {

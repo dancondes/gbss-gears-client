@@ -99,8 +99,8 @@ const Login = () => {
         }
     }
 
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    const dateString = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Manila' })
+    const dateString = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Manila' })
 
     return (
         <div className="flex min-h-screen flex-col bg-white">

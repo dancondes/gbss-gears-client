@@ -70,7 +70,12 @@ function COERequests({
             // toast.success('COE request successful. The file has been downloaded.')
 
         } catch (error) {
-            toast.error(error.message || 'An error occurred while processing your request. Please try again later.')
+            addNotification({
+                type: 'error',
+                title: `Failed to download COE`,
+                message: error.message || 'An error occurred while processing your request. Please try again later.',
+                showToast: true,
+            })
         }
     }
 

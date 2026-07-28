@@ -1,5 +1,8 @@
+import { ErrorSound, SuccessSound } from '@/assets/audio'
+import logger from '@/utilities/logger'
 import { toast } from 'sonner'
 import { create } from 'zustand'
+import useUIStore from './ui-store'
 
 const NOTIFICATION_STORAGE_KEY = 'gears_notifications'
 const NOTIFICATION_STORAGE_VERSION = 1
@@ -172,6 +175,12 @@ const useNotificationStore = create(function (set) {
                 toast[nextNotification.type](notification?.message || '')
             }
 
+            // play a sound effect for the notif, ErrorSound if type is error, otherwise SuccessSound
+            if (useUIStore.getState().enableSound) {
+                const audio = new Audio(notification?.type === 'error' ? ErrorSound : SuccessSound)
+                audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+            }
+
             set(function (state) {
                 const notifications = pruneAndSortNotifications([nextNotification, ...state.notifications])
                 const nextState = {
@@ -192,12 +201,12 @@ const useNotificationStore = create(function (set) {
                 }
 
                 const notifications = pruneAndSortNotifications(state.notifications.map(function (notification) {
-                        if (notification.isRead) {
-                            return notification
-                        }
+                    if (notification.isRead) {
+                        return notification
+                    }
 
-                        return { ...notification, isRead: true }
-                    }))
+                    return { ...notification, isRead: true }
+                }))
                 const nextState = {
                     notifications,
                     unreadCount: 0,

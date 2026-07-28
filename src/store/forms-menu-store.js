@@ -33,7 +33,7 @@ const useFormsMenuStore = create((set, get) => {
         checkIfUserHavAccessToTab: (tab) => {
             const { findParentMenuItem } = get()
 
-            if (tab.id === 'Clock-In-Out') return true
+            if (['Clock-In-Out', 'Settings'].includes(tab.id)) return true
 
             const parentItem = findParentMenuItem(tab)
             if (!parentItem) return false

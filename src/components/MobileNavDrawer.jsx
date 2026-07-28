@@ -113,7 +113,7 @@ function MobileNavDrawer({ isOpen, onClose, menuItems, canViewTeams, canViewIT, 
                 ].join(' ')}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between bg-primary px-4 py-3 shrink-0">
+                <div className="flex items-center justify-between bg-linear-to-br from-primary to-secondary px-4 py-3 shrink-0">
                     <img src={gbss_logo_white} alt="GBSS Logo" className="h-7 object-contain" />
                     <button
                         ref={closeButtonRef}

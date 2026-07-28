@@ -31,6 +31,9 @@ const IMPORT_MAP = {
     // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
     // '/help/about': { main: () => import('@/pages/help/HARDCODED') },
     '/help/comms': { main: () => import('@/pages/help/Ticketing') },
+
+    // Others
+    '/settings': { main: () => import('@/pages/other/Settings') },
 }
 
 function buildRouteComponents() {

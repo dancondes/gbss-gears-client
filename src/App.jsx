@@ -15,8 +15,6 @@ const PageLoader = () => <Spinner />
 import Login from '@/pages/auth/Login'
 import ViewDocumentPage from './pages/other/ViewDocumentPage'
 import { Toaster } from 'sonner'
-// import ResetPassword from '@/pages/auth/ResetPassword'
-// import ForgotPassword from '@/pages/auth/ForgotPassword'
 
 const App = () => {
     return (
@@ -40,9 +38,6 @@ const App = () => {
                                 <Routes>
                                     {/* Routes without Layout */}
                                     <Route path="/login" element={<Login />} />
-                                    {/* <Route path="/forgot-password" element={<ForgotPassword />} />
-                            <Route path="/reset-password" element={<ResetPassword />} />
-                            <Route path="/reset-password/:encryptedEmail" element={<ResetPassword />} /> */}
                                     <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
 
                                     <Route

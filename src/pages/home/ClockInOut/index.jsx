@@ -11,7 +11,7 @@ import RunningTime from './components/RunningTime'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { LunchOverSound } from '@/assets/audio'
 import logger from '@/utilities/logger'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useUIStore } from '@/store'
 import LocationModal from './components/LocationModal'
 import { createTimeEntry, getTimeEntriesById } from '@/services/event-service'
 import { toast } from 'sonner'
@@ -24,6 +24,7 @@ function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
     const user = useAuthStore((state) => state.user)
     const setUser = useAuthStore((state) => state.setUser)
+    const enableAlertForLunchBreak = useUIStore((state) => state.enableAlertForLunchBreak)
     const { navigate } = useTabNavigation()
     const {
         earlyCheckOut15,
@@ -57,6 +58,18 @@ function ClockInOut() {
 
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
+
+    // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
+    const isBeforeNoonManila = () => {
+        const manilaHour = Number(
+            new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Manila',
+                hour: 'numeric',
+                hour12: false,
+            }).format(new Date())
+        )
+        return manilaHour < 12
+    }
 
     const isFieldDisabled = useCallback((field) => {
         // disable all fields if user has already checked out
@@ -94,7 +107,7 @@ function ClockInOut() {
                 return false // no more validations for Lunch — user can take lunch anytime after check-in
 
             case 'break2Out':
-                return combinedOut || !lunchOut // no Break 2 if user has already taken the combined break or hasn't taken lunch yet
+                return combinedOut || !lunchOut || isBeforeNoonManila() // no Break 2 if user has already taken the combined break, hasn't taken lunch yet, or it's earlier than 12:00 PM Manila time
 
             case 'combinedOut':
                 return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
@@ -130,7 +143,7 @@ function ClockInOut() {
 
     useEffect(() => {
         // Dont run if user is not 1710 or if lunchOut is not set or if lunchIn is already set
-        if (user?.employeeInfo?.personId != 1710 || !lunchOut || lunchIn) return
+        if (!enableAlertForLunchBreak || !lunchOut || lunchIn) return
 
         const LUNCH_LIMIT_MINUTES = 55; // 55 minutes instead of 60 to give a 5-minute warning before the hour is up
         const lunchOutDate = parseCustomDateTime(lunchOut)
@@ -155,9 +168,11 @@ function ClockInOut() {
         if (isAlertActiveRef.current) return // already alerting, ignore duplicate call
         isAlertActiveRef.current = true
 
-        const audio = new Audio(LunchOverSound)
-        alertAudioRef.current = audio
-        audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+        setTimeout(() => {
+            const audio = new Audio(LunchOverSound)
+            alertAudioRef.current = audio
+            audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+        }, 300)
 
         function stopAlertSound() {
             if (alertAudioRef.current) {
@@ -310,7 +325,7 @@ function ClockInOut() {
     return (
         <PageTemplate
             title="Clock In/Out"
-            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : 'Log your work hours and breaks'}
+            subtitle={isFetchingEntries ? 'Fetching updated time entries...' : checkOutTime ? 'You\'re checked out for the day. All fields are now disabled.' : 'Log your work hours and breaks'}
             rightSide={(
                 <RunningTime />
             )}

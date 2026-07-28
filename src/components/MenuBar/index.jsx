@@ -83,6 +83,27 @@ function MenuBar() {
         })
     }, [])
 
+    function handleUserProfileItemClick(e, item) {
+        e?.preventDefault?.()
+
+        switch (item) {
+            case 'profile':
+                handleUserProfileClick()
+                break
+            case 'logout':
+                handleLogoutClick()
+                break
+            case 'settings':
+                navigateTo('/settings', {
+                    id: 'Settings',
+                    title: 'Settings',
+                })
+                break
+            default:
+                break
+        }
+    }
+
     function handleLogoutConfirm() {
         logout()
         navigate('/login')
@@ -116,8 +137,7 @@ function MenuBar() {
         setUserMenuOpen(false)
     }
 
-    function handleUserProfileClick(e) {
-        e.preventDefault()
+    function handleUserProfileClick() {
         setUserMenuOpen(false)
         navigateTo('/user/personal-details', {
             id: 'Personal-Details',
@@ -247,8 +267,7 @@ function MenuBar() {
                             userMenuOpen={userMenuOpen}
                             onUserMenuToggle={handleUserMenuToggle}
                             onUserMenuClose={handleUserMenuClose}
-                            onLogoutClick={handleLogoutClick}
-                            onProfileClick={handleUserProfileClick}
+                            onItemClick={handleUserProfileItemClick}
                         />
                     </div>
                 </div>

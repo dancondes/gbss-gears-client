@@ -11,7 +11,7 @@ import RunningTime from './components/RunningTime'
 import useConfirmationModal from '@/hooks/use-confirmation-modal'
 import { LunchOverSound } from '@/assets/audio'
 import logger from '@/utilities/logger'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useUIStore } from '@/store'
 import LocationModal from './components/LocationModal'
 import { createTimeEntry, getTimeEntriesById } from '@/services/event-service'
 import { toast } from 'sonner'
@@ -24,6 +24,7 @@ function ClockInOut() {
     const { showConfirmationModal } = useConfirmationModal()
     const user = useAuthStore((state) => state.user)
     const setUser = useAuthStore((state) => state.setUser)
+    const enableAlertForLunchBreak = useUIStore((state) => state.enableAlertForLunchBreak)
     const { navigate } = useTabNavigation()
     const {
         earlyCheckOut15,
@@ -130,7 +131,7 @@ function ClockInOut() {
 
     useEffect(() => {
         // Dont run if user is not 1710 or if lunchOut is not set or if lunchIn is already set
-        if (user?.employeeInfo?.personId != 1710 || !lunchOut || lunchIn) return
+        if (!enableAlertForLunchBreak || !lunchOut || lunchIn) return
 
         const LUNCH_LIMIT_MINUTES = 55; // 55 minutes instead of 60 to give a 5-minute warning before the hour is up
         const lunchOutDate = parseCustomDateTime(lunchOut)
@@ -155,9 +156,11 @@ function ClockInOut() {
         if (isAlertActiveRef.current) return // already alerting, ignore duplicate call
         isAlertActiveRef.current = true
 
-        const audio = new Audio(LunchOverSound)
-        alertAudioRef.current = audio
-        audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+        setTimeout(() => {
+            const audio = new Audio(LunchOverSound)
+            alertAudioRef.current = audio
+            audio.play().catch((err) => logger.error('Audio playback blocked:', err))
+        }, 300)
 
         function stopAlertSound() {
             if (alertAudioRef.current) {

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import FormInput from '@/components/form/FormInput'
-import TypeaheadSelect from '@/components/form/TypeaheadSelect'
+import TypeaheadInput from '@/components/form/TypeaheadInput'
 
 function OvertimeForm({
     register,
@@ -16,10 +16,10 @@ function OvertimeForm({
         if (data) {
             const approverName = data.approvedBy
             if (!approverOptions.some(option => option.value === approverName)) {
-                return [...approverOptions, { value: approverName, label: approverName }]
+                return [...approverOptions.map(option => option.value), approverName]
             }
         }
-        return approverOptions
+        return approverOptions.map(option => option.value)
     }, [data, approverOptions])
 
     return (
@@ -46,13 +46,25 @@ function OvertimeForm({
                 error={errors.numHours?.message}
             />
 
-            <TypeaheadSelect
+            {/* <TypeaheadSelect
                 name="approvedBy"
                 label="Approved By"
                 control={control}
                 validation={{ required: 'Approved By is required' }}
                 error={errors.approvedBy?.message}
                 options={updatedOptions}
+                className='col-span-1 sm:col-span-2'
+                /> */}
+
+            <TypeaheadInput
+                name='approvedBy'
+                label='Approved By'
+                control={control}
+                options={updatedOptions}
+                error={errors.approvedBy?.message}
+                validation={{
+                    required: 'Approved By is required'
+                }}
                 className='col-span-1 sm:col-span-2'
             />
         </div>

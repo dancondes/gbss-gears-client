@@ -107,7 +107,6 @@ function ProtectedRoute({ children }) {
             }
 
             setIsInitialized(true)
-            refresh() // Trigger token refresh after successful initialization
         } catch (err) {
             logger.error('Auth initialization error:', err)
             toast.error('Failed to initialize authentication')

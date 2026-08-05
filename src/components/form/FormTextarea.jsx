@@ -19,16 +19,21 @@ const FormTextarea = ({
     disabled = false,
     readonly = false,
     autoFocus = false,
+    inputProps: otherProps = {}, // Additional props for the textarea element
 }) => {
     const hasError = Boolean(error)
 
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
     const textareaProps = register
-        ? register(name, validation)
+        ? {
+            ...register(name, validation),
+            ...otherProps
+        }
         : {
             value,
-            onChange
+            onChange,
+            ...otherProps
         }
 
     // Check if field is required from validation rules or props
@@ -85,6 +90,7 @@ FormTextarea.propTypes = {
     disabled: PropTypes.bool,
     readonly: PropTypes.bool,
     autoFocus: PropTypes.bool,
+    inputProps: PropTypes.object, // Additional props for the textarea element
 }
 
 export default FormTextarea

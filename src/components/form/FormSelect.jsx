@@ -19,16 +19,21 @@ const FormSelect = ({
     noPlaceholder = false,
     disabled = false,
     autoFocus = false,
+    inputProps: otherProps = {}, // Additional props for the select element
 }) => {
     const hasError = Boolean(error)
 
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
     const selectProps = register
-        ? register(name, validation)
+        ? {
+            ...register(name, validation),
+            ...otherProps
+        }
         : {
             value,
-            onChange
+            onChange,
+            ...otherProps
         }
 
     // Check if field is required from validation rules or props
@@ -115,6 +120,7 @@ FormSelect.propTypes = {
     noPlaceholder: PropTypes.bool, // If true, do not render placeholder option
     disabled: PropTypes.bool, // If true, disable the select field,
     autoFocus: PropTypes.bool, // If true, auto-focus the select field
+    inputProps: PropTypes.object, // Additional props for the select element
 }
 
 export default FormSelect

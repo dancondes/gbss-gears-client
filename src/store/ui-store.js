@@ -19,6 +19,7 @@ const useUIStore = create(
             // states to be persisted in localStorage
             enableSound: false,
             enableAlertForLunchBreak: false,
+            showTeamStatus: false,
 
             // UI Settings Actions
             setCOERequestModalOpen: (isOpen) => {
@@ -43,6 +44,10 @@ const useUIStore = create(
 
             setEnableAlertForLunchBreak: (enableAlertForLunchBreak) => {
                 set({ enableAlertForLunchBreak });
+            },
+
+            setShowTeamStatus: (showTeamStatus) => {
+                set({ showTeamStatus });
             }
         }),
         {
@@ -51,7 +56,8 @@ const useUIStore = create(
             // in-memory and always resets to false on reload, as before.
             partialize: (state) => ({
                 enableSound: !!state.enableSound,
-                enableAlertForLunchBreak: !!state.enableAlertForLunchBreak
+                enableAlertForLunchBreak: !!state.enableAlertForLunchBreak,
+                showTeamStatus: !!state.showTeamStatus,
             }),
             version: 0
         }

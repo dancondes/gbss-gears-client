@@ -42,11 +42,13 @@ function ApplicationLeaveFrom({
         control,
         reset,
         getValues,
-        setValue
+        setValue,
+        watch
     } = useForm({
         defaultValues: DEFAULT_FORM_VALUES,
         mode: 'onBlur',
     })
+    const watchDateFrom = watch('dateFrom')
 
     useEffect(() => {
         if (selectedLeave) {
@@ -203,6 +205,9 @@ function ApplicationLeaveFrom({
                                 }
                             }}
                             className="mb-0!"
+                            inputProps={{
+                                min: getCurrentDate(1)
+                            }}
                         />
 
                         <FormInput
@@ -212,9 +217,18 @@ function ApplicationLeaveFrom({
                             register={register}
                             error={errors.dateTo?.message}
                             validation={{
-                                required: 'Date To is required'
+                                required: 'Date To is required',
+                                // validate: (value) => {
+
+                                //     if (value && watchDateFrom && value < watchDateFrom) {
+                                //         return 'Date To cannot be earlier than Date From'
+                                //     }
+                                // },
                             }}
                             className="mb-0!"
+                            inputProps={{
+                                min: watchDateFrom || getCurrentDate(1)
+                            }}
                         />
                     </div>
 

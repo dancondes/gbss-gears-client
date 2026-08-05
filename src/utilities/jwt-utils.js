@@ -105,3 +105,24 @@ export function getPIN(token) {
 export function canUserTriggerEvacuation(token) {
     return decodeJWT(token)?.Evac == "True" || false
 }
+
+/**
+ * Check if token expired on a previous date (any date before today)
+ * Compares calendar dates, not exact timestamps
+ * 
+ * @param {string} token - JWT token
+ * @returns {boolean} - True if token's expiration date is before today
+ */
+export function isTokenExpiredOnPreviousDate(token) {
+    const expirationTime = getTokenExpiration(token)
+    if (!expirationTime) return true
+
+    const expirationDate = new Date(expirationTime)
+    const today = new Date()
+
+    // Zero out the time portion so we're comparing dates only
+    expirationDate.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
+
+    return expirationDate < today
+}

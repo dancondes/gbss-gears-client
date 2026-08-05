@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import Table from '../../../components/Table'
 import PageTemplate from '@/components/PageTemplate'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import { createOvertime, deleteOvertime, getOvertime, updateOvertime } from '@/services/event-service'
@@ -11,6 +10,8 @@ import { toast } from 'sonner'
 import { isResultSuccessful } from '@/utilities'
 import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getApprovers } from '@/services/lookups-service'
+import OpenTicketModal from '../Leaves/components/OpenTicketModal'
+import { ENQUIRY_TYPE_ID_FOR_HR } from '@/constants/database-id'
 
 const currentDate = getCurrentDate()
 
@@ -86,6 +87,7 @@ function Overtime() {
             title="Overtime"
             subtitle="View and manage your overtime records"
             mutate={mutate}
+            rightSide={<OpenTicketModal concernLabel="Overtime" defaultValues={{ ticketType: ENQUIRY_TYPE_ID_FOR_HR }} />}
         >
             <div className="p-1 sm:p-3">
                 <EditableListTabModal

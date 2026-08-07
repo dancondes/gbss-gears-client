@@ -3,8 +3,8 @@ import Modal from '@/components/modals/Modal'
 import PropTypes from 'prop-types'
 
 const LOCATIONS = [
-    { id: 'Home', label: 'Home', icon: 'home' },
-    { id: 'Three Neo', label: 'Three NEO', icon: 'pin' },
+    { id: 'HOME', label: 'Home', icon: 'home' },
+    { id: 'Three NEO', label: 'Three NEO', icon: 'pin' },
     { id: 'PhilPlans', label: 'PhilPlans', icon: 'pin' }
 ]
 

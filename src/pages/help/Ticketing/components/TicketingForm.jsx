@@ -76,7 +76,8 @@ export default function TicketingForm({
         const existingCheckInEntry = entries.find(entry => entry.logTypeCode === 'I')
 
         if (existingCheckInEntry) {
-            setValue('location', existingCheckInEntry.location || '')
+            const location = LOCATION_OPTIONS.find(option => option.value === existingCheckInEntry.location)?.value || null
+            setValue('location', location)
         }
     }
 

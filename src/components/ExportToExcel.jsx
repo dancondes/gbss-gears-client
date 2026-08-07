@@ -34,8 +34,9 @@ const ExportToExcel = ({ data, fileName, buttonLabel = 'Excel' }) => {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
 
         // Generate filename with timestamp
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const finalFileName = `${fileName}_${timestamp}.xlsx`;
+        // const timestamp = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+        // const finalFileName = `${fileName}_${timestamp}.xlsx`;
+        const finalFileName = `${fileName}.xlsx`;
 
         // Write the file
         XLSX.writeFile(workbook, finalFileName);

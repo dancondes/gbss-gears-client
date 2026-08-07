@@ -40,6 +40,7 @@ export default function TicketingForm({
         handleSubmit,
         reset,
         watch,
+        setValue,
         formState: { errors },
         // setError,
     } = useForm({
@@ -70,6 +71,30 @@ export default function TicketingForm({
     const [uploading, setUploading] = useState(false)
     const [timeEntries, setTimeEntries] = useState([])
 
+    // Applies the location of an existing Check In entry (if any) to the form's location field
+    function applyCheckInLocation(entries) {
+        const existingCheckInEntry = entries.find(entry => entry.logTypeCode === 'I')
+
+        if (existingCheckInEntry) {
+            const location = LOCATION_OPTIONS.find(option => option.value === existingCheckInEntry.location)?.value || null
+            setValue('location', location)
+        }
+    }
+
+    // Builds and dispatches the submission result notification (success or failure)
+    function notifySubmissionResult(success, ticketLabel) {
+        const labelSuffix = ticketLabel ? ' ' + ticketLabel : ''
+
+        addNotification({
+            type: success ? 'success' : 'error',
+            title: success ? 'Ticket Submitted' : 'Ticket Submission Failed',
+            message: success
+                ? `Your${labelSuffix} ticket has been submitted successfully.`
+                : `An error occurred while submitting your${labelSuffix} ticket. Please try again later.`,
+            showToast: true,
+        })
+    }
+
     useEffect(() => {
         reset(defaultValues ? {
             ...generateDefaultValues(),
@@ -82,6 +107,10 @@ export default function TicketingForm({
             try {
                 const result = await getTimeEntriesById(user?.userId, { dateFrom: date, dateTo: date })
                 setTimeEntries(result?.data || [])
+
+                if (watchedLogType === 'I') {
+                    applyCheckInLocation(result?.data || [])
+                }
             } catch {
                 setTimeEntries([])
             }
@@ -89,6 +118,8 @@ export default function TicketingForm({
 
         if (isTimeAmendment && watchedAmendDate && validateStrictDateInput(watchedAmendDate) === true) {
             fetchTimeEntries(watchedAmendDate)
+        } else {
+            setTimeEntries([])
         }
     }, [watchedAmendDate, user, isTimeAmendment, setTimeEntries])
 
@@ -116,6 +147,8 @@ export default function TicketingForm({
             return `${date}T${time}`
         }
         const optionSelected = typeOptions.find(option => option.value == data.ticketType)
+        const ticketLabel = optionSelected?.label
+
         try {
             setUploading(true)
             const params = isTimeAmendment ? {
@@ -141,28 +174,13 @@ export default function TicketingForm({
             const result = await (isTimeAmendment ? createTimeAmendment(params, filesToUpload) : createTicket(params, filesToUpload))
 
             if (result == 'New ticket has been added to the system!' || isResultSuccessful(result)) {
-                addNotification({
-                    type: 'success',
-                    title: 'Ticket Submitted',
-                    message: `Your${optionSelected ? ' ' + optionSelected?.label : ''} ticket has been submitted successfully.`,
-                    showToast: true,
-                })
+                notifySubmissionResult(true, ticketLabel)
             } else {
-                addNotification({
-                    type: 'error',
-                    title: 'Ticket Submission Failed',
-                    message: `An error occurred while submitting your${optionSelected ? ' ' + optionSelected?.label : ''} ticket. Please try again later.`,
-                    showToast: true,
-                })
+                notifySubmissionResult(false, ticketLabel)
                 logger.error('Error submitting ticket:', result)
             }
         } catch (error) {
-            addNotification({
-                type: 'error',
-                title: 'Ticket Submission Failed',
-                message: `An error occurred while submitting your${optionSelected ? ' ' + optionSelected?.label : ''} ticket. Please try again later.`,
-                showToast: true,
-            })
+            notifySubmissionResult(false, ticketLabel)
             logger.error('Error submitting ticket:', error)
         } finally {
             setUploading(false)
@@ -250,9 +268,16 @@ export default function TicketingForm({
                                 register={register}
                                 validation={{
                                     required: { value: isTimeAmendment, message: 'Please select a log type for the time amendment' },
+                                    onChange: (e) => {
+                                        const selectedLogType = e.target.value
+
+                                        if (selectedLogType === 'I') {
+                                            applyCheckInLocation(timeEntries)
+                                        }
+                                    }
                                 }}
                                 error={errors.amendType?.message}
-                            // className='col-span-2 sm:col-span-1'
+                                // className='col-span-2 sm:col-span-1'
                             />
 
                             {isCheckInLogType && (

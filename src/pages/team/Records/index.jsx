@@ -81,6 +81,16 @@ export default function Records() {
         mutate(result, false)
     }
 
+    function getDateRangeFilters() {
+        const { dateFrom, dateTo } = filters.current
+
+        if (dateFrom && dateTo && dateFrom === dateTo) {
+            return dateFrom
+        }
+
+        return `${dateFrom} to ${dateTo}`
+    }
+
     return (
         <PageTemplate
             title="Records"
@@ -96,7 +106,7 @@ export default function Records() {
                     isLoading={isLoading}
                     onSearch={handleSearch}
                     exportToExcel={{
-                        fileName: 'Time Logs',
+                        fileName: `Time Logs_${getDateRangeFilters()}`,
                         position: 'bottom-right',
                         buttonLabel: 'Export to Excel'
                     }}

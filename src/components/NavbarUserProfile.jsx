@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onUserMenuClose, onLogoutClick, onProfileClick }) {
+function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onUserMenuClose, onItemClick }) {
 
     if (!user) {
         return (
@@ -43,15 +43,20 @@ function NavbarUserProfile({ user, fullName, userMenuOpen, onUserMenuToggle, onU
                                 <div className="font-medium text-primary">{fullName}</div>
                                 <div className="text-xs text-gray-500">Employee Number: {user?.empNo}</div>
                             </div>
-                            <Link
-                                // to="/profile"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                                onClick={onProfileClick}
+                            <button
+                                className="block w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                onClick={(e) => onItemClick(e, 'profile')}
                             >
                                 Your Profile
+                            </button>
+                            <Link
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                onClick={(e) => onItemClick(e, 'settings')}
+                            >
+                                Settings
                             </Link>
                             <button
-                                onClick={onLogoutClick}
+                                onClick={(e) => onItemClick(e, 'logout')}
                                 className="block w-full text-left px-4 py-2 text-sm text-danger hover:bg-red-50 cursor-pointer"
                             >
                                 Sign out
@@ -78,8 +83,7 @@ NavbarUserProfile.propTypes = {
     userMenuOpen: PropTypes.bool.isRequired,
     onUserMenuToggle: PropTypes.func.isRequired,
     onUserMenuClose: PropTypes.func.isRequired,
-    onLogoutClick: PropTypes.func.isRequired,
-    onProfileClick: PropTypes.func.isRequired,
+    onItemClick: PropTypes.func.isRequired,
 }
 
 export default NavbarUserProfile

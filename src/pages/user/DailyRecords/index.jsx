@@ -9,6 +9,7 @@ import { useFetchOptions } from '@/hooks/use-fetch-options'
 import { getLogTypes } from '@/services/lookups-service'
 import OpenTicketModal from '../Leaves/components/OpenTicketModal'
 import { ENQUIRY_TYPE_ID_FOR_TIME_AMEND } from '@/constants/database-id'
+import useRefetchOnTabActive from '@/hooks/use-refresh-tab-on-tab-active'
 
 function DailyRecords() {
     const user = useAuthStore((state) => state.user)
@@ -33,6 +34,7 @@ function DailyRecords() {
     }, [user?.userId])
 
     const { data, isValidating, mutate } = useSWR('daily-records', fetchTimeEntries)
+    useRefetchOnTabActive('Daily-Records', mutate)
 
     const handleSearch = useCallback(async (filters) => {
         const workDate = filters.workdate

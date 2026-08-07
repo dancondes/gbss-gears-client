@@ -20,20 +20,6 @@ const ClockIcon = (props) => (
     </svg>
 )
 
-const EyeIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
-        <circle cx="12" cy="12" r="3" />
-    </svg>
-)
-
-const EyeOffIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-10.5-7-10.5-7a19.13 19.13 0 0 1 4.22-5.15M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 10.5 7 10.5 7a19.2 19.2 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-        <path d="M1 1l22 22" />
-    </svg>
-)
-
 const brandItems = [
     { letter: 'GBSS' },
     { letter: 'Employee' },
@@ -47,7 +33,6 @@ const Login = () => {
     const token = useAuthStore((state) => state.token)
     const [formError, setFormError] = useMessage()
     const [loading, setLoading] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)
     const [now, setNow] = useState(new Date())
 
     const {
@@ -99,8 +84,8 @@ const Login = () => {
         }
     }
 
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    const dateString = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Manila' })
+    const dateString = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Manila' })
 
     return (
         <div className="flex min-h-screen flex-col bg-white">
@@ -182,29 +167,18 @@ const Login = () => {
                                         />
 
                                         {/* Password */}
-                                        <div className="relative">
-                                            <FormInput
-                                                name="password"
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="Password"
-                                                label="Password"
-                                                autoComplete="current-password"
-                                                error={errors.password?.message}
-                                                register={register}
-                                                validation={{
-                                                    required: 'Password is required'
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword((v) => !v)}
-                                                className="absolute right-3 top-9.5 text-tertiary transition-colors hover:text-primary cursor-pointer"
-                                                tabIndex={-1}
-                                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                            >
-                                                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                                            </button>
-                                        </div>
+                                        <FormInput
+                                            name="password"
+                                            type="password"
+                                            placeholder="Password"
+                                            label="Password"
+                                            autoComplete="current-password"
+                                            error={errors.password?.message}
+                                            register={register}
+                                            validation={{
+                                                required: 'Password is required'
+                                            }}
+                                        />
 
                                         {/* Submit Button */}
                                         <button

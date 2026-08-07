@@ -249,7 +249,7 @@ const TableFilters = ({
                     className="flex items-center justify-end"
                 >
                     <Toggle
-                        id="showSubmenuOnHover"
+                        id="tableToggle"
                         checked={toggleState}
                         onChange={onToggleChange}
                         label={toggleLabel || 'Toggle Option'}

@@ -15,8 +15,8 @@ export const LOCATION_OPTIONS = [
     // 'Home',
     // 'Three NEO',
     // 'PhilPlans',
-    { value: 'Home', label: 'Home' },
-    { value: 'Three Neo', label: 'Three NEO' },
+    { value: 'HOME', label: 'Home' },
+    { value: 'Three NEO', label: 'Three NEO' },
     { value: 'PhilPlans', label: 'PhilPlans' }
 ]
 

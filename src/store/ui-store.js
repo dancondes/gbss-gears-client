@@ -1,79 +1,67 @@
 import { create } from 'zustand';
-import logger from '@/utilities/logger'
-import useTabStore from './tab-store'
+import { persist } from 'zustand/middleware';
 
 const UI_SETTINGS_KEY = 'gears_ui_settings';
-
-function loadUISettings() {
-    try {
-        const stored = localStorage.getItem(UI_SETTINGS_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch (error) {
-        logger.error('Failed to load UI settings:', error);
-        return {};
-    }
-}
-
-function saveUISettings(settings) {
-    try {
-        localStorage.setItem(UI_SETTINGS_KEY, JSON.stringify(settings));
-    } catch (error) {
-        logger.error('Failed to save UI settings:', error);
-    }
-}
 
 /**
  * UI Store
  * Manages UI state like unsaved changes and page refresh callbacks
  */
-const useUIStore = create((set, get) => {
-    const initialSettings = loadUISettings();
-    
-    return {
-        // State
-        sidebarMinimized: initialSettings.sidebarMinimized ?? false,
-        coeRequestModalOpen: false,
-        payslipPinModalOpen: false,
-        changePasswordModalOpen: false,
-        changePinModalOpen: false,
-        
-        // UI Settings (persisted to localStorage)
-        showSubmenuOnHover: initialSettings.showSubmenuOnHover ?? false,
-        
-        // Trigger the refresh callback for the currently active tab
-        triggerRefresh: () => {
-            const { refreshCallbacks } = get()
-            const activeTab = useTabStore.getState().getActiveTab()
-            if (!activeTab) return
-            const callback = refreshCallbacks[activeTab.path]
-            if (callback && typeof callback === 'function') {
-                callback()
+const useUIStore = create(
+    persist(
+        (set) => ({
+            // State
+            coeRequestModalOpen: false,
+            payslipPinModalOpen: false,
+            changePasswordModalOpen: false,
+            changePinModalOpen: false,
+
+            // states to be persisted in localStorage
+            enableSound: false,
+            enableAlertForLunchBreak: false,
+            showTeamStatus: false,
+
+            // UI Settings Actions
+            setCOERequestModalOpen: (isOpen) => {
+                set({ coeRequestModalOpen: isOpen });
+            },
+
+            setPayslipPinModalOpen: (isOpen) => {
+                set({ payslipPinModalOpen: isOpen });
+            },
+
+            setChangePasswordModalOpen: (isOpen) => {
+                set({ changePasswordModalOpen: isOpen });
+            },
+
+            setChangePinModalOpen: (isOpen) => {
+                set({ changePinModalOpen: isOpen });
+            },
+
+            setEnableSound: (enableSound) => {
+                set({ enableSound });
+            },
+
+            setEnableAlertForLunchBreak: (enableAlertForLunchBreak) => {
+                set({ enableAlertForLunchBreak });
+            },
+
+            setShowTeamStatus: (showTeamStatus) => {
+                set({ showTeamStatus });
             }
-        },
-        
-        // UI Settings Actions
-        setShowSubmenuOnHover: (value) => {
-            set({ showSubmenuOnHover: value });
-            const { showSubmenuOnHover } = get();
-            saveUISettings({ ...loadUISettings(), showSubmenuOnHover });
-        },
-
-        setCOERequestModalOpen: (isOpen) => {
-            set({ coeRequestModalOpen: isOpen });
-        },
-
-        setPayslipPinModalOpen: (isOpen) => {
-            set({ payslipPinModalOpen: isOpen });
-        },
-
-        setChangePasswordModalOpen: (isOpen) => {
-            set({ changePasswordModalOpen: isOpen });
-        },
-
-        setChangePinModalOpen: (isOpen) => {
-            set({ changePinModalOpen: isOpen });
+        }),
+        {
+            name: UI_SETTINGS_KEY,
+            // Only enableSound is persisted — modal open/close state stays
+            // in-memory and always resets to false on reload, as before.
+            partialize: (state) => ({
+                enableSound: !!state.enableSound,
+                enableAlertForLunchBreak: !!state.enableAlertForLunchBreak,
+                showTeamStatus: !!state.showTeamStatus,
+            }),
+            version: 0
         }
-    };
-});
+    )
+);
 
 export default useUIStore;

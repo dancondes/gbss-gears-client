@@ -82,6 +82,7 @@ const FormInput = ({
     readonly = false,
     autoFocus = false,
     maxLength,
+    inputProps: otherProps = {}, // Additional props for the input element
 }) => {
     const [showPassword, setShowPassword] = useState(false)
 
@@ -126,10 +127,14 @@ const FormInput = ({
     // If register is provided, use React Hook Form
     // Otherwise, use as controlled component
     const inputProps = register
-        ? register(name, composedValidationRules)
+        ? {
+            ...register(name, composedValidationRules),
+            ...otherProps
+        }
         : {
             value,
-            onChange
+            onChange,
+            ...otherProps
         }
 
     // Check if field is required from validation rules or props
@@ -244,6 +249,7 @@ FormInput.propTypes = {
     readonly: PropTypes.bool, // For read-only input
     autoFocus: PropTypes.bool, // For auto-focusing the input
     maxLength: PropTypes.number, // For maximum length of input
+    inputProps: PropTypes.object, // Additional props for the input element
 }
 
 export default FormInput

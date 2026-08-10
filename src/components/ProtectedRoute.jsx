@@ -10,7 +10,6 @@ import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 import { useRefreshToken } from '@/hooks/use-refresh-token'
 import { useIpInfo } from '@/hooks/use-ip-info'
-import { useGetLocation } from '@/hooks/use-get-location'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // Refresh 5 minutes before expiry
 
@@ -28,7 +27,6 @@ function ProtectedRoute({ children }) {
     const [shouldRedirect, setShouldRedirect] = useState(false)
     const { refresh } = useRefreshToken()
     const { fetchIpInfo } = useIpInfo()
-    const { getLocation } = useGetLocation()
 
     // Every early-exit path from initializeAuth needs to mark init done; some
     // also need to log the user out. One call instead of repeating both lines
@@ -103,7 +101,6 @@ function ProtectedRoute({ children }) {
 
             const ipInfo = await fetchIpInfo()
             const fetchedUser = await getUserById(userId)
-            await getLocation()
 
             if (fetchedUser && fetchedUser.data[0]) {
                 setUser({

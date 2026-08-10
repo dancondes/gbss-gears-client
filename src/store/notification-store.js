@@ -7,7 +7,7 @@ import useUIStore from './ui-store'
 const NOTIFICATION_STORAGE_KEY = 'gears_notifications'
 const NOTIFICATION_STORAGE_VERSION = 1
 const NOTIFICATION_TTL_MS = 1000 * 60 * 60 * 24 * 30
-const NOTIFICATION_MAX_ITEMS = 50
+const NOTIFICATION_MAX_ITEMS = 100
 
 function isStorageAvailable() {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'

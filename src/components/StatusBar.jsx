@@ -8,6 +8,7 @@ function StatusBar() {
         <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 border-t border-gray-300 bg-gray-50 px-3 py-1.5 text-xs text-gray-500" >
             {/* <span>MAC: {statusBar.mac}</span> */}
             {/* <span>IP: {statusBar.ip}</span> */}
+            {user?.ipInfo?.ip && <span><strong>IP Address:</strong> {user?.ipInfo?.ip}</span>}
             {user?.loggedAtLoc && <span><strong>Loc:</strong> {user?.loggedAtLoc}</span>}
             <span><strong>Shift:</strong> {user?.schedule?.[0]?.description}</span>
             <span><strong>G-Role:</strong> {user?.role?.description}</span>

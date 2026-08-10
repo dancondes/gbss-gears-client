@@ -15,7 +15,7 @@ import { getCurrentDate, getCurrentTime, to24HourTime } from '@/utilities/date-u
 // import { createTicket } from '@/services/ticketing-service'
 import logger from '@/utilities/logger'
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -51,7 +51,7 @@ export default function TicketingForm({
     })
     const { showConfirmationModal } = useConfirmationModal()
     const { options: typeOptions, loading: enquiryTypesLoading } = useFetchOptions(getEnquiryTypes, {
-        transform: (list) => list.map(item => ({...item, description: item?.description?.replace('_', ' ')}))
+        transform: (list) => list.map(item => ({ ...item, description: item?.description?.replace('_', ' ') }))
     })
     const { options: logTypeOptions, loading: logTypesLoading } = useFetchOptions(getLogTypes, {
         valueKey: 'code',
@@ -94,6 +94,24 @@ export default function TicketingForm({
             showToast: true,
         })
     }
+
+    const loggedTimeForChosenDateAndType = useMemo(() => {
+        if (watchedAmendDate && validateStrictDateInput(watchedAmendDate) === true && watchedLogType) {
+            const existingEntry = timeEntries.find(entry => entry.logTypeCode === watchedLogType)
+
+            if (existingEntry) {
+                return to24HourTime(existingEntry.worktime)
+            }
+        }
+
+        return null
+    }, [watchedAmendDate, watchedLogType, timeEntries])
+
+    const setLoggedTime = useCallback(() => {
+        if (loggedTimeForChosenDateAndType) {
+            setValue('amendTime', loggedTimeForChosenDateAndType)
+        }
+    }, [loggedTimeForChosenDateAndType])
 
     useEffect(() => {
         reset(defaultValues ? {
@@ -249,17 +267,31 @@ export default function TicketingForm({
                                 className='mb-0!'
                             />
 
-                            <TimeInput
-                                name='amendTime'
-                                label='Time'
-                                register={register}
-                                validation={{
-                                    required: { value: isTimeAmendment, message: 'Please select a time for the time amendment' },
-                                }}
-                                error={errors.amendTime?.message}
-                                showSeconds
-                                className='mb-0!'
-                            />
+                            <div>
+                                <TimeInput
+                                    name='amendTime'
+                                    label='Time'
+                                    register={register}
+                                    validation={{
+                                        required: { value: isTimeAmendment, message: 'Please select a time for the time amendment' },
+                                    }}
+                                    error={errors.amendTime?.message}
+                                    showSeconds
+                                    className='mb-0!'
+                                />
+
+                                {
+                                    loggedTimeForChosenDateAndType && (
+                                        <button
+                                            type='button'
+                                            onClick={setLoggedTime}
+                                            className='mt-1 inline-block text-sm font-medium text-primary underline decoration-primary/40 underline-offset-2 transition-colors duration-150 hover:text-primary/80 hover:decoration-primary/80'
+                                        >
+                                            Set to the logged time
+                                        </button>
+                                    )
+                                }
+                            </div>
 
                             <FormSelect
                                 name='amendType'
@@ -277,7 +309,7 @@ export default function TicketingForm({
                                     }
                                 }}
                                 error={errors.amendType?.message}
-                                // className='col-span-2 sm:col-span-1'
+                            // className='col-span-2 sm:col-span-1'
                             />
 
                             {isCheckInLogType && (

@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Table from '@/components/Table'
+import { getCurrentDate, spliceDateFromTime } from '@/utilities/date-utilities'
 
+const currentDate = getCurrentDate()
 function FiledLeaves({
     data = [],
     isLoading = false,
@@ -29,6 +31,15 @@ function FiledLeaves({
         }
     ]), [])
 
+    function rowCondition(row) {
+        const startDate = spliceDateFromTime(row.startDate)
+        const endDate = spliceDateFromTime(row.endDate)
+
+        if (startDate < currentDate || endDate < currentDate) {
+            return true
+        }
+    }
+
     return (
         <div className="mt-4">
             <h2 className="text-sm font-bold text-primary uppercase mb-0!">
@@ -44,6 +55,8 @@ function FiledLeaves({
                 maxHeight={200}
                 defaultSorting={[{ id: 'startDate', desc: true }]}
                 isLoading={isLoading}
+                rowCondition={rowCondition}
+                rowConditionClassName="bg-gray-100 hover:bg-gray-200! text-gray-400 cursor-not-allowed!"
             />
         </div>
     )

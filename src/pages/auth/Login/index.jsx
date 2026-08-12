@@ -43,7 +43,8 @@ const Login = () => {
         defaultValues: {
             username: '',
             password: ''
-        }
+        },
+        mode: 'onSubmit'
     })
 
     useEffect(function () {

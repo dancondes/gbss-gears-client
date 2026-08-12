@@ -8,7 +8,7 @@ import {
     getPaginationRowModel,
     flexRender,
 } from '@tanstack/react-table'
-import { transformRowsForExport } from '@/utilities/export-utilities'
+// import { transformRowsForExport } from '@/utilities/export-utilities'
 import ExportToExcel from '@/components/ExportToExcel'
 import CollapsibleContainer from '@/components/CollapsibleContainer'
 import TableFilters from './TableFilters'
@@ -97,7 +97,7 @@ TableHeader.propTypes = {
 // TABLE BODY COMPONENT
 // ============================================================================
 
-const TableBody = ({ noDataLabel, rows, columns, onRowClick, onRowRightClick, isStripes, isClickable, isLoading }) => {
+const TableBody = ({ noDataLabel, rows, columns, onRowClick, onRowRightClick, isStripes, isClickable, isLoading, rowCondition, rowConditionClassName }) => {
     const [showExtendedMessage, setShowExtendedMessage] = useState(false)
 
     useEffect(function handleLoadingTimeout() {
@@ -149,40 +149,48 @@ const TableBody = ({ noDataLabel, rows, columns, onRowClick, onRowRightClick, is
 
     return (
         <tbody className="bg-white divide-y divide-gray-200">
-            {rows.map((row, index) => (
-                <tr
-                    key={row.id}
-                    onClick={() => onRowClick(row.original)}
-                    onContextMenu={(e) => {
-                        if (onRowRightClick) {
-                            e.preventDefault()
-                            onRowRightClick(e, row.original)
-                        }
-                    }}
-                    className={`
-                        hover:bg-slate-50 hover:shadow-sm transition-all duration-150
-                        ${isClickable ? 'cursor-pointer' : ''}
-                        ${isStripes && index % 2 !== 0 ? 'bg-gray-50/50' : 'bg-white'}
-                    `}
-                >
-                    {row.getVisibleCells().map((cell) => {
-                        const columnDef = cell.column.columnDef
-                        const hasCustomWidth = columnDef.width !== undefined
-                        const displayValue = flexRender(cell.column.columnDef.cell, cell.getContext())
+            {rows.map((row, index) => {
+                const isConditionMet = rowCondition ? rowCondition(row.original) : false
 
-                        return (
-                            <td
-                                key={cell.id}
-                                className="px-2 py-1 whitespace-nowrap text-xs text-gray-700 max-w-80 overflow-hidden text-ellipsis"
-                                style={{ width: hasCustomWidth ? columnDef.width : undefined }}
-                            // title={displayValue} // not working because the displayValue is an html element, consider adding a custom tooltip component if needed
-                            >
-                                {displayValue}
-                            </td>
-                        )
-                    })}
-                </tr>
-            ))}
+                return (
+                    <tr
+                        key={row.id}
+                        onClick={() => onRowClick(row.original)}
+                        onContextMenu={(e) => {
+                            if (onRowRightClick) {
+                                e.preventDefault()
+                                onRowRightClick(e, row.original)
+                            }
+                        }}
+                        className={`
+                            hover:bg-slate-50 hover:shadow-sm transition-all duration-150 text-gray-700
+                            ${isClickable ? 'cursor-pointer' : ''}
+                            ${isConditionMet
+                                ? rowConditionClassName
+                                : isStripes && index % 2 !== 0
+                                    ? 'bg-gray-50/50'
+                                    : 'bg-white'}
+                        `}
+                    >
+                        {row.getVisibleCells().map((cell) => {
+                            const columnDef = cell.column.columnDef
+                            const hasCustomWidth = columnDef.width !== undefined
+                            const displayValue = flexRender(cell.column.columnDef.cell, cell.getContext())
+
+                            return (
+                                <td
+                                    key={cell.id}
+                                    className="px-2 py-1 whitespace-nowrap text-xs max-w-80 overflow-hidden text-ellipsis"
+                                    style={{ width: hasCustomWidth ? columnDef.width : undefined }}
+                                // title={displayValue} // not working because the displayValue is an html element, consider adding a custom tooltip component if needed
+                                >
+                                    {displayValue}
+                                </td>
+                            )
+                        })}
+                    </tr>
+                )
+            })}
         </tbody>
     )
 }
@@ -196,6 +204,8 @@ TableBody.propTypes = {
     isStripes: PropTypes.bool,
     isClickable: PropTypes.bool,
     isLoading: PropTypes.bool,
+    rowCondition: PropTypes.func, // (rowData) => boolean
+    rowConditionClassName: PropTypes.string, // string, e.g. 'bg-red-50'
 }
 
 // ============================================================================
@@ -259,6 +269,8 @@ const Table = ({
 
     // Appearance
     isStripes = true,
+    rowCondition,        // (rowData) => boolean
+    rowConditionClassName, // string, e.g. 'bg-red-50'
     initialColumnVisibility = {},
     minHeight,
     maxHeight,
@@ -567,6 +579,8 @@ const Table = ({
                         isStripes={isStripes}
                         isClickable={isClickable}
                         isLoading={isLoading}
+                        rowCondition={rowCondition}
+                        rowConditionClassName={rowConditionClassName}
                     />
                 </table>
             </div>
@@ -735,6 +749,9 @@ Table.propTypes = {
         toggleState: PropTypes.bool.isRequired,
         onToggleChange: PropTypes.func.isRequired,
     }),
+
+    rowCondition: PropTypes.func,
+    rowConditionClassName: PropTypes.string,
 }
 
 export default React.memo(Table)

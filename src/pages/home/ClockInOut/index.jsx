@@ -22,26 +22,6 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 import TeamStatus from './components/TeamStatus'
 import PropTypes from 'prop-types'
 
-function EyeIcon({ off }) {
-    return off ? (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M3 3l18 18M10.58 10.58a2 2 0 002.83 2.83M9.88 5.09A9.77 9.77 0 0112 5c5 0 9 4.5 9.94 7-.36.98-.94 2.06-1.72 3.08M6.53 6.53C4.6 7.86 3.13 9.77 2.06 12c1 2.5 3 4.5 5.5 5.5a9.9 9.9 0 004.44 1" />
-        </svg>
-    ) : (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M2.06 12C3 9.5 6.5 5 12 5s9 4.5 9.94 7c-.94 2.5-4.44 7-9.94 7s-9-4.5-9.94-7z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-    )
-}
-
-EyeIcon.propTypes = {
-    off: PropTypes.bool,
-}
-
 function PanelIcon({ open }) {
     return (
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

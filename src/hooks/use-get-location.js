@@ -11,7 +11,7 @@ export function useGetLocation() {
         if (permission.state === "granted" || permission.state === "prompt") {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    // console.log(position.coords);
+                    console.log(position.coords);
                 },
                 (error) => {
                     console.error(error);

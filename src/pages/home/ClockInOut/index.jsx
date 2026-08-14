@@ -276,9 +276,9 @@ function ClockInOut() {
 
     function handleOkayOvertimeConfirmation() {
         setShowOvertimeConfirmation(false)
-        const message = '1. Press "YES" if you have Overtime hours that need to be rcorded.\n' +
+        const message = '1. Press "YES" if you have Overtime hours that need to be recorded.\n' +
             '2. Press "NO" if you do not have any Overtime hours to log.\n\n' +
-            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported..'
+            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported.'
 
         showConfirmationModal({
             title: 'Action Confirmation',

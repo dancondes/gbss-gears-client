@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
@@ -6,7 +6,6 @@ import Alert from '@/components/Alert'
 import CompanyBrand from '@/components/CompanyBrand'
 import DevelopmentBanner from '@/components/DevelopmentBanner'
 import { useAuthStore } from '@/store'
-import { useMessage } from '@/hooks/use-message'
 import { login as loginUser } from '@/services/auth-service'
 import { getUserIdFromToken } from '@/utilities/jwt-utils'
 import { isResultSuccessful } from '@/utilities'
@@ -28,12 +27,25 @@ const brandItems = [
     { letter: 'System' },
 ]
 
+function getLoginErrorMessage(error) {
+    if (error?.status === 401) {
+        return 'Incorrect username or password. Please try again.'
+    }
+
+    if (error?.status) {
+        return 'We could not sign you in right now. Please try again later.'
+    }
+
+    return error?.message || 'We could not sign you in right now. Please try again later.'
+}
+
 const Login = () => {
     const navigate = useNavigate()
     const token = useAuthStore((state) => state.token)
-    const [formError, setFormError] = useMessage()
+    const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
     const [now, setNow] = useState(new Date())
+    const errorRef = useRef(null)
 
     const {
         register,
@@ -59,6 +71,14 @@ const Login = () => {
         return () => clearInterval(timer)
     }, [])
 
+    // Once an error is shown, move focus to it so screen reader users and
+    // anyone scrolled away from the top of the form actually notice it.
+    useEffect(function () {
+        if (formError && errorRef.current) {
+            errorRef.current.focus()
+        }
+    }, [formError])
+
     async function onSubmit(data) {
         setFormError('')
 
@@ -76,12 +96,22 @@ const Login = () => {
 
                 const { login } = useAuthStore.getState()
                 login(result.data)
+            } else {
+                setFormError(getLoginErrorMessage(result))
             }
 
         } catch (err) {
-            setFormError(err?.message || 'Login failed. Please try again.')
+            setFormError(getLoginErrorMessage(err))
         } finally {
             setLoading(false)
+        }
+    }
+
+    // Clear a stale server error as soon as the user starts correcting
+    // their input, instead of leaving it up until the next submit.
+    function clearFormError() {
+        if (formError) {
+            setFormError('')
         }
     }
 
@@ -144,9 +174,17 @@ const Login = () => {
                                         </p>
                                     </div>
 
-                                    {/* Error Message */}
+                                    {/* Error message — only takes up space when there's actually an
+                                        error, grows to fit longer messages, and is announced to
+                                        assistive tech + focused so it's never missed. */}
                                     {formError && (
-                                        <div className="mb-6">
+                                        <div
+                                            ref={errorRef}
+                                            role="alert"
+                                            aria-live="assertive"
+                                            tabIndex={-1}
+                                            className="mb-6 outline-none animate-in fade-in slide-in-from-top-1 duration-200"
+                                        >
                                             <Alert text={formError} type="error" />
                                         </div>
                                     )}
@@ -163,6 +201,7 @@ const Login = () => {
                                             register={register}
                                             validation={{
                                                 required: 'Username is required',
+                                                onChange: clearFormError,
                                             }}
                                             autoFocus
                                         />
@@ -177,7 +216,8 @@ const Login = () => {
                                             error={errors.password?.message}
                                             register={register}
                                             validation={{
-                                                required: 'Password is required'
+                                                required: 'Password is required',
+                                                onChange: clearFormError,
                                             }}
                                         />
 

@@ -20,9 +20,21 @@ import {
     clearPendingUserGuide,
     getPendingUserGuide,
 } from '@/utilities/user-guide-launcher'
+import logger from '@/utilities/logger'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
+
+    useEffect(() => {
+        const errorMessage = error?.message || ''
+        const shouldReloadPage = errorMessage.includes('Failed to fetch dynamically imported module') || errorMessage.includes('Importing a module script failed')
+
+        if (shouldReloadPage) {
+            alert('A critical error occurred while loading this tab. The page will now reload to recover from the error.')
+            logger.error('Critical error detected in tab:', error)
+            window.location.reload()
+        }
+    }, [error])
 
     return (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
@@ -198,7 +210,7 @@ const Layout = () => {
             setRunGuide(false)
             setGuideRetryCount(0)
             setActiveGuideMenuId(pendingGuide.menuId)
-            setActiveGuideSteps([ ...leadInStep, ...featureSteps ])
+            setActiveGuideSteps([...leadInStep, ...featureSteps])
             setPendingGuideItem({
                 id: guideItem?.actionName || pendingGuide.menuId,
                 name: guideItem?.feature || pendingGuide.menuId,

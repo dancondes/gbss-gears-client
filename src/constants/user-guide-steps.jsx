@@ -43,7 +43,7 @@ const USER_GUIDE_FEATURES = [
         description: 'Learn how to submit a time amendment request for assistance.',
         category: 'Attendance',
         triggerSelector: '[data-guide-item-id="menu-bar-help"]',
-        labelGuide: <span>Click <b>Help &gt; Comms</b> to open the Create Ticket modal and learn how to submit a time amendment request.</span>,
+        labelGuide: <span>Click <b>Help &gt; Comms</b> to open the Create Ticket page and learn how to submit a time amendment request.</span>,
         menuItemClick: {
             id: 'Comms',
             tabName: 'Ticketing',
@@ -87,7 +87,7 @@ const USER_GUIDE_FEATURES = [
         description: 'Learn how to submit a support ticket for assistance.',
         category: 'Leave & Support',
         triggerSelector: '[data-guide-item-id="menu-bar-help"]',
-        labelGuide: <span>Click <b>Help &gt; Comms</b> to open the Create Ticket modal and learn how to submit a support ticket.</span>,
+        labelGuide: <span>Click <b>Help &gt; Comms</b> to open the Create Ticket page and learn how to submit a support ticket.</span>,
         menuItemClick: {
             id: 'Comms',
             tabName: 'Ticketing',

@@ -41,7 +41,10 @@ export default function UserGuide() {
     }
 
     return (
-        <PageTemplate title="User Guide">
+        <PageTemplate
+            title="User Guide"
+            subtitle="A step-by-step guide to help you navigate and use the features of the application."
+        >
             <div className="p-1 sm:p-3 space-y-6">
                 <p className="text-sm text-gray-500">
                     Pick a feature to open it and walk through a short, guided tour.

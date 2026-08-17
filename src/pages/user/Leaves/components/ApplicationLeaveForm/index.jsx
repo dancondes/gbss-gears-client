@@ -170,7 +170,7 @@ function ApplicationLeaveFrom({
     }
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 application-leave-form">
             <h2 className="text-md font-bold text-primary uppercase trakcking-widest">
                 Application (Leave Form)
             </h2>
@@ -274,7 +274,7 @@ function ApplicationLeaveFrom({
                         )}
                         <button
                             type="submit"
-                            className="btn-primary py-1.5! px-4!"
+                            className="btn-primary py-1.5! px-4! file-leave-submit-btn"
                         >
                             {isSubmitting ? 'Submitting...' : 'Save'}
                         </button>

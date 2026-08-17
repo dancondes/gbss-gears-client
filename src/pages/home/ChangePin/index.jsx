@@ -78,7 +78,7 @@ export default function ChangePin() {
                             </div>
                         </div>
 
-                        <div className="px-5 py-5 space-y-4">
+                        <div className="px-5 py-5 space-y-4 change-pin-inputs">
                             <FormInput
                                 type="password"
                                 label="New Pin"
@@ -117,7 +117,7 @@ export default function ChangePin() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="btn-primary w-full sm:w-auto"
+                                className="btn-primary w-full sm:w-auto change-pin-submit-btn"
                             >
                                 {isSubmitting ? 'Saving...' : 'Change PIN'}
                             </button>

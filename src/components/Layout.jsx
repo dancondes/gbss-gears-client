@@ -12,6 +12,14 @@ import MenuBar from './MenuBar'
 import StatusBar from './StatusBar'
 import COERequests from '@/pages/user/COERequest'
 import PayslipPinInputModal from '@/pages/user/Payslip/PayslipPinInputModal'
+import UserGuide from '@/components/UserGuide/UserGuide'
+import { USER_GUIDE_FEATURES, USER_GUIDE_STEPS_BY_MENU_ID } from '@/constants/user-guide-steps.jsx'
+import useMenuItemClick from '@/hooks/use-menu-item-click'
+import {
+    USER_GUIDE_LAUNCH_EVENT,
+    clearPendingUserGuide,
+    getPendingUserGuide,
+} from '@/utilities/user-guide-launcher'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
@@ -102,6 +110,12 @@ const Layout = () => {
     const setCOERequestModalOpen = useUIStore((state) => state.setCOERequestModalOpen)
     const payslipPinModalOpen = useUIStore((state) => state.payslipPinModalOpen)
     const setPayslipPinModalOpen = useUIStore((state) => state.setPayslipPinModalOpen)
+    const [activeGuideMenuId, setActiveGuideMenuId] = useState(null)
+    const [activeGuideSteps, setActiveGuideSteps] = useState([])
+    const [runGuide, setRunGuide] = useState(false)
+    const [guideRetryCount, setGuideRetryCount] = useState(0)
+    const [pendingGuideItem, setPendingGuideItem] = useState(null)
+    const handleMenuItemClick = useMenuItemClick()
 
     const hasTabs = tabs.length > 0
 
@@ -142,6 +156,115 @@ const Layout = () => {
             return updated
         })
     }, [tabs])
+
+    useEffect(function () {
+        function stopGuide() {
+            setRunGuide(false)
+            setGuideRetryCount(0)
+            setActiveGuideMenuId(null)
+            setActiveGuideSteps([])
+            setPendingGuideItem(null)
+            clearPendingUserGuide()
+        }
+
+        function handlePendingGuideLaunch() {
+            const pendingGuide = getPendingUserGuide()
+
+            if (!pendingGuide?.menuId) {
+                return
+            }
+
+            const guideItem = USER_GUIDE_FEATURES.find(function (item) {
+                return item.actionName === pendingGuide.menuId
+            })
+
+            const featureSteps = USER_GUIDE_STEPS_BY_MENU_ID[pendingGuide.menuId] || []
+            const triggerSelector = guideItem?.triggerSelector
+            const triggerLabel = guideItem?.triggerLabel || guideItem?.feature || pendingGuide.menuId
+            const leadInStep = triggerSelector ? [{
+                target: triggerSelector,
+                content: guideItem?.labelGuide || <span>Click <b>{triggerLabel}</b> to open this feature and then continue the guide.</span>,
+                placement: 'bottom',
+                disableBeacon: true,
+                clickTargetOnNext: !guideItem?.menuItemClick,
+                menuItemClick: guideItem?.menuItemClick || null,
+            }] : []
+
+            if (featureSteps.length === 0) {
+                stopGuide()
+                return
+            }
+
+            setRunGuide(false)
+            setGuideRetryCount(0)
+            setActiveGuideMenuId(pendingGuide.menuId)
+            setActiveGuideSteps([ ...leadInStep, ...featureSteps ])
+            setPendingGuideItem({
+                id: guideItem?.actionName || pendingGuide.menuId,
+                name: guideItem?.feature || pendingGuide.menuId,
+                action: guideItem?.action,
+                path: guideItem?.path,
+                tabName: guideItem?.feature,
+                url: guideItem?.url,
+            })
+        }
+
+        handlePendingGuideLaunch()
+        window.addEventListener(USER_GUIDE_LAUNCH_EVENT, handlePendingGuideLaunch)
+
+        return function () {
+            window.removeEventListener(USER_GUIDE_LAUNCH_EVENT, handlePendingGuideLaunch)
+        }
+    }, [])
+
+    useEffect(function () {
+        if (!activeGuideMenuId || activeGuideSteps.length === 0 || runGuide) {
+            return
+        }
+
+        const hasTarget = activeGuideSteps.some(function (step) {
+            if (!step?.target || typeof document === 'undefined') {
+                return false
+            }
+
+            return Boolean(document.querySelector(step.target))
+        })
+
+        if (hasTarget) {
+            clearPendingUserGuide()
+            setRunGuide(true)
+            setGuideRetryCount(0)
+            return
+        }
+
+        if (guideRetryCount >= 20) {
+            clearPendingUserGuide()
+            setActiveGuideMenuId(null)
+            setActiveGuideSteps([])
+            setPendingGuideItem(null)
+            setGuideRetryCount(0)
+            return
+        }
+
+        const timer = setTimeout(function () {
+            setGuideRetryCount(function (previousCount) {
+                return previousCount + 1
+            })
+        }, 200)
+
+        return function () {
+            clearTimeout(timer)
+        }
+    }, [activeGuideMenuId, activeGuideSteps, runGuide, guideRetryCount, coeRequestModalOpen, payslipPinModalOpen, activeTabId])
+
+    function handleGuideDone() {
+        setRunGuide(false)
+        setGuideRetryCount(0)
+        setActiveGuideMenuId(null)
+        setActiveGuideSteps([])
+        setPendingGuideItem(null)
+        clearPendingUserGuide()
+    }
 
 
     function handleTabClick(tabId) {
@@ -266,6 +389,14 @@ const Layout = () => {
                     setIsOpen={setPayslipPinModalOpen}
                 />
             )}
+
+            <UserGuide
+                steps={activeGuideSteps}
+                run={runGuide}
+                onFinish={handleGuideDone}
+                onSkip={handleGuideDone}
+                onClose={handleGuideDone}
+            />
         </div>
     )
 }

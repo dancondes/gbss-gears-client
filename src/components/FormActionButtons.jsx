@@ -96,6 +96,7 @@ const FormActionButtons = ({
                             onClick={handleSaveClick}
                             disabled={saving || !isDirty}
                             className="btn-primary w-full sm:w-auto cursor-pointer"
+                            data-guide-item-id={`save-changes-btn-${entityName.toLowerCase()}`}
                         >
                             {saving ? (
                                 <>

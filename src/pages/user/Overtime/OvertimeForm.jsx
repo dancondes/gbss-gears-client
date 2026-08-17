@@ -32,6 +32,7 @@ function OvertimeForm({
                 disabled={true}
                 validation={{ required: 'OT Date is required' }}
                 error={errors.overtimeDate?.message}
+                className='ot-date-input'
             />
 
             <FormInput
@@ -44,6 +45,7 @@ function OvertimeForm({
                     validate: value => value > 0 || 'Num of Hours must be greater than 0'
                 }}
                 error={errors.numHours?.message}
+                className='ot-num-hours-input'
             />
 
             {/* <TypeaheadSelect
@@ -65,7 +67,7 @@ function OvertimeForm({
                 validation={{
                     required: 'Approved By is required'
                 }}
-                className='col-span-1 sm:col-span-2'
+                className='col-span-1 sm:col-span-2 ot-approved-by-input'
             />
         </div>
     )

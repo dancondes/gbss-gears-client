@@ -65,6 +65,7 @@ function MenuBarItem({ item, isOpen, onToggle, onClose }) {
                 aria-haspopup={!isDirect ? 'true' : undefined}
                 aria-expanded={!isDirect ? isOpen : undefined}
                 title={isIconOnly ? 'Menu' : item.name}
+                data-guide-item-id={`menu-bar-${item.name?.toLowerCase()?.replace(' ', '-')}`}
             >
                 {/* Icon */}
                 {item.icon && (

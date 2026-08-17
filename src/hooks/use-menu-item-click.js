@@ -1,11 +1,9 @@
 // use-menu-item-click.js
 import useTabNavigation from './use-tab-navigation'
-import useMessageModal from './use-message-modal'
 import { useTabStore, useUIStore } from '@/store'
 
 function useMenuItemClick(onClose) {
     const { navigate } = useTabNavigation()
-    const { showMessageModal } = useMessageModal()
     const setCOERequestModalOpen = useUIStore(state => state.setCOERequestModalOpen)
     const setPayslipPinModalOpen = useUIStore(state => state.setPayslipPinModalOpen)
     const tabs = useTabStore(state => state.tabs)
@@ -27,12 +25,6 @@ function useMenuItemClick(onClose) {
                     return
                 }
                 setPayslipPinModalOpen(true)
-                return
-            case 'user-guide':
-                showMessageModal('This feature is not yet ready.', {
-                    type: 'info',
-                    title: 'User Guide',
-                })
                 return
             case 'change-password':
                 navigate('/user/personal-details', {

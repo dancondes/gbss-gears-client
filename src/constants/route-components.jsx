@@ -28,7 +28,7 @@ const IMPORT_MAP = {
     '/it/manage-users': { main: () => import('@/pages/it/ManageUsers') },
 
     // help
-    // '/help/user-guide': { main: () => import('@/pages/help/HARDCODED') },
+    '/help/user-guide': { main: () => import('@/pages/help/UserGuide') },
     // '/help/about': { main: () => import('@/pages/help/HARDCODED') },
     '/help/comms': { main: () => import('@/pages/help/Ticketing') },
 

@@ -224,7 +224,7 @@ export default function TicketingForm({
                     label='Type'
                     options={typeOptions}
                     register={register}
-                    className='max-w-100'
+                    className='max-w-100 ticketing-form-ticket-type'
                     validation={{
                         required: 'Please select a ticket type',
                     }}
@@ -239,6 +239,7 @@ export default function TicketingForm({
                     maxFileSize={10 * 1024 * 1024}
                     placeholder="Drag and drop files here, or click to browse"
                     disabled={uploading}
+                    className='ticketing-form-file-dropzone'
                 />
 
                 <FormTextarea
@@ -250,6 +251,7 @@ export default function TicketingForm({
                         required: 'Please provide a description of your issue',
                     }}
                     error={errors.description?.message}
+                    className='ticketing-form-description'
                 />
 
                 {
@@ -264,7 +266,7 @@ export default function TicketingForm({
                                     required: { value: isTimeAmendment, message: 'Please select a date for the time amendment' },
                                 }}
                                 error={errors.amendDate?.message}
-                                className='mb-0!'
+                                className='mb-0! ticketing-form-amend-date'
                             />
 
                             <div>
@@ -277,7 +279,7 @@ export default function TicketingForm({
                                     }}
                                     error={errors.amendTime?.message}
                                     showSeconds
-                                    className='mb-0!'
+                                    className='mb-0! ticketing-form-amend-time'
                                 />
 
                                 {
@@ -309,6 +311,7 @@ export default function TicketingForm({
                                     }
                                 }}
                                 error={errors.amendType?.message}
+                                className='ticketing-form-amend-type'
                             // className='col-span-2 sm:col-span-1'
                             />
 
@@ -342,7 +345,7 @@ export default function TicketingForm({
                     )}
                     <button
                         type='submit'
-                        className='btn-primary px-8!'
+                        className='btn-primary px-8! ticketing-form-submit'
                         disabled={uploading}
                     >
                         {uploading ? 'Submitting...' : 'Submit'}

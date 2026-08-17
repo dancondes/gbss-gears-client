@@ -17,6 +17,7 @@ function SubmenuPanel({ items, isOpen, onClose }) {
                 return (
                     <button
                         key={item.id || item.name}
+                        data-guide-item-id={item.id}
                         onClick={function () { handleItemClick(item) }}
                         className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors focus:outline-none focus:bg-gray-50"
                     >

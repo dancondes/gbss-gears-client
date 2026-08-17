@@ -354,13 +354,15 @@ function ClockInOut() {
                             title={showTeamStatus ? 'Hide Team Status panel' : 'Show Team Status panel'}
                             aria-label={showTeamStatus ? 'Hide Team Status panel' : 'Show Team Status panel'}
                             aria-pressed={showTeamStatus}
-                            className="hidden lg:inline-flex items-center gap-1.5 px-2.5 h-8 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="clock-guide-team-toggle hidden lg:inline-flex items-center gap-1.5 px-2.5 h-8 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <PanelIcon open={showTeamStatus} />
                             <span>Team</span>
                         </button>
                     )}
-                    <RunningTime />
+                    <div className="clock-guide-running-time">
+                        <RunningTime />
+                    </div>
                 </div>
             )}
         >
@@ -372,7 +374,7 @@ function ClockInOut() {
                         <SectionHeader title="Start" />
                         <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
                             {/* No flex-1 here — let it size to its content */}
-                            <div className="flex items-center gap-4 min-w-0">
+                            <div className="clock-guide-check-in flex items-center gap-4 min-w-0">
                                 <ClockButton
                                     label="Check In"
                                     onClick={() => setLocationModalOpen(true)}
@@ -399,7 +401,7 @@ function ClockInOut() {
                             single column. On md+ screens the original two-column layout
                             is restored with Lunch in the right column.
                         */}
-                        <div className="border-b border-gray-200">
+                        <div className="clock-guide-breaks border-b border-gray-200">
 
                             {/* md+: two-column grid */}
                             <div className="grid md:grid-cols-2 gap-0">
@@ -450,7 +452,7 @@ function ClockInOut() {
                         <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
 
                             {/* Check Out row */}
-                            <div className="flex items-center gap-4 flex-wrap">
+                            <div className="clock-guide-check-out-btn flex items-center gap-4 flex-wrap">
                                 <ClockButton
                                     label="Check Out"
                                     onClick={() => handleButtonClick('O')}
@@ -460,7 +462,7 @@ function ClockInOut() {
                             </div>
 
                             {/* Combined checkout buttons */}
-                            <div>
+                            <div className="clock-guide-quick-checkout">
                                 <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
                                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
 

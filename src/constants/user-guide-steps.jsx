@@ -32,7 +32,7 @@ const USER_GUIDE_FEATURES = [
         triggerSelector: '[data-guide-item-id="menu-bar-user"]',
         labelGuide: <span>Click <b>User &gt; Overtime</b> to open the Overtime page where you can plot your overtime.</span>,
         menuItemClick: {
-            id: 'overtime',
+            id: 'Overtime',
             tabName: 'Overtime',
             path: '/user/overtime',
         },

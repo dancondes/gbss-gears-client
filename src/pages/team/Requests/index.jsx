@@ -114,7 +114,7 @@ export default function Requests() {
             {
                 accessorKey: 'logTime',
                 header: 'LogTime',
-                type: 'time',
+                // type: 'time',
             },
             {
                 accessorKey: 'amendmentOn',
@@ -123,7 +123,7 @@ export default function Requests() {
             {
                 accessorKey: 'requestedTime',
                 header: 'Requested Time',
-                type: 'time',
+                // type: 'time',
             },
             {
                 accessorKey: 'comment',

@@ -42,22 +42,20 @@ function OvertimeForm({
         const numericHours = Number(numHoursValue)
 
         if (numHoursValue && !Number.isNaN(numericHours) && numericHours > 0) {
-            const minutes = Math.round((numericHours % 1) * 100)
+            // Decimal is a fraction of an hour: 1.5 -> 1hr 30min
+            const hours = Math.floor(numericHours)
+            const minutes = Math.round((numericHours - hours) * 60)
+            const parts = []
 
-            if (minutes <= 59) {
-                const hours = Math.floor(numericHours)
-                const parts = []
-
-                if (hours > 0) {
-                    parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`)
-                }
-
-                if (minutes > 0) {
-                    parts.push(`${minutes} ${minutes === 1 ? 'Minute' : 'Minutes'}`)
-                }
-
-                formattedHours = parts.join(' & ')
+            if (hours > 0) {
+                parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`)
             }
+
+            if (minutes > 0) {
+                parts.push(`${minutes} ${minutes === 1 ? 'Minute' : 'Minutes'}`)
+            }
+
+            formattedHours = parts.join(' & ')
         }
 
         return { formattedDate, formattedHours }
@@ -97,14 +95,6 @@ function OvertimeForm({
                             return 'Num of Hours must be greater than 0'
                         }
 
-                        // The decimal portion represents minutes, not a fraction of an hour,
-                        // so anything from .60 onward isn't a valid minute value.
-                        const minutesPortion = Math.round((numericValue % 1) * 100)
-
-                        if (minutesPortion > 59) {
-                            return 'Minutes (the part after the decimal) can only go up to .59'
-                        }
-
                         return true
                     }
                 }}
@@ -141,7 +131,7 @@ function OvertimeForm({
             </div>
 
             <p className='col-span-1 sm:col-span-2 mt-2 text-xs text-gray-500'>
-                The decimal represents minutes, not a fraction of an hour. For example, 1.30 means 1 hour and 30 minutes, not 1.5 hours. Only .00 to .59 is valid.
+                The decimal represents a fraction of an hour. For example, 1.5 means 1 hour and 30 minutes.
             </p>
         </div>
     )

@@ -227,6 +227,12 @@ const USER_GUIDE_STEPS_BY_MENU_ID = {
             disableBeacon: true,
         },
         {
+            target: '.ticketing-form-file-dropzone',
+            content: 'Attach any relevant files to your time amendment request by dragging and dropping them here or clicking to browse.',
+            placement: 'bottom',
+            disableBeacon: true,
+        },
+        {
             target: '.ticketing-form-submit',
             content: 'Click Submit to send your time amendment request for review and approval.',
             placement: 'top',

@@ -512,7 +512,7 @@ function ClockInOut() {
                 <LocationModal
                     isOpen={locationModalOpen}
                     onClose={() => setLocationModalOpen(false)}
-                    onSave={(selectedLocation) => {
+                    onSave={(selectedLocation, homeLocation) => {
                         handleButtonClick('I', selectedLocation)
                         setLocationModalOpen(false)
                     }}

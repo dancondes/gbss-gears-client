@@ -221,7 +221,7 @@ function ClockInOut() {
     }
 
     // show confirmation modal on click
-    function handleButtonClick(type, location = null) {
+    function handleButtonClick(type, location = null, homeLocation = null) {
         showConfirmationModal({
             title: 'Action Confirmation',
             message: 'Are you sure you want to perform the selected action?',
@@ -229,7 +229,7 @@ function ClockInOut() {
             cancelText: 'No',
             variant: 'info',
             onConfirm: () => {
-                handleSaveTimeEntry(type, location)
+                handleSaveTimeEntry(type, location, homeLocation)
             }
         })
     }
@@ -257,7 +257,7 @@ function ClockInOut() {
      * @param {string} type - The type of time entry to save.
      * @param {object} data - Additional data for the time entry (optional).
      */
-    async function handleSaveTimeEntry(type, location = null) {
+    async function handleSaveTimeEntry(type, location = null, homeLocation = null) {
         try {
             setIsSubmitting(true)
             await createTimeEntry(type, location)
@@ -513,7 +513,7 @@ function ClockInOut() {
                     isOpen={locationModalOpen}
                     onClose={() => setLocationModalOpen(false)}
                     onSave={(selectedLocation, homeLocation) => {
-                        handleButtonClick('I', selectedLocation)
+                        handleButtonClick('I', selectedLocation, homeLocation)
                         setLocationModalOpen(false)
                     }}
                 />

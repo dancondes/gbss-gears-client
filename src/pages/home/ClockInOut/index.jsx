@@ -383,14 +383,14 @@ function ClockInOut() {
                                 <TimeDisplay time={formatTime(checkInTime)} large />
                             </div>
                             <button
-                                onClick={function () { window.location.reload() }}
+                                onClick={function () { refreshTimeEntries() }}
                                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
-                                title="Refresh [F5]"
+                                title="Refresh"
                             >
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                Refresh [F5]
+                                Refresh
                             </button>
                         </div>
 

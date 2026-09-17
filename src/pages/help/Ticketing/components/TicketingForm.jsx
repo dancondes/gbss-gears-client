@@ -70,6 +70,7 @@ export default function TicketingForm({
     const [filesToUpload, setFilesToUpload] = useState([])
     const [uploading, setUploading] = useState(false)
     const [timeEntries, setTimeEntries] = useState([])
+    const [fileError, setFileError] = useState(null)
 
     // Applies the location of an existing Check In entry (if any) to the form's location field
     function applyCheckInLocation(entries) {
@@ -142,6 +143,16 @@ export default function TicketingForm({
     }, [watchedAmendDate, user, isTimeAmendment, setTimeEntries])
 
     async function onSubmit(data) {
+        if (filesToUpload.length <= 0) {
+            setFileError('Please attach at least one file before submitting the ticket.')
+            setTimeout(() => {
+                setFileError(null)
+            }, 5000) // Clear the error after 5 seconds
+            return
+        } else {
+            setFileError(null)
+        }
+
         showConfirmationModal({
             title: 'Submit Ticket',
             message: 'Are you sure you want to submit this ticket?',
@@ -240,6 +251,7 @@ export default function TicketingForm({
                     placeholder="Drag and drop files here, or click to browse"
                     disabled={uploading}
                     className='ticketing-form-file-dropzone'
+                    error={fileError}
                 />
 
                 <FormTextarea

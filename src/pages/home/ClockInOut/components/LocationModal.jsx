@@ -36,9 +36,49 @@ function CheckIcon(props) {
     )
 }
 
+function SpinnerIcon(props) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" {...props}>
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" />
+            </path>
+        </svg>
+    )
+}
+
+function AlertIcon(props) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5" />
+            <path d="M12 16h.01" />
+        </svg>
+    )
+}
+
 const ICONS = {
     home: HomeIcon,
     pin: PinIcon
+}
+
+// Free, keyless reverse-geocoding lookup. BigDataCloud's client endpoint
+// has no API key and no meaningful rate limit for this kind of usage.
+async function reverseGeocode(latitude, longitude) {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Reverse geocode request failed')
+    const data = await res.json()
+
+    return {
+        city: data.city || data.locality || null,
+        region: data.principalSubdivision || null,
+        country: data.countryName || null
+    }
+}
+
+function formatLocation({ city, region, country }) {
+    return [city, region, country].filter(Boolean).join(', ') || 'Unknown location'
 }
 
 function LocationModal({
@@ -47,16 +87,70 @@ function LocationModal({
     onSave
 }) {
     const [selected, setSelected] = useState(null)
+    const [homeLocation, setHomeLocation] = useState(null) // { city, region, country }
+    const [homeCoords, setHomeCoords] = useState(null)
+    const [locating, setLocating] = useState(false)
+    const [locationError, setLocationError] = useState(null)
+
+    const handleSelect = (locId) => {
+        setSelected(locId)
+
+        if (locId !== 'HOME') return
+
+        // Already have it, no need to re-fetch
+        if (homeLocation) return
+
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation is not supported on this device.')
+            return
+        }
+
+        setLocating(true)
+        setLocationError(null)
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords
+                setHomeCoords({ latitude, longitude })
+                try {
+                    const location = await reverseGeocode(latitude, longitude)
+                    setHomeLocation(location)
+                } catch {
+                    setLocationError('Could not determine your city.')
+                } finally {
+                    setLocating(false)
+                }
+            },
+            (error) => {
+                setLocating(false)
+                setLocationError(
+                    error.code === error.PERMISSION_DENIED
+                        ? 'Location permission denied.'
+                        : 'Unable to retrieve your location.'
+                )
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        )
+    }
 
     const handleProceed = () => {
         if (!selected) return
-        onSave(selected)
-        setSelected(null)
+        // onSave(selected)
+        onSave(selected, selected === 'HOME' ? homeLocation : null)
+        resetState()
     }
 
     const handleCancel = () => {
-        setSelected(null)
+        resetState()
         onClose()
+    }
+
+    const resetState = () => {
+        setSelected(null)
+        setHomeLocation(null)
+        setHomeCoords(null)
+        setLocating(false)
+        setLocationError(null)
     }
 
     return (
@@ -73,7 +167,7 @@ function LocationModal({
                     or <span className="font-medium text-primary">Cancel</span> to go back.
                 </p>
 
-                <div className="mb-8 grid grid-cols-3 gap-3">
+                <div className="mb-3 grid grid-cols-3 gap-3">
                     {LOCATIONS.map((loc) => {
                         const Icon = ICONS[loc.icon]
                         const isActive = selected === loc.id
@@ -81,7 +175,7 @@ function LocationModal({
                             <button
                                 key={loc.id}
                                 type="button"
-                                onClick={() => setSelected(loc.id)}
+                                onClick={() => handleSelect(loc.id)}
                                 aria-pressed={isActive}
                                 className={`relative flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 transition-colors cursor-pointer ${
                                     isActive
@@ -103,6 +197,29 @@ function LocationModal({
                     })}
                 </div>
 
+                {selected === 'HOME' && (
+                    <div className="mb-5 flex min-h-6 items-center justify-center text-xs">
+                        {locating && (
+                            <span className="flex items-center gap-1.5 text-gray-500">
+                                <SpinnerIcon className="h-3.5 w-3.5" />
+                                Detecting your location…
+                            </span>
+                        )}
+                        {!locating && homeLocation && (
+                            <span className="flex items-center gap-1.5 font-medium text-primary">
+                                <PinIcon className="h-3.5 w-3.5 shrink-0" />
+                                <span>Detected Location: {formatLocation(homeLocation)}</span>
+                            </span>
+                        )}
+                        {!locating && locationError && (
+                            <span className="flex items-center gap-1.5 text-red-500">
+                                <AlertIcon className="h-3.5 w-3.5 shrink-0" />
+                                {locationError}
+                            </span>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex items-center justify-center gap-3">
                     <button
                         type="button"
@@ -114,7 +231,7 @@ function LocationModal({
                     <button
                         type="button"
                         onClick={handleProceed}
-                        disabled={!selected}
+                        disabled={!selected || locating}
                         className="flex-1 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 cursor-pointer"
                     >
                         Proceed

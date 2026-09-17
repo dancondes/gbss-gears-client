@@ -101,8 +101,9 @@ export default function TeamStatus({ open = false }) {
     }, [])
 
     useEffect(() => {
-        loadTeamStatus(true)
-    }, [loadTeamStatus])
+        if (open)
+            loadTeamStatus(true)
+    }, [loadTeamStatus, open])
 
     function handleRefresh() {
         if (isRefreshing) return

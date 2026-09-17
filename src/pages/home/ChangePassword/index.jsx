@@ -110,7 +110,7 @@ export default function ChangePassword() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
                             {/* Left: password fields */}
-                            <div className="px-5 py-5 space-y-4">
+                            <div className="px-5 py-5 space-y-4 password-input-panel">
                                 <FormInput
                                     type="password"
                                     label="New Password"
@@ -142,7 +142,7 @@ export default function ChangePassword() {
                             </div>
 
                             {/* Right: requirements panel */}
-                            <div className="px-5 py-5">
+                            <div className="px-5 py-5 password-requirements-panel">
                                 <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
                                     Requirements
                                 </h4>
@@ -173,7 +173,7 @@ export default function ChangePassword() {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="btn-primary w-full sm:w-auto"
+                                className="btn-primary w-full sm:w-auto change-password-submit-btn"
                             >
                                 {isSubmitting ? 'Saving...' : 'Change Password'}
                             </button>

@@ -70,6 +70,7 @@ export default function TicketingForm({
     const [filesToUpload, setFilesToUpload] = useState([])
     const [uploading, setUploading] = useState(false)
     const [timeEntries, setTimeEntries] = useState([])
+    const [fileError, setFileError] = useState(null)
 
     // Applies the location of an existing Check In entry (if any) to the form's location field
     function applyCheckInLocation(entries) {
@@ -142,6 +143,16 @@ export default function TicketingForm({
     }, [watchedAmendDate, user, isTimeAmendment, setTimeEntries])
 
     async function onSubmit(data) {
+        if (filesToUpload.length <= 0) {
+            setFileError('Please attach at least one file before submitting the ticket.')
+            setTimeout(() => {
+                setFileError(null)
+            }, 5000) // Clear the error after 5 seconds
+            return
+        } else {
+            setFileError(null)
+        }
+
         showConfirmationModal({
             title: 'Submit Ticket',
             message: 'Are you sure you want to submit this ticket?',
@@ -224,7 +235,7 @@ export default function TicketingForm({
                     label='Type'
                     options={typeOptions}
                     register={register}
-                    className='max-w-100'
+                    className='max-w-100 ticketing-form-ticket-type'
                     validation={{
                         required: 'Please select a ticket type',
                     }}
@@ -239,6 +250,8 @@ export default function TicketingForm({
                     maxFileSize={10 * 1024 * 1024}
                     placeholder="Drag and drop files here, or click to browse"
                     disabled={uploading}
+                    className='ticketing-form-file-dropzone'
+                    error={fileError}
                 />
 
                 <FormTextarea
@@ -250,6 +263,7 @@ export default function TicketingForm({
                         required: 'Please provide a description of your issue',
                     }}
                     error={errors.description?.message}
+                    className='ticketing-form-description'
                 />
 
                 {
@@ -264,7 +278,7 @@ export default function TicketingForm({
                                     required: { value: isTimeAmendment, message: 'Please select a date for the time amendment' },
                                 }}
                                 error={errors.amendDate?.message}
-                                className='mb-0!'
+                                className='mb-0! ticketing-form-amend-date'
                             />
 
                             <div>
@@ -277,7 +291,7 @@ export default function TicketingForm({
                                     }}
                                     error={errors.amendTime?.message}
                                     showSeconds
-                                    className='mb-0!'
+                                    className='mb-0! ticketing-form-amend-time'
                                 />
 
                                 {
@@ -309,6 +323,7 @@ export default function TicketingForm({
                                     }
                                 }}
                                 error={errors.amendType?.message}
+                                className='ticketing-form-amend-type'
                             // className='col-span-2 sm:col-span-1'
                             />
 
@@ -342,7 +357,7 @@ export default function TicketingForm({
                     )}
                     <button
                         type='submit'
-                        className='btn-primary px-8!'
+                        className='btn-primary px-8! ticketing-form-submit'
                         disabled={uploading}
                     >
                         {uploading ? 'Submitting...' : 'Submit'}

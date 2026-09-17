@@ -13,7 +13,7 @@ function RunningTime() {
 
     return (
         <p
-            className="text-xs sm:text-sm text-primary font-medium tabular-nums truncate max-w-50 sm:max-w-none"
+            className="text-xs sm:text-sm text-primary font-medium tabular-nums truncate"
             title={formatDateTime(now)}
         >
             {formatDateTime(now)}

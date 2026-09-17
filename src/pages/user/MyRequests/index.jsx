@@ -66,7 +66,7 @@ function MyRequests() {
             {
                 accessorKey: 'logTime',
                 header: 'LogTime',
-                type: 'time'
+                // type: 'time'
             },
             {
                 accessorKey: 'amendmentOn',
@@ -76,7 +76,7 @@ function MyRequests() {
             {
                 accessorKey: 'requestedTime',
                 header: 'Requested Time',
-                type: 'time'
+                // type: 'time'
             },
             {
                 accessorKey: 'comment',

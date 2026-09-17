@@ -90,11 +90,12 @@ function COERequests({
             title="COE Request"
             size="sm"
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 user-guide-coe-form">
                 <FormSelect
                     name="format"
                     label="Select Format"
                     options={FORMAT_OPTIONS}
+                    className="user-guide-coe-format"
                     register={register}
                     validation={{ required: 'Please select a format' }}
                     error={errors.format?.message}
@@ -103,7 +104,7 @@ function COERequests({
                 <div className="flex justify-end mt-4 border-t border-gray-200 pt-">
                     <button
                         type="submit"
-                        className="mt-3 btn-primary"
+                        className="mt-3 btn-primary user-guide-coe-submit"
                     >
                         Send Request
                     </button>

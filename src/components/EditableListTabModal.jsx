@@ -168,6 +168,7 @@ const EditableListTabModal = forwardRef(function EditableListTabModal({
                         onClick={handleAddNew}
                         className="btn-primary whitespace-nowrap cursor-pointer w-full sm:w-auto"
                         title={`Add New ${singularName}`}
+                        data-guide-item-id={`add-new-btn-${singularName.toLowerCase()}`}
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

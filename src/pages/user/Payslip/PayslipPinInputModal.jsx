@@ -70,6 +70,7 @@ function PayslipPinInputModal({
                     name="pin"
                     type="password"
                     label="Enter Payslip PIN"
+                    className="user-guide-payslip-pin"
                     register={register}
                     validation={{ required: 'Please enter your PIN' }}
                     error={errors.pin?.message}
@@ -81,7 +82,7 @@ function PayslipPinInputModal({
                 <div className="flex justify-end mt-4 border-t border-gray-200 pt-">
                     <button
                         type="submit"
-                        className="mt-3 btn-primary"
+                        className="mt-3 btn-primary user-guide-payslip-submit"
                     >
                         Submit
                     </button>

@@ -9,7 +9,6 @@ import SessionExpiredModal from './modals/SessionExpiredModal'
 import { toast } from 'sonner'
 import logger from '@/utilities/logger'
 import { useRefreshToken } from '@/hooks/use-refresh-token'
-import { useIpInfo } from '@/hooks/use-ip-info'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // Refresh 5 minutes before expiry
 
@@ -26,7 +25,6 @@ function ProtectedRoute({ children }) {
     const [isInitialized, setIsInitialized] = useState(false)
     const [shouldRedirect, setShouldRedirect] = useState(false)
     const { refresh } = useRefreshToken()
-    const { fetchIpInfo } = useIpInfo()
 
     // Every early-exit path from initializeAuth needs to mark init done; some
     // also need to log the user out. One call instead of repeating both lines
@@ -99,13 +97,11 @@ function ProtectedRoute({ children }) {
                 return
             }
 
-            const ipInfo = await fetchIpInfo()
             const fetchedUser = await getUserById(userId)
 
             if (fetchedUser && fetchedUser.data[0]) {
                 setUser({
-                    ...fetchedUser.data[0],
-                    ipInfo: ipInfo || null
+                    ...fetchedUser.data[0]
                 })
             } else {
                 toast.error('Failed to fetch user data')

@@ -22,26 +22,6 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 import TeamStatus from './components/TeamStatus'
 import PropTypes from 'prop-types'
 
-function EyeIcon({ off }) {
-    return off ? (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M3 3l18 18M10.58 10.58a2 2 0 002.83 2.83M9.88 5.09A9.77 9.77 0 0112 5c5 0 9 4.5 9.94 7-.36.98-.94 2.06-1.72 3.08M6.53 6.53C4.6 7.86 3.13 9.77 2.06 12c1 2.5 3 4.5 5.5 5.5a9.9 9.9 0 004.44 1" />
-        </svg>
-    ) : (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M2.06 12C3 9.5 6.5 5 12 5s9 4.5 9.94 7c-.94 2.5-4.44 7-9.94 7s-9-4.5-9.94-7z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-    )
-}
-
-EyeIcon.propTypes = {
-    off: PropTypes.bool,
-}
-
 function PanelIcon({ open }) {
     return (
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -241,7 +221,7 @@ function ClockInOut() {
     }
 
     // show confirmation modal on click
-    function handleButtonClick(type, location = null) {
+    function handleButtonClick(type, location = null, homeLocation = null) {
         showConfirmationModal({
             title: 'Action Confirmation',
             message: 'Are you sure you want to perform the selected action?',
@@ -249,7 +229,7 @@ function ClockInOut() {
             cancelText: 'No',
             variant: 'info',
             onConfirm: () => {
-                handleSaveTimeEntry(type, location)
+                handleSaveTimeEntry(type, location, homeLocation)
             }
         })
     }
@@ -277,7 +257,7 @@ function ClockInOut() {
      * @param {string} type - The type of time entry to save.
      * @param {object} data - Additional data for the time entry (optional).
      */
-    async function handleSaveTimeEntry(type, location = null) {
+    async function handleSaveTimeEntry(type, location = null, homeLocation = null) {
         try {
             setIsSubmitting(true)
             await createTimeEntry(type, location)
@@ -296,9 +276,9 @@ function ClockInOut() {
 
     function handleOkayOvertimeConfirmation() {
         setShowOvertimeConfirmation(false)
-        const message = '1. Press "YES" if you have Overtime hours that need to be rcorded.\n' +
+        const message = '1. Press "YES" if you have Overtime hours that need to be recorded.\n' +
             '2. Press "NO" if you do not have any Overtime hours to log.\n\n' +
-            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported..'
+            'Ensure that you select the correct option to proceed with your Overtime entry or confirm that there are no Overtime hours to be reported.'
 
         showConfirmationModal({
             title: 'Action Confirmation',
@@ -374,13 +354,15 @@ function ClockInOut() {
                             title={showTeamStatus ? 'Hide Team Status panel' : 'Show Team Status panel'}
                             aria-label={showTeamStatus ? 'Hide Team Status panel' : 'Show Team Status panel'}
                             aria-pressed={showTeamStatus}
-                            className="hidden lg:inline-flex items-center gap-1.5 px-2.5 h-8 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="clock-guide-team-toggle hidden lg:inline-flex items-center gap-1.5 px-2.5 h-8 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <PanelIcon open={showTeamStatus} />
                             <span>Team</span>
                         </button>
                     )}
-                    <RunningTime />
+                    <div className="clock-guide-running-time">
+                        <RunningTime />
+                    </div>
                 </div>
             )}
         >
@@ -392,7 +374,7 @@ function ClockInOut() {
                         <SectionHeader title="Start" />
                         <div className="grid sm:grid-cols-2 gap-3 px-4 py-3 border-b border-gray-200">
                             {/* No flex-1 here — let it size to its content */}
-                            <div className="flex items-center gap-4 min-w-0">
+                            <div className="clock-guide-check-in flex items-center gap-4 min-w-0">
                                 <ClockButton
                                     label="Check In"
                                     onClick={() => setLocationModalOpen(true)}
@@ -401,14 +383,14 @@ function ClockInOut() {
                                 <TimeDisplay time={formatTime(checkInTime)} large />
                             </div>
                             <button
-                                onClick={function () { window.location.reload() }}
+                                onClick={function () { refreshTimeEntries() }}
                                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-primary/40 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors focus:outline-none mr-auto sm:ml-auto"
-                                title="Refresh [F5]"
+                                title="Refresh"
                             >
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                Refresh [F5]
+                                Refresh
                             </button>
                         </div>
 
@@ -419,7 +401,7 @@ function ClockInOut() {
                             single column. On md+ screens the original two-column layout
                             is restored with Lunch in the right column.
                         */}
-                        <div className="border-b border-gray-200">
+                        <div className="clock-guide-breaks border-b border-gray-200">
 
                             {/* md+: two-column grid */}
                             <div className="grid md:grid-cols-2 gap-0">
@@ -470,7 +452,7 @@ function ClockInOut() {
                         <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
 
                             {/* Check Out row */}
-                            <div className="flex items-center gap-4 flex-wrap">
+                            <div className="clock-guide-check-out-btn flex items-center gap-4 flex-wrap">
                                 <ClockButton
                                     label="Check Out"
                                     onClick={() => handleButtonClick('O')}
@@ -480,7 +462,7 @@ function ClockInOut() {
                             </div>
 
                             {/* Combined checkout buttons */}
-                            <div>
+                            <div className="clock-guide-quick-checkout">
                                 <p className="text-xs text-gray-400 mb-2">Quick checkout with break already taken:</p>
                                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
 
@@ -530,8 +512,8 @@ function ClockInOut() {
                 <LocationModal
                     isOpen={locationModalOpen}
                     onClose={() => setLocationModalOpen(false)}
-                    onSave={(selectedLocation) => {
-                        handleButtonClick('I', selectedLocation)
+                    onSave={(selectedLocation, homeLocation) => {
+                        handleButtonClick('I', selectedLocation, homeLocation)
                         setLocationModalOpen(false)
                     }}
                 />

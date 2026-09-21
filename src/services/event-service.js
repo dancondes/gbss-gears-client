@@ -57,7 +57,8 @@ export function createTimeAmendment(ticketData, files = [], onUploadProgress = n
     formData.append('LogType', ticketData.logType)
     formData.append('RequestedTime', ticketData.requestedTime)
     formData.append('Comment', ticketData.comment)
-    formData.append('Location', ticketData.location)
+    if (ticketData.location)
+        formData.append('Location', ticketData.location)
     files.forEach(function (file) {
         formData.append('Attachments', file)
     })

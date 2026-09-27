@@ -35,7 +35,8 @@ function FiledLeaves({
         const startDate = spliceDateFromTime(row.startDate)
         const endDate = spliceDateFromTime(row.endDate)
 
-        if (startDate < currentDate || endDate < currentDate) {
+        // disable the row if the start date or end date is less than or equals the current date
+        if (startDate <= currentDate || endDate <= currentDate) {
             return true
         }
     }

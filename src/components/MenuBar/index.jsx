@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useContext, useRef, useEffect } from 'react'
 import { useAuthStore, useFormsMenuStore, useNotificationStore } from '@/store'
+import { useSWRConfig } from 'swr'
+import { toast } from 'sonner'
 import { gbss_logo_white } from '@/assets/images'
 import NavbarNotifications from '../NavbarNotifications'
 import NavbarUserProfile from '../NavbarUserProfile'
@@ -21,16 +23,20 @@ function MenuBar() {
     const [openIndex, setOpenIndex] = useState(null)
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [isExitingImpersonation, setIsExitingImpersonation] = useState(false)
     const hamburgerButtonRef = useRef(null)
     const messageModalContext = useContext(MessageModalContext)
     const user = useAuthStore((state) => state.user)
     const token = useAuthStore((state) => state.token)
+    const impersonatedUser = useAuthStore((state) => state.impersonatedUser)
+    const restoreImpersonation = useAuthStore((state) => state.restoreImpersonation)
     const fullName = user?.employeeInfo ? `${user?.employeeInfo?.preferedName || user?.employeeInfo?.firstname} ${user?.employeeInfo?.lastname}` : ''
     const logout = useAuthStore((state) => state.logout)
     const navigate = useNavigate()
     const { navigate: navigateTo } = useTabNavigation()
     const canViewTeams = useAuthStore((state) => state.canViewTeams)
     const canViewIT = useAuthStore((state) => state.canViewIT)
+    const { mutate: mutateAll } = useSWRConfig()
 
     const [notificationOpen, setNotificationOpen] = useState(false)
 
@@ -180,6 +186,39 @@ function MenuBar() {
         setMobileMenuOpen(false)
     }
 
+    async function handleExitImpersonation() {
+        if (isExitingImpersonation) return
+        setIsExitingImpersonation(true)
+
+        // capture the name before the session is restored, since the stores will change
+        const impersonatedName = impersonatedUser?.targetName || fullName
+
+        try {
+
+            if (restoreImpersonation()) {
+                // clear the SWR cache for all keys to ensure fresh data is fetched after impersonation
+                await mutateAll(function () { return true }, undefined, { revalidate: false })
+                toast.success('You are back in your own account', {
+                    description: impersonatedName
+                        ? `You stopped impersonating ${impersonatedName}.`
+                        : 'Impersonation has ended.',
+                })
+                setTimeout(() => {
+                    navigateTo('/it/manage-users', {
+                        id: 'Manage-Users',
+                        label: 'Manage Users',
+                    })
+                }, 10)
+            } else {
+                toast.error('Could not return to your account', {
+                    description: 'Please sign out and sign back in to continue.',
+                })
+            }
+        } finally {
+            setIsExitingImpersonation(false)
+        }
+    }
+
     function getNotificationAccentClass(type) {
         if (type === 'success') {
             return 'bg-secondary'
@@ -217,6 +256,7 @@ function MenuBar() {
     if (!menuItems || menuItems.length === 0) return null
 
     const canEvacuate = canUserTriggerEvacuation(token) && user?.hasEvac
+    const impersonatedName = impersonatedUser?.targetName || fullName
 
     return (
         <div>
@@ -243,7 +283,6 @@ function MenuBar() {
 
                     {/* Right side - User menu */}
                     <div className="flex items-center gap-2">
-
                         <NavbarNotifications
                             notificationOpen={notificationOpen}
                             onNotificationToggle={handleNotificationToggle}
@@ -268,6 +307,31 @@ function MenuBar() {
                     </div>
                 </div>
             </div>
+
+            {/* Impersonation banner – full-width row, stacks on mobile and sits side by side from sm up */}
+            {impersonatedUser && (
+                <div
+                    role="status"
+                    className="flex flex-col gap-2 bg-danger px-4 py-2 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                >
+                    <p className="min-w-0 text-sm leading-snug">
+                        You&apos;re signed in as{' '}
+                        <span className="font-semibold wrap-break-word">{impersonatedName}</span>.
+                        <span className="block sm:inline sm:ml-1 text-white/90">
+                            Changes you make apply to their account.
+                        </span>
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={handleExitImpersonation}
+                        disabled={isExitingImpersonation}
+                        className="w-full shrink-0 cursor-pointer rounded bg-white px-4 py-2 text-sm font-semibold text-danger hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:py-1.5"
+                    >
+                        {isExitingImpersonation ? 'Returning...' : 'Return to my account'}
+                    </button>
+                </div>
+            )}
 
             {/* Desktop dropdown menu row – hidden below md, hamburger/drawer take over */}
             <div className="hidden md:flex gap-10 justify-between px-2 py-1 border-b border-gray-200 bg-white">

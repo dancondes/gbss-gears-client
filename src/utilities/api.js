@@ -26,6 +26,7 @@ apiClient.interceptors.request.use(
     (config) => {
         const authState = useAuthStore.getState()
         const token = authState.token
+        const impersonatedUser = authState.impersonatedUser
 
         if (token && isTokenExpired(token)) {
             authState.setSessionExpired(true)
@@ -37,7 +38,7 @@ apiClient.interceptors.request.use(
         }
 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`
+            config.headers.Authorization = `Bearer ${impersonatedUser ? impersonatedUser.token : token}`
         }
 
         return config

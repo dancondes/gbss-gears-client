@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import useTabStore from './tab-store';
+import { ALLOWED_TO_IMPERSONATE } from '@/constants/database-id';
 
 const ADMIN_ID = 'b3d9fdc9-52e1-419b-b59f-0812aa590488'
 const TEAM_LEAD_ID = '09b62cd6-f215-439a-8606-ead5519bab6a'
@@ -16,6 +17,7 @@ const useAuthStore = create(
             isAuthenticated: false,
             isLoading: false,
             sessionExpired: false,
+            impersonatedUser: null,
 
             setUser: (user) => {
                 set({ user, isAuthenticated: !!user, userId: user ? user.id : null })
@@ -43,6 +45,26 @@ const useAuthStore = create(
                 useTabStore.getState().closeAllTabs()
             },
 
+            beginImpersonation: (impersonateToken, userToBeImpersonated) => {
+                set({
+                    impersonatedUser: {
+                        token: impersonateToken,
+                        originalUser: get().user,
+                    },
+                    user: userToBeImpersonated,
+                })
+                useTabStore.getState().closeAllTabs()
+            },
+
+            restoreImpersonation: () => {
+                set({
+                    user: get().impersonatedUser.originalUser,
+                    impersonatedUser: null,
+                })
+                useTabStore.getState().closeAllTabs()
+                return true;
+            },
+
             logout: () => {
                 useTabStore.getState().closeAllTabs()
 
@@ -52,7 +74,8 @@ const useAuthStore = create(
                     refreshToken: null,
                     userId: null,
                     isAuthenticated: false,
-                    sessionExpired: false
+                    sessionExpired: false,
+                    impersonatedUser: null,
                 })
             },
 
@@ -78,12 +101,23 @@ const useAuthStore = create(
                 if (!user) return false
 
                 return [ADMIN_ID].includes(user.role?.id?.toLowerCase())
+            },
+
+            canImpersonate: () => {
+                const user = get().user
+                if (!user) return false
+
+                return ALLOWED_TO_IMPERSONATE.includes(user?.userId)
             }
         }),
         {
             name: 'gears-auth-storage',
             partialize: function(state) {
-                return { token: state.token, refreshToken: state.refreshToken }
+                return {
+                    token: state.token,
+                    refreshToken: state.refreshToken,
+                    impersonatedUser: state.impersonatedUser,
+                }
             },
         }
     )

@@ -20,3 +20,7 @@ export function login (credentials) {
 export function refreshToken(tokens) {
     return post(ROUTES.AUTH.REFRESH_TOKEN, tokens)
 }
+
+export function impersonateUser(personId) {
+    return post(ROUTES.AUTH.IMPERSONATE(personId))
+}

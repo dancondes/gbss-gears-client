@@ -15,6 +15,7 @@ import useTabNavigation from '@/hooks/use-tab-navigation'
 
 export default function ManageUsers() {
     const user = useAuthStore((state) => state.user)
+    const impersonatedUser = useAuthStore((state) => state.impersonatedUser)
     const canImpersonate = useAuthStore((state) => state.canImpersonate())
     const beginImpersonation = useAuthStore((state) => state.beginImpersonation)
     const { refresh } = useRefreshToken()
@@ -104,6 +105,17 @@ export default function ManageUsers() {
 
         const isLoading = impersonatingUserId === row.original.userId
 
+        if (row.original.userId === user?.userId) {
+            return (
+                <span
+                    className="min-w-28 text-left text-sm italic text-gray-500 whitespace-nowrap"
+                    title="You can't impersonate your own account"
+                >
+                    Your account
+                </span>
+            )
+        }
+
         return (
             <div className="text-center">
                 <button
@@ -129,41 +141,41 @@ export default function ManageUsers() {
         }
     }
 
-const columns = useMemo(() => {
-    const baseColumns = [
-        {
-            accessorKey: 'name',
-            header: 'Name',
-        },
-        {
-            accessorKey: 'username',
-            header: 'Username',
-        },
-        {
-            accessorKey: 'account',
-            header: 'Account',
-            cell: ({ getValue }) => getValue()?.name,
-        },
-        {
-            accessorKey: 'role',
-            header: 'Role',
-            cell: ({ getValue }) => getValue()?.description,
-        }
-    ]
+    const columns = useMemo(() => {
+        const baseColumns = [
+            {
+                accessorKey: 'name',
+                header: 'Name',
+            },
+            {
+                accessorKey: 'username',
+                header: 'Username',
+            },
+            {
+                accessorKey: 'account',
+                header: 'Account',
+                cell: ({ getValue }) => getValue()?.name,
+            },
+            {
+                accessorKey: 'role',
+                header: 'Role',
+                cell: ({ getValue }) => getValue()?.description,
+            }
+        ]
 
-    if (!canImpersonate) return baseColumns
+        if (!canImpersonate || impersonatedUser) return baseColumns
 
-    return [
-        ...baseColumns,
-        {
-            id: 'impersonate',
-            header: () => <div className="text-right">Impersonate</div>,
-            cell: renderImpersonateAction,
-            size: 140,
-            enableSorting: false,
-        },
-    ]
-}, [impersonatingUserId, canImpersonate])
+        return [
+            ...baseColumns,
+            {
+                id: 'impersonate',
+                header: () => <div className="text-right">Impersonate</div>,
+                cell: renderImpersonateAction,
+                size: 140,
+                enableSorting: false,
+            },
+        ]
+    }, [impersonatingUserId, canImpersonate])
 
     return (
         <PageTemplate

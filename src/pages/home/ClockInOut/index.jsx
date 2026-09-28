@@ -158,7 +158,7 @@ function ClockInOut() {
 
     useEffect(() => {
         refreshTimeEntries()
-    }, [])
+    }, [user?.userId])
 
     useEffect(() => {
         // Dont run if user is not 1710 or if lunchOut is not set or if lunchIn is already set

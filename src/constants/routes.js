@@ -2,6 +2,7 @@ export const ROUTES = {
     AUTH: {
         LOGIN: '/Auth/login',
         REFRESH_TOKEN: '/Auth/login/refresh',
+        IMPERSONATE: (personId) => `/Auth/impersonate/${personId}`,
     },
     EVENT: {
         CREATE_TIME_ENTRY: (type) => `/Event/time-entry/create/${type}`,

@@ -456,7 +456,7 @@ function ClockInOut() {
 
                         {/* ── END ───────────────────────────────────────────── */}
                         <SectionHeader title="End" />
-                        <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
+                        <div className={`flex flex-row flex-wrap justify-between gap-3 px-4 py-3 ${checkOutTime ? 'border-b border-gray-200' : ''}`}>
 
                             {/* Check Out row */}
                             <div className="clock-guide-check-out-btn flex items-center gap-4 flex-wrap">
@@ -505,24 +505,20 @@ function ClockInOut() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* ── OVERTIME (below End, same card) ───────────────── */}
+                        {/* Only shown once the regular shift is checked out */}
+                        {checkOutTime && (
+                            <OvertimeEntry
+                                checkInTime={overtimeCheckInTime}
+                                checkOutTime={overtimeCheckOutTime}
+                                onCheckIn={function () { handleButtonClick('OTI') }}
+                                onCheckOut={function () { handleButtonClick('OTO') }}
+                                disabled={Boolean(isSubmitting || isFetchingEntries)}
+                            />
+                        )}
                     </div>
                 </fieldset>
-
-                {/* ── OVERTIME (right side, 50/50 with the time entry) ─────
-                    Only shown once the regular shift is checked out.
-                    Mobile: stacks below the time entry, full width.
-                    lg+: sits to the right, sharing the row equally. */}
-                {checkOutTime && (
-                    <div className="clock-guide-overtime min-w-0 lg:flex-1 lg:basis-0 border-t lg:border-t-0 lg:border-l border-gray-200 pt-2 lg:pt-0 lg:pl-4">
-                        <OvertimeEntry
-                            checkInTime={overtimeCheckInTime}
-                            checkOutTime={overtimeCheckOutTime}
-                            onCheckIn={function () { handleButtonClick('OTI') }}
-                            onCheckOut={function () { handleButtonClick('OTO') }}
-                            disabled={Boolean(isSubmitting || isFetchingEntries)}
-                        />
-                    </div>
-                )}
 
                 {
                     canViewTeamStatus && (

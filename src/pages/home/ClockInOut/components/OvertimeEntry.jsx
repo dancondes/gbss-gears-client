@@ -10,21 +10,19 @@ import { calcDuration, formatTime } from '../helpers'
 const TICKET_DEFAULTS = { ticketType: ENQUIRY_TYPE_ID_FOR_TIME_AMEND }
 
 /**
- * Rendered by ClockInOut as the right-hand half of the page once the user has
- * checked out. The parent controls the width (50% on lg+, full width stacked
- * on mobile); this component only lays out its own content.
- *
- * checkInTime / checkOutTime are the raw values from the time entries
- * (e.g. "2025-01-01T18:00:00") — formatting happens here.
+ * Proposal B: rendered inside the ClockInOut card, directly below "End".
+ * Same rhythm as Start / End: SectionHeader, then a two-column row for
+ * Check In / Check Out, then a footer row (hint on the left, ticket button
+ * on the right). Full width means no dead space; on mobile everything stacks.
  */
 function OvertimeEntry({ checkInTime, checkOutTime, onCheckIn, onCheckOut, disabled }) {
     const isComplete = Boolean(checkInTime && checkOutTime)
 
     return (
-        <div className="flex flex-col gap-0 overflow-hidden text-sm">
+        <div className="clock-guide-overtime flex flex-col gap-0 overflow-hidden text-sm">
             <SectionHeader title="Overtime" />
 
-            <div className="flex flex-col gap-5 px-4 py-4">
+            <div className="grid sm:grid-cols-2 gap-3 px-4 py-3">
                 <div className="flex items-center gap-4 flex-wrap min-w-0">
                     <ClockButton
                         label="Check In"
@@ -44,7 +42,7 @@ function OvertimeEntry({ checkInTime, checkOutTime, onCheckIn, onCheckOut, disab
                 </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3 px-4 pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4">
                 <p className="text-xs text-gray-400">
                     {isComplete
                         ? <>Overtime logged <span className="text-primary/80">[ {calcDuration(checkInTime, checkOutTime)} min(s) ]</span></>

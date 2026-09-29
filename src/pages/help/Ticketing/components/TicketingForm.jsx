@@ -242,30 +242,6 @@ export default function TicketingForm({
                     error={errors.ticketType?.message}
                 />
 
-                <FileDropzone
-                    files={filesToUpload}
-                    onFilesChange={setFilesToUpload}
-                    multiple={true}
-                    maxFiles={10}
-                    maxFileSize={10 * 1024 * 1024}
-                    placeholder="Drag and drop files here, or click to browse"
-                    disabled={uploading}
-                    className='ticketing-form-file-dropzone'
-                    error={fileError}
-                />
-
-                <FormTextarea
-                    name='description'
-                    label='Describe your issue'
-                    register={register}
-                    rows={7}
-                    validation={{
-                        required: 'Please provide a description of your issue',
-                    }}
-                    error={errors.description?.message}
-                    className='ticketing-form-description'
-                />
-
                 {
                     isTimeAmendment && (
                         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
@@ -279,6 +255,26 @@ export default function TicketingForm({
                                 }}
                                 error={errors.amendDate?.message}
                                 className='mb-0! ticketing-form-amend-date'
+                            />
+
+                            <FormSelect
+                                name='amendType'
+                                label='Log Type'
+                                options={logTypeOptions}
+                                register={register}
+                                validation={{
+                                    required: { value: isTimeAmendment, message: 'Please select a log type for the time amendment' },
+                                    onChange: (e) => {
+                                        const selectedLogType = e.target.value
+
+                                        if (selectedLogType === 'I') {
+                                            applyCheckInLocation(timeEntries)
+                                        }
+                                    }
+                                }}
+                                error={errors.amendType?.message}
+                                className='ticketing-form-amend-type'
+                            // className='col-span-2 sm:col-span-1'
                             />
 
                             <div>
@@ -307,26 +303,6 @@ export default function TicketingForm({
                                 }
                             </div>
 
-                            <FormSelect
-                                name='amendType'
-                                label='Log Type'
-                                options={logTypeOptions}
-                                register={register}
-                                validation={{
-                                    required: { value: isTimeAmendment, message: 'Please select a log type for the time amendment' },
-                                    onChange: (e) => {
-                                        const selectedLogType = e.target.value
-
-                                        if (selectedLogType === 'I') {
-                                            applyCheckInLocation(timeEntries)
-                                        }
-                                    }
-                                }}
-                                error={errors.amendType?.message}
-                                className='ticketing-form-amend-type'
-                            // className='col-span-2 sm:col-span-1'
-                            />
-
                             {isCheckInLogType && (
                                 <FormSelect
                                     name='location'
@@ -344,6 +320,29 @@ export default function TicketingForm({
                     )
                 }
 
+                <FormTextarea
+                    name='description'
+                    label='Describe your issue'
+                    register={register}
+                    rows={7}
+                    validation={{
+                        required: 'Please provide a description of your issue',
+                    }}
+                    error={errors.description?.message}
+                    className='ticketing-form-description'
+                />
+
+                <FileDropzone
+                    files={filesToUpload}
+                    onFilesChange={setFilesToUpload}
+                    multiple={true}
+                    maxFiles={10}
+                    maxFileSize={10 * 1024 * 1024}
+                    placeholder="Drag and drop files here, or click to browse"
+                    disabled={uploading}
+                    className='ticketing-form-file-dropzone'
+                    error={fileError}
+                />
 
                 <div className='flex justify-end gap-2 border-t border-gray-200 pt-4'>
                     {onCancel && (

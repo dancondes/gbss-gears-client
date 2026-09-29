@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import OvertimeConfirmation from './components/OvertimeConfirmation'
+import OvertimeEntry from './components/OvertimeEntry'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import TeamStatus from './components/TeamStatus'
 import PropTypes from 'prop-types'
@@ -77,6 +78,10 @@ function ClockInOut() {
 
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
+
+    // Overtime
+    const [overtimeCheckInTime, setOvertimeCheckInTime] = useState(null)
+    const [overtimeCheckOutTime, setOvertimeCheckOutTime] = useState(null)
 
     // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
     const isBeforeNoonManila = () => {
@@ -332,6 +337,8 @@ function ClockInOut() {
                 getTimeEntryValue(entries, '5', setCombinedIn)
 
                 getTimeEntryValue(entries, 'O', setCheckOutTime)
+                getTimeEntryValue(entries, 'OTI', setOvertimeCheckInTime)
+                getTimeEntryValue(entries, 'OTO', setOvertimeCheckOutTime)
             }
         } catch (error) {
             logger.error('Error fetching time entries:', error)
@@ -366,8 +373,8 @@ function ClockInOut() {
                 </div>
             )}
         >
-            <div className='flex gap-4'>
-                <fieldset className='flex-1' disabled={isSubmitting || isFetchingEntries}>
+            <div className='flex flex-col lg:flex-row gap-4'>
+                <fieldset className='min-w-0 flex-1 lg:basis-0' disabled={isSubmitting || isFetchingEntries}>
                     <div className="flex flex-col gap-0 overflow-hidden text-sm">
 
                         {/* ── START ─────────────────────────────────────────── */}
@@ -500,6 +507,22 @@ function ClockInOut() {
                         </div>
                     </div>
                 </fieldset>
+
+                {/* ── OVERTIME (right side, 50/50 with the time entry) ─────
+                    Only shown once the regular shift is checked out.
+                    Mobile: stacks below the time entry, full width.
+                    lg+: sits to the right, sharing the row equally. */}
+                {checkOutTime && (
+                    <div className="clock-guide-overtime min-w-0 lg:flex-1 lg:basis-0 border-t lg:border-t-0 lg:border-l border-gray-200 pt-2 lg:pt-0 lg:pl-4">
+                        <OvertimeEntry
+                            checkInTime={overtimeCheckInTime}
+                            checkOutTime={overtimeCheckOutTime}
+                            onCheckIn={function () { handleButtonClick('OTI') }}
+                            onCheckOut={function () { handleButtonClick('OTO') }}
+                            disabled={Boolean(isSubmitting || isFetchingEntries)}
+                        />
+                    </div>
+                )}
 
                 {
                     canViewTeamStatus && (

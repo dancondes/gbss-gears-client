@@ -1,12 +1,24 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Modal from '@/components/modals/Modal'
 import PropTypes from 'prop-types'
+import TypeaheadInput from '@/components/form/TypeaheadInput'
+import { useForm, Controller } from 'react-hook-form'
+import FileDropzone from '@/components/form/FileDropzone'
+import { useFetchOptions } from '@/hooks/use-fetch-options'
+import { getApprovers } from '@/services/lookups-service'
 
 const LOCATIONS = [
     { id: 'HOME', label: 'Home', icon: 'home' },
     { id: 'Three NEO', label: 'Three NEO', icon: 'pin' },
     { id: 'PhilPlans', label: 'PhilPlans', icon: 'pin' }
 ]
+
+const DEFAULT_VALUES = {
+    location: '',
+    address: null, // { city, region, country } — only used when location is HOME
+    approvedBy: null, // overtime only
+    files: [] // overtime only
+}
 
 // Custom inline icons — no icon package, color comes from currentColor so it
 // follows whatever text-* class is applied by the parent (active vs inactive).
@@ -81,25 +93,90 @@ function formatLocation({ city, region, country }) {
     return [city, region, country].filter(Boolean).join(', ') || 'Unknown location'
 }
 
+function FieldLabel({ children }) {
+    return <p className="mb-2 text-sm font-medium text-gray-700">{children}</p>
+}
+
+FieldLabel.propTypes = {
+    children: PropTypes.node.isRequired
+}
+
+function FieldError({ message }) {
+    if (!message) return null
+    return (
+        <p role="alert" className="mt-2 flex items-center gap-1.5 text-xs text-red-500">
+            <AlertIcon className="h-3.5 w-3.5 shrink-0" />
+            {message}
+        </p>
+    )
+}
+
+FieldError.propTypes = {
+    message: PropTypes.string
+}
+
+function ApprovedByField({ control, error }) {
+    const { options } = useFetchOptions(getApprovers, {}, 'name')
+
+    return (
+        <TypeaheadInput
+            name="approvedBy"
+            label="Approved By"
+            control={control}
+            options={options}
+            error={error}
+            validation={{
+                required: 'Approved By is required'
+            }}
+        />
+    )
+}
+
+ApprovedByField.propTypes = {
+    control: PropTypes.object.isRequired,
+    error: PropTypes.string
+}
+
 function LocationModal({
     isOpen,
     onClose,
-    onSave
+    onSave,
+    forOvertime = false
 }) {
-    const [selected, setSelected] = useState(null)
-    const [homeLocation, setHomeLocation] = useState(null) // { city, region, country }
-    const [homeCoords, setHomeCoords] = useState(null)
+    // UI-only state for the geolocation lookup. The result itself lives in the form.
     const [locating, setLocating] = useState(false)
     const [locationError, setLocationError] = useState(null)
 
-    const handleSelect = (locId) => {
-        setSelected(locId)
+    const {
+        control,
+        handleSubmit,
+        watch,
+        setValue,
+        getValues,
+        clearErrors,
+        reset,
+        formState: { errors, isSubmitting }
+    } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
+        defaultValues: DEFAULT_VALUES
+    })
 
-        if (locId !== 'HOME') return
+    const selectedLocation = watch('location')
+    const address = watch('address')
+    const isHome = selectedLocation === 'HOME'
+    const homeError = locationError || errors.address?.message
 
-        // Already have it, no need to re-fetch
-        if (homeLocation) return
+    // Start fresh every time the modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            reset(DEFAULT_VALUES)
+            setLocating(false)
+            setLocationError(null)
+        }
+    }, [isOpen, reset])
 
+    const detectHomeAddress = () => {
         if (!navigator.geolocation) {
             setLocationError('Geolocation is not supported on this device.')
             return
@@ -107,14 +184,13 @@ function LocationModal({
 
         setLocating(true)
         setLocationError(null)
+        clearErrors('address')
 
         navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords
-                setHomeCoords({ latitude, longitude })
+            async ({ coords }) => {
                 try {
-                    const location = await reverseGeocode(latitude, longitude)
-                    setHomeLocation(location)
+                    const result = await reverseGeocode(coords.latitude, coords.longitude)
+                    setValue('address', result, { shouldValidate: true })
                 } catch {
                     setLocationError('Could not determine your city.')
                 } finally {
@@ -133,111 +209,191 @@ function LocationModal({
         )
     }
 
-    const handleProceed = () => {
-        if (!selected) return
-        // onSave(selected)
-        onSave(selected, selected === 'HOME' ? homeLocation : null)
-        resetState()
+    const handleSelect = (field, locId) => {
+        field.onChange(locId)
+
+        if (locId !== 'HOME') {
+            clearErrors('address')
+            return
+        }
+
+        // Already have it, no need to re-fetch
+        if (!getValues('address')) detectHomeAddress()
     }
 
-    const handleCancel = () => {
-        resetState()
-        onClose()
+    const onSubmit = async (data) => {
+        const homeAddress = data.location === 'HOME' ? data.address : null
+
+        if (forOvertime) {
+            await onSave({
+                location: data.location,
+                address: homeAddress,
+                approvedBy: data.approvedBy,
+                files: data.files
+            })
+        } else {
+            await onSave(data.location, homeAddress)
+        }
     }
 
-    const resetState = () => {
-        setSelected(null)
-        setHomeLocation(null)
-        setHomeCoords(null)
-        setLocating(false)
-        setLocationError(null)
-    }
+    const proceedDisabled = isSubmitting || (isHome && locating)
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Check-in Confirmation"
-            size="xl"
+            title={forOvertime ? 'Overtime Location' : 'Check-in Confirmation'}
+            size={forOvertime ? '3xl' : 'xl'}
         >
-            <div className="px-6 pb-6 pt-2">
-                <p className="mb-7 text-center text-sm text-tertiary">
-                    Confirm your location, then tap{' '}
-                    <span className="font-medium text-primary">Proceed</span> to continue —
-                    or <span className="font-medium text-primary">Cancel</span> to go back.
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="px-6 pb-6 pt-2">
+                <p className="mb-6 text-sm text-tertiary">
+                    {forOvertime
+                        ? 'Confirm where you’re working from and add your overtime approval. All fields are required.'
+                        : 'Confirm where you’re checking in from to continue.'}
                 </p>
 
-                <div className="mb-3 grid grid-cols-3 gap-3">
-                    {LOCATIONS.map((loc) => {
-                        const Icon = ICONS[loc.icon]
-                        const isActive = selected === loc.id
-                        return (
-                            <button
-                                key={loc.id}
-                                type="button"
-                                onClick={() => handleSelect(loc.id)}
-                                aria-pressed={isActive}
-                                className={`relative flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 transition-colors cursor-pointer ${
-                                    isActive
-                                        ? 'border-primary bg-primary/5 shadow-sm'
-                                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                                }`}
+                <div className="flex flex-col gap-6">
+                    {/* Location */}
+                    <section>
+                        <FieldLabel>Location</FieldLabel>
+
+                        <Controller
+                            name="location"
+                            control={control}
+                            rules={{ required: 'Select a location to continue' }}
+                            render={({ field }) => (
+                                <div role="radiogroup" aria-label="Location" className="grid grid-cols-3 gap-3">
+                                    {LOCATIONS.map((loc) => {
+                                        const Icon = ICONS[loc.icon]
+                                        const isActive = field.value === loc.id
+                                        return (
+                                            <button
+                                                key={loc.id}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={isActive}
+                                                onClick={() => handleSelect(field, loc.id)}
+                                                className={`relative flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                                                    isActive
+                                                        ? 'border-primary bg-primary/5 shadow-sm'
+                                                        : errors.location
+                                                            ? 'border-red-300 bg-white hover:bg-gray-50'
+                                                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                {isActive && (
+                                                    <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-white">
+                                                        <CheckIcon className="h-2.5 w-2.5" />
+                                                    </span>
+                                                )}
+                                                <Icon className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
+                                                <span className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-gray-600'}`}>
+                                                    {loc.label}
+                                                </span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        />
+                        <FieldError message={errors.location?.message} />
+
+                        {/* Registers the reverse-geocoded address and requires it when HOME is selected */}
+                        <Controller
+                            name="address"
+                            control={control}
+                            rules={{
+                                validate: (value) =>
+                                    getValues('location') !== 'HOME' ||
+                                    !!value ||
+                                    'We couldn’t detect your address. Try again to continue.'
+                            }}
+                            render={() => null}
+                        />
+
+                        {isHome && (
+                            <div
+                                aria-live="polite"
+                                className="mt-3 flex min-h-10 items-center gap-2 rounded-xl bg-gray-50 px-3 py-2 text-xs"
                             >
-                                {isActive && (
-                                    <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-white">
-                                        <CheckIcon className="h-2.5 w-2.5" />
+                                {locating ? (
+                                    <span className="flex items-center gap-2 text-gray-500">
+                                        <SpinnerIcon className="h-3.5 w-3.5" />
+                                        Detecting your location…
                                     </span>
+                                ) : homeError ? (
+                                    <>
+                                        <span className="flex flex-1 items-center gap-2 text-red-500">
+                                            <AlertIcon className="h-3.5 w-3.5 shrink-0" />
+                                            {homeError}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={detectHomeAddress}
+                                            className="shrink-0 rounded-lg px-2 py-1 font-semibold text-primary transition-colors hover:bg-primary/10 cursor-pointer"
+                                        >
+                                            Try again
+                                        </button>
+                                    </>
+                                ) : address ? (
+                                    <span className="flex items-center gap-2 font-medium text-primary">
+                                        <PinIcon className="h-3.5 w-3.5 shrink-0" />
+                                        <span>Detected: {formatLocation(address)}</span>
+                                    </span>
+                                ) : null}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Overtime details */}
+                    {forOvertime && (
+                        <>
+                            <ApprovedByField control={control} error={errors.approvedBy?.message} />
+
+                            <Controller
+                                name="files"
+                                control={control}
+                                rules={{
+                                    validate: (files) =>
+                                        (files && files.length > 0) || 'Attach at least one file'
+                                }}
+                                render={({ field, fieldState }) => (
+                                    <FileDropzone
+                                        files={field.value}
+                                        onFilesChange={field.onChange}
+                                        multiple={true}
+                                        maxFiles={10}
+                                        maxFileSize={10 * 1024 * 1024}
+                                        placeholder="Drag and drop files here, or click to browse"
+                                        disabled={isSubmitting}
+                                        className="ticketing-form-file-dropzone"
+                                        error={fieldState.error?.message}
+                                    />
                                 )}
-                                <Icon className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
-                                <span className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-gray-600'}`}>
-                                    {loc.label}
-                                </span>
-                            </button>
-                        )
-                    })}
+                            />
+                        </>
+                    )}
                 </div>
 
-                {selected === 'HOME' && (
-                    <div className="mb-5 flex min-h-6 items-center justify-center text-xs">
-                        {locating && (
-                            <span className="flex items-center gap-1.5 text-gray-500">
-                                <SpinnerIcon className="h-3.5 w-3.5" />
-                                Detecting your location…
-                            </span>
-                        )}
-                        {!locating && homeLocation && (
-                            <span className="flex items-center gap-1.5 font-medium text-primary">
-                                <PinIcon className="h-3.5 w-3.5 shrink-0" />
-                                <span>Detected Location: {formatLocation(homeLocation)}</span>
-                            </span>
-                        )}
-                        {!locating && locationError && (
-                            <span className="flex items-center gap-1.5 text-red-500">
-                                <AlertIcon className="h-3.5 w-3.5 shrink-0" />
-                                {locationError}
-                            </span>
-                        )}
-                    </div>
-                )}
-
-                <div className="flex items-center justify-center gap-3">
+                <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-5">
                     <button
                         type="button"
-                        onClick={handleCancel}
-                        className="flex-1 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 cursor-pointer"
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                        className="flex-1 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
-                        type="button"
-                        onClick={handleProceed}
-                        disabled={!selected || locating}
-                        className="flex-1 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 cursor-pointer"
+                        type="submit"
+                        disabled={proceedDisabled}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 cursor-pointer"
                     >
+                        {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
                         Proceed
                     </button>
                 </div>
-            </div>
+            </form>
         </Modal>
     )
 }
@@ -245,7 +401,8 @@ function LocationModal({
 LocationModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    onSave: PropTypes.func.isRequired
+    onSave: PropTypes.func.isRequired,
+    forOvertime: PropTypes.bool
 }
 
 export default LocationModal

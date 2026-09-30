@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { isResultSuccessful } from '@/utilities'
 import { getCurrentDate } from '@/utilities/date-utilities'
 import OvertimeConfirmation from './components/OvertimeConfirmation'
+import OvertimeEntry from './components/OvertimeEntry'
 import useTabNavigation from '@/hooks/use-tab-navigation'
 import TeamStatus from './components/TeamStatus'
 import PropTypes from 'prop-types'
@@ -57,6 +58,7 @@ function ClockInOut() {
     const [locationModalOpen, setLocationModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(null)
     const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false)
+    const [showOvertimeLocationModal, setShowOvertimeLocationModal] = useState(false)
     const [isFetchingEntries, setIsFetchingEntries] = useState(false)
     const isAlertActiveRef = useRef(false)
 
@@ -77,6 +79,10 @@ function ClockInOut() {
 
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
+
+    // Overtime
+    const [overtimeCheckInTime, setOvertimeCheckInTime] = useState(null)
+    const [overtimeCheckOutTime, setOvertimeCheckOutTime] = useState(null)
 
     // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
     const isBeforeNoonManila = () => {
@@ -332,6 +338,8 @@ function ClockInOut() {
                 getTimeEntryValue(entries, '5', setCombinedIn)
 
                 getTimeEntryValue(entries, 'O', setCheckOutTime)
+                getTimeEntryValue(entries, 'OTI', setOvertimeCheckInTime)
+                getTimeEntryValue(entries, 'OTO', setOvertimeCheckOutTime)
             }
         } catch (error) {
             logger.error('Error fetching time entries:', error)
@@ -366,8 +374,8 @@ function ClockInOut() {
                 </div>
             )}
         >
-            <div className='flex gap-4'>
-                <fieldset className='flex-1' disabled={isSubmitting || isFetchingEntries}>
+            <div className='flex flex-col lg:flex-row gap-4'>
+                <fieldset className='min-w-0 flex-1 lg:basis-0' disabled={isSubmitting || isFetchingEntries}>
                     <div className="flex flex-col gap-0 overflow-hidden text-sm">
 
                         {/* ── START ─────────────────────────────────────────── */}
@@ -449,7 +457,7 @@ function ClockInOut() {
 
                         {/* ── END ───────────────────────────────────────────── */}
                         <SectionHeader title="End" />
-                        <div className="flex flex-row flex-wrap justify-between gap-3 px-4 py-3">
+                        <div className={`flex flex-row flex-wrap justify-between gap-3 px-4 py-3 ${checkOutTime ? 'border-b border-gray-200' : ''}`}>
 
                             {/* Check Out row */}
                             <div className="clock-guide-check-out-btn flex items-center gap-4 flex-wrap">
@@ -498,6 +506,18 @@ function ClockInOut() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* ── OVERTIME (below End, same card) ───────────────── */}
+                        {/* Only shown once the regular shift is checked out */}
+                        {checkOutTime && (
+                            <OvertimeEntry
+                                checkInTime={overtimeCheckInTime}
+                                checkOutTime={overtimeCheckOutTime}
+                                onCheckIn={() => { setShowOvertimeLocationModal(true) }}
+                                onCheckOut={function () { handleButtonClick('OTO') }}
+                                disabled={Boolean(isSubmitting || isFetchingEntries)}
+                            />
+                        )}
                     </div>
                 </fieldset>
 
@@ -524,6 +544,17 @@ function ClockInOut() {
                     isOpen={showOvertimeConfirmation}
                     onClose={() => setShowOvertimeConfirmation(false)}
                     onOkay={handleOkayOvertimeConfirmation}
+                />
+            )}
+
+            {showOvertimeLocationModal && (
+                <LocationModal
+                    isOpen={showOvertimeLocationModal}
+                    onClose={() => setShowOvertimeLocationModal(false)}
+                    onSave={(data) => {
+                        setShowOvertimeLocationModal(false)
+                    }}
+                    forOvertime
                 />
             )}
         </PageTemplate>

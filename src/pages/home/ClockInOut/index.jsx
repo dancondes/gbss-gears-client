@@ -58,6 +58,7 @@ function ClockInOut() {
     const [locationModalOpen, setLocationModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(null)
     const [showOvertimeConfirmation, setShowOvertimeConfirmation] = useState(false)
+    const [showOvertimeLocationModal, setShowOvertimeLocationModal] = useState(false)
     const [isFetchingEntries, setIsFetchingEntries] = useState(false)
     const isAlertActiveRef = useRef(false)
 
@@ -512,7 +513,7 @@ function ClockInOut() {
                             <OvertimeEntry
                                 checkInTime={overtimeCheckInTime}
                                 checkOutTime={overtimeCheckOutTime}
-                                onCheckIn={function () { handleButtonClick('OTI') }}
+                                onCheckIn={() => { setShowOvertimeLocationModal(true) }}
                                 onCheckOut={function () { handleButtonClick('OTO') }}
                                 disabled={Boolean(isSubmitting || isFetchingEntries)}
                             />
@@ -543,6 +544,17 @@ function ClockInOut() {
                     isOpen={showOvertimeConfirmation}
                     onClose={() => setShowOvertimeConfirmation(false)}
                     onOkay={handleOkayOvertimeConfirmation}
+                />
+            )}
+
+            {showOvertimeLocationModal && (
+                <LocationModal
+                    isOpen={showOvertimeLocationModal}
+                    onClose={() => setShowOvertimeLocationModal(false)}
+                    onSave={(data) => {
+                        setShowOvertimeLocationModal(false)
+                    }}
+                    forOvertime
                 />
             )}
         </PageTemplate>

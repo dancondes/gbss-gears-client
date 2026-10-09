@@ -18,7 +18,7 @@ const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // Refresh 5 minutes before expiry
  * Redirects to login if not authenticated
  */
 function ProtectedRoute({ children }) {
-    const { user, token, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired } = useAuthStore()
+    const { user, token, impersonatedUser, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired } = useAuthStore()
     const activeTabId = useTabStore((state) => state.activeTabId)
     const tabsCount = useTabStore((state) => state.tabs.length)
     const location = useLocation()
@@ -91,7 +91,7 @@ function ProtectedRoute({ children }) {
                 return
             }
 
-            const userId = getUserIdFromToken(token)
+            const userId = getUserIdFromToken(impersonatedUser ? impersonatedUser.token : token)
             if (!userId) {
                 finishAuth({ doLogout: true })
                 return
@@ -114,7 +114,7 @@ function ProtectedRoute({ children }) {
             toast.error('Failed to initialize authentication')
             finishAuth({ doLogout: true })
         }
-    }, [token, user, setUser, logout, enforceTokenValidity, finishAuth, refresh])
+    }, [token, impersonatedUser, user, setUser, logout, enforceTokenValidity, finishAuth, refresh])
 
     // Run initial auth setup when component mounts or when dependencies change
     useEffect(() => {

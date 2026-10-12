@@ -87,56 +87,56 @@ function LocationModal({
     onSave
 }) {
     const [selected, setSelected] = useState(null)
-    const [homeLocation, setHomeLocation] = useState(null) // { city, region, country }
-    const [homeCoords, setHomeCoords] = useState(null)
-    const [locating, setLocating] = useState(false)
-    const [locationError, setLocationError] = useState(null)
+    // const [homeLocation, setHomeLocation] = useState(null) // { city, region, country }
+    // const [homeCoords, setHomeCoords] = useState(null)
+    // const [locating, setLocating] = useState(false)
+    // const [locationError, setLocationError] = useState(null)
 
     const handleSelect = (locId) => {
         setSelected(locId)
 
-        if (locId !== 'HOME') return
+        // if (locId !== 'HOME') return
 
-        // Already have it, no need to re-fetch
-        if (homeLocation) return
+        // // Already have it, no need to re-fetch
+        // if (homeLocation) return
 
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported on this device.')
-            return
-        }
+        // if (!navigator.geolocation) {
+        //     setLocationError('Geolocation is not supported on this device.')
+        //     return
+        // }
 
-        setLocating(true)
-        setLocationError(null)
+        // setLocating(true)
+        // setLocationError(null)
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords
-                setHomeCoords({ latitude, longitude })
-                try {
-                    const location = await reverseGeocode(latitude, longitude)
-                    setHomeLocation(location)
-                } catch {
-                    setLocationError('Could not determine your city.')
-                } finally {
-                    setLocating(false)
-                }
-            },
-            (error) => {
-                setLocating(false)
-                setLocationError(
-                    error.code === error.PERMISSION_DENIED
-                        ? 'Location permission denied.'
-                        : 'Unable to retrieve your location.'
-                )
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-        )
+        // navigator.geolocation.getCurrentPosition(
+        //     async (position) => {
+        //         const { latitude, longitude } = position.coords
+        //         setHomeCoords({ latitude, longitude })
+        //         try {
+        //             const location = await reverseGeocode(latitude, longitude)
+        //             setHomeLocation(location)
+        //         } catch {
+        //             setLocationError('Could not determine your city.')
+        //         } finally {
+        //             setLocating(false)
+        //         }
+        //     },
+        //     (error) => {
+        //         setLocating(false)
+        //         setLocationError(
+        //             error.code === error.PERMISSION_DENIED
+        //                 ? 'Location permission denied.'
+        //                 : 'Unable to retrieve your location.'
+        //         )
+        //     },
+        //     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        // )
     }
 
     const handleProceed = () => {
         if (!selected) return
         // onSave(selected)
-        onSave(selected, selected === 'HOME' ? homeLocation : null)
+        onSave(selected)
         resetState()
     }
 
@@ -147,10 +147,10 @@ function LocationModal({
 
     const resetState = () => {
         setSelected(null)
-        setHomeLocation(null)
-        setHomeCoords(null)
-        setLocating(false)
-        setLocationError(null)
+        // setHomeLocation(null)
+        // setHomeCoords(null)
+        // setLocating(false)
+        // setLocationError(null)
     }
 
     return (
@@ -197,7 +197,7 @@ function LocationModal({
                     })}
                 </div>
 
-                {selected === 'HOME' && (
+                {/* {selected === 'HOME' && (
                     <div className="mb-5 flex min-h-6 items-center justify-center text-xs">
                         {locating && (
                             <span className="flex items-center gap-1.5 text-gray-500">
@@ -218,7 +218,7 @@ function LocationModal({
                             </span>
                         )}
                     </div>
-                )}
+                )} */}
 
                 <div className="flex items-center justify-center gap-3">
                     <button
@@ -231,7 +231,7 @@ function LocationModal({
                     <button
                         type="button"
                         onClick={handleProceed}
-                        disabled={!selected || locating}
+                        disabled={!selected}
                         className="flex-1 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 cursor-pointer"
                     >
                         Proceed

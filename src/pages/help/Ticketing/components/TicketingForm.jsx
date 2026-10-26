@@ -143,7 +143,7 @@ export default function TicketingForm({
     }, [watchedAmendDate, user, isTimeAmendment, setTimeEntries])
 
     async function onSubmit(data) {
-        if (filesToUpload.length <= 0) {
+        if (data?.ticketType == TIME_AMENDMENT_ENQUIRY_TYPE_ID && filesToUpload.length <= 0) {
             setFileError('Please attach at least one file before submitting the ticket.')
             setTimeout(() => {
                 setFileError(null)

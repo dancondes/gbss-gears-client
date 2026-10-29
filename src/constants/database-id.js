@@ -8,7 +8,7 @@ export const ENQUIRY_TYPE_ID_FOR_PAYROLL = 3
 export const ENQUIRY_TYPE_ID_FOR_TIME_AMEND = 7
 
 // Leave Types
-export const LEAVE_TYPE_OPTION_IDS = [1, 5, 29, 30] // Annual-Paid, Holiday Paid, Halfday (Early-out), Halfday (Late)
+export const LEAVE_TYPE_OPTION_IDS = [1, 5, 29, 30, 13] // Annual-Paid, Holiday Paid, Halfday (Early-out), Halfday (Late), Free Day
 export const HALFDAY_EARLY_OUT_LEAVE_TYPE_ID = 29
 export const HALFDAY_LATE_LEAVE_TYPE_ID = 30
 export const ALLOWED_TO_IMPERSONATE = [2721, 1865]

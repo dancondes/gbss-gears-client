@@ -14,7 +14,7 @@ export function downloadFile(blob, name) {
 export function updatePathFor201Files(path) {
     if (!path) return null
 
-    return path.replace('\\\\10.0.7.2\\Documents\\', 'Documents/201 Files/')
+    return path.replace('\\\\10.0.7.2\\Documents\\', 'Documents/201 Files/').replace('\\\\manhr\\Documents\\', 'Documents/201 Files/')
 }
 
 // For Documents (Sidebar)

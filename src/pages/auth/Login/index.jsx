@@ -45,6 +45,9 @@ const Login = () => {
     const [loading, setLoading] = useState(false)
     const [now, setNow] = useState(new Date())
     const errorRef = useRef(null)
+    // Set once a successful login triggers the page reload, so the form stays in its
+    // "Signing in…" state instead of flickering back before the reload completes.
+    const isRedirectingRef = useRef(false)
 
     const {
         register,
@@ -97,6 +100,11 @@ const Login = () => {
 
                 const { login } = useAuthStore.getState()
                 login(result.data)
+
+                // Hard reload so the whole app boots fresh with the new session.
+                // login() has already written the tokens to localStorage (persist is synchronous).
+                isRedirectingRef.current = true
+                window.location.replace('/')
             } else {
                 setFormError(getLoginErrorMessage(result))
             }
@@ -104,7 +112,9 @@ const Login = () => {
         } catch (err) {
             setFormError(getLoginErrorMessage(err))
         } finally {
-            setLoading(false)
+            if (!isRedirectingRef.current) {
+                setLoading(false)
+            }
         }
     }
 

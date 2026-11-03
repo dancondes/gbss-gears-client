@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
 import Alert from '@/components/Alert'
@@ -40,8 +39,6 @@ function getLoginErrorMessage(error) {
 }
 
 const Login = () => {
-    const navigate = useNavigate()
-    const token = useAuthStore((state) => state.token)
     const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
     const [now, setNow] = useState(new Date())
@@ -58,12 +55,6 @@ const Login = () => {
         },
         mode: 'onSubmit'
     })
-
-    useEffect(function () {
-        if (token) {
-            navigate('/', { replace: true })
-        }
-    }, [token, navigate])
 
     // Running timestamp — small, functional nod to what an attendance system is for
     useEffect(function () {

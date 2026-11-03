@@ -4,6 +4,7 @@ import { SWRConfig } from 'swr'
 import { Toaster } from 'sonner'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import GuestRoute from '@/components/GuestRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import Spinner from '@/components/Spinner'
 import DesktopOnly from '@/components/DesktopOnly'
@@ -19,7 +20,7 @@ function PageLoader() {
 function AppRoutes() {
     return (
         <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
             <Route
                 path="*"

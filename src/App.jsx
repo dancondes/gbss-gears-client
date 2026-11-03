@@ -11,7 +11,6 @@ import { swrConfig, defaultFetcher } from '@/lib/swr-config'
 import { MessageModalProvider } from '@/contexts/MessageModalContext'
 import Login from '@/pages/auth/Login'
 import ViewDocumentPage from '@/pages/other/ViewDocumentPage'
-import EnableDeviceBypassPage from '@/pages/other/EnableDeviceBypassPage'
 
 function PageLoader() {
     return <Spinner />
@@ -54,10 +53,6 @@ function App() {
                 <ErrorBoundary>
                     <Suspense fallback={<PageLoader />}>
                         <Routes>
-                            {/* Soft convenience mechanism only: this route is intentionally obscure,
-                                not a real security boundary. It must stay reachable on any device
-                                so someone can enable the local bypass flag when needed. */}
-                            <Route path="/enable-bypass" element={<EnableDeviceBypassPage />} />
                             <Route
                                 path="*"
                                 element={

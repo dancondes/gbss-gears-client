@@ -1,12 +1,10 @@
 import React from 'react'
 import { useIsDesktop } from '@/hooks/use-is-desktop'
-import { isDeviceBypassed } from '@/lib/device-bypass'
 
 function DesktopOnly({ children }) {
     const isDesktop = useIsDesktop()
-    const deviceIsBypassed = isDeviceBypassed()
 
-    if (!isDesktop && !deviceIsBypassed) {
+    if (!isDesktop) {
         return <DesktopOnlyFallback />
     }
 

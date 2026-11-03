@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/store'
+import { syncAuthFromStorage } from '@/store/auth-store'
+import { AUTH_STORAGE_KEY } from '@/utilities/auth-storage'
 import { isTokenExpired } from '@/utilities/jwt-utils'
 import Spinner from './Spinner'
 
@@ -13,6 +15,9 @@ function GuestRoute({ children }) {
 
     useEffect(function () {
         function checkStoredToken() {
+            // Make sure the store reflects localStorage before judging it, regardless of
+            // the order in which storage listeners fire.
+            syncAuthFromStorage()
             const storedToken = useAuthStore.getState().token
 
             if (!storedToken) {
@@ -32,7 +37,7 @@ function GuestRoute({ children }) {
         }
 
         function handleStorageChange(event) {
-            if (event.key === 'gears-auth-storage' || event.key === null) {
+            if (event.key === AUTH_STORAGE_KEY || event.key === null) {
                 checkStoredToken()
             }
         }

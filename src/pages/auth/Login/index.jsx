@@ -5,8 +5,10 @@ import Alert from '@/components/Alert'
 import CompanyBrand from '@/components/CompanyBrand'
 import DevelopmentBanner from '@/components/DevelopmentBanner'
 import { useAuthStore } from '@/store'
+import { syncAuthFromStorage } from '@/store/auth-store'
 import { login as loginUser } from '@/services/auth-service'
 import { getUserIdFromToken } from '@/utilities/jwt-utils'
+import { hasValidStoredToken } from '@/utilities/auth-storage'
 import { isResultSuccessful } from '@/utilities'
 import AcronymBreakdown from '@/components/AcronymBreakdown'
 
@@ -72,6 +74,14 @@ const Login = () => {
 
     async function onSubmit(data) {
         setFormError('')
+
+        // Another tab may have logged in while this one sat on the login page.
+        // Check localStorage directly and do NOT call the login API when a valid
+        // token is already stored. Syncing the store lets GuestRoute redirect to "/".
+        if (hasValidStoredToken()) {
+            syncAuthFromStorage()
+            return
+        }
 
         try {
             setLoading(true)

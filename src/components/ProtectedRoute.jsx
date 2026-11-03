@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useTabStore } from '@/store'
+import { syncAuthFromStorage } from '@/store/auth-store'
 import { getUserById } from '@/services/user-service'
 import { getTimeUntilExpiration, getUserIdFromToken, isTokenExpired, isTokenExpiredOnPreviousDate, shouldRefreshToken } from '@/utilities/jwt-utils'
 import Spinner from './Spinner'
@@ -18,7 +19,16 @@ const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // Refresh 5 minutes before expiry
  * Redirects to login if not authenticated
  */
 function ProtectedRoute({ children }) {
-    const { user, token, impersonatedUser, isAuthenticated, setUser, logout, sessionExpired, setSessionExpired } = useAuthStore()
+    // Select only what we need so unrelated store changes don't re-render this component
+    const user = useAuthStore((state) => state.user)
+    const token = useAuthStore((state) => state.token)
+    const impersonatedUser = useAuthStore((state) => state.impersonatedUser)
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+    const sessionExpired = useAuthStore((state) => state.sessionExpired)
+    const setUser = useAuthStore((state) => state.setUser)
+    const logout = useAuthStore((state) => state.logout)
+    const setSessionExpired = useAuthStore((state) => state.setSessionExpired)
+
     const activeTabId = useTabStore((state) => state.activeTabId)
     const tabsCount = useTabStore((state) => state.tabs.length)
     const location = useLocation()
@@ -40,39 +50,43 @@ function ProtectedRoute({ children }) {
         [logout]
     )
 
-    // Check if current token has expired and trigger session expiry if needed
+    // Check if the current token has expired and trigger session expiry if needed.
+    // Reads the latest token from localStorage/the store (not the render closure) so a
+    // token refreshed by another tab is never mistaken for an expired one.
     const enforceTokenValidity = useCallback(() => {
-        if (!token) {
+        syncAuthFromStorage()
+        const currentToken = useAuthStore.getState().token
+
+        if (!currentToken) {
             return true
         }
 
-        if (isTokenExpiredOnPreviousDate(token)) {
+        if (isTokenExpiredOnPreviousDate(currentToken)) {
             logout()
             setIsInitialized(true)
             setShouldRedirect(true)
             return false
         }
 
-        if (isTokenExpired(token)) {
+        if (isTokenExpired(currentToken)) {
             setSessionExpired(true)
             return false
         }
 
         return true
-    }, [token, setSessionExpired, logout])
+    }, [setSessionExpired, logout])
 
-    // Refresh the token now if it's due, and only if the tab is actually visible.
+    // Refresh now if it's due, and only if the tab is actually visible.
+    // (refresh() itself is a no-op unless the token is due.)
     const refreshIfDue = useCallback(() => {
         if (document.hidden) {
             logger.log('Tab hidden, skipping token refresh')
             return
         }
-        if (shouldRefreshToken(token)) {
-            refresh()
-        }
-    }, [token, refresh])
+        refresh()
+    }, [refresh])
 
-    // Initialize authentication: validate token, fetch user data, and load forms menu
+    // Initialize authentication: validate token and fetch user data
     const initializeAuth = useCallback(async () => {
         try {
             if (!token) {
@@ -114,7 +128,7 @@ function ProtectedRoute({ children }) {
             toast.error('Failed to initialize authentication')
             finishAuth({ doLogout: true })
         }
-    }, [token, impersonatedUser, user, setUser, logout, enforceTokenValidity, finishAuth, refresh])
+    }, [token, impersonatedUser, user, setUser, logout, enforceTokenValidity, finishAuth])
 
     // Run initial auth setup when component mounts or when dependencies change
     useEffect(() => {
@@ -144,12 +158,12 @@ function ProtectedRoute({ children }) {
         return () => window.clearTimeout(timeoutId)
     }, [token, refreshIfDue])
 
-    // Refresh token when tab becomes visible again after inactivity
+    // When the tab becomes visible again: re-sync from localStorage, validate, and
+    // refresh only if the token is actually due (no more refresh on every tab switch).
     useEffect(() => {
         function handleVisibilityChange() {
-            if (!document.hidden) {
-                if (enforceTokenValidity())
-                    refresh()
+            if (!document.hidden && enforceTokenValidity()) {
+                refresh()
             }
         }
 

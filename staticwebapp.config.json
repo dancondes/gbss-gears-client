@@ -2,18 +2,28 @@
     "navigationFallback": {
         "rewrite": "/index.html",
         "exclude": [
-            "/images/.{png,jpg,gif}",
+            "/images/*.{png,jpg,gif}",
             "/css/"
         ]
     },
     "routes": [
         {
+            "route": "/index.html",
+            "headers": {
+                "Cache-Control": "no-cache, must-revalidate"
+            }
+        },
+        {
             "route": "/*",
             "serve": "/index.html",
-            "statusCode": 200
+            "statusCode": 200,
+            "headers": {
+                "Cache-Control": "no-cache, must-revalidate"
+            }
         }
     ],
     "globalHeaders": {
+        "Cache-Control": "no-cache, must-revalidate",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
         "Referrer-Policy": "strict-origin-when-cross-origin",

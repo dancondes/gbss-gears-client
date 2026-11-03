@@ -1,5 +1,5 @@
 import axios from 'axios'
-import useAuthStore from '@/store/auth-store'
+import useAuthStore, { syncAuthFromStorage } from '@/store/auth-store'
 import { isTokenExpired } from './jwt-utils'
 
 /**
@@ -24,6 +24,9 @@ const apiClient = axios.create({
  */
 apiClient.interceptors.request.use(
     (config) => {
+        // Make sure we use the newest tokens, even if another tab just rotated them
+        syncAuthFromStorage()
+
         const authState = useAuthStore.getState()
         const token = authState.token
         const impersonatedUser = authState.impersonatedUser
@@ -38,7 +41,10 @@ apiClient.interceptors.request.use(
         }
 
         if (token) {
-            config.headers.Authorization = `Bearer ${impersonatedUser ? impersonatedUser.token : token}`
+            const effectiveToken = impersonatedUser ? impersonatedUser.token : token
+            config.headers.Authorization = `Bearer ${effectiveToken}`
+            // Remember which mode this request was made in (used by the 401 handler)
+            config._impersonated = !!impersonatedUser
         }
 
         return config
@@ -51,7 +57,6 @@ apiClient.interceptors.request.use(
 /**
  * Response Interceptor
  * Handles common response scenarios and errors
- * Automatically attempts token refresh on 401 errors
  */
 apiClient.interceptors.response.use(
     (response) => {
@@ -60,7 +65,7 @@ apiClient.interceptors.response.use(
         return response.data
     },
     async (error) => {
-        // const originalRequest = error.config
+        const originalRequest = error.config
 
         // Handle specific error cases
         if (error.response) {
@@ -69,10 +74,34 @@ apiClient.interceptors.response.use(
             const { status, data } = error.response
 
             switch (status) {
-                case 401:
-                    // Unauthorized - logout user
-                    useAuthStore.getState().setSessionExpired(true)
+                case 401: {
+                    // A 401 can simply mean another tab refreshed the tokens while this
+                    // request was in flight. Compare the token this request used with the
+                    // latest one before treating the session as expired.
+                    const usedToken = originalRequest?.headers?.Authorization?.replace('Bearer ', '')
+                    syncAuthFromStorage()
+
+                    const state = useAuthStore.getState()
+                    const sameMode = originalRequest?._impersonated === !!state.impersonatedUser
+                    const currentToken = state.impersonatedUser ? state.impersonatedUser.token : state.token
+
+                    const tokenWasRotated =
+                        sameMode && !!currentToken && !!usedToken && currentToken !== usedToken
+
+                    if (tokenWasRotated) {
+                        // Retry once with the fresh token (the request interceptor re-attaches it).
+                        // Skip the refresh endpoint itself: its body carries the old tokens.
+                        const isRefreshCall = originalRequest?.url?.toLowerCase().includes('refresh')
+                        if (originalRequest && !originalRequest._retried && !isRefreshCall) {
+                            originalRequest._retried = true
+                            return apiClient(originalRequest)
+                        }
+                    } else {
+                        // Unauthorized - session is really over
+                        state.setSessionExpired(true)
+                    }
                     break
+                }
                 case 403:
                     break
                 case 404:

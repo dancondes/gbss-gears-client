@@ -9,7 +9,7 @@ function OvertimeForm({
     errors,
     data,
     approverOptions,
-    watch,
+    // watch,
 }) {
 
     // If the approver in the data is not in the approverOptions, add it to the options
@@ -23,43 +23,43 @@ function OvertimeForm({
         return approverOptions.map(option => option.value)
     }, [data, approverOptions])
 
-    const overtimeDateValue = watch('overtimeDate')
-    const numHoursValue = watch('numHours')
+    // const overtimeDateValue = watch('overtimeDate')
+    // const numHoursValue = watch('numHours')
 
     // Always resolves, but each field falls back to an empty string until its
     // source value is present and would actually pass validation.
-    const summary = useMemo(() => {
-        let formattedDate = ''
+    // const summary = useMemo(() => {
+    //     let formattedDate = ''
 
-        if (overtimeDateValue) {
-            const [year, month, day] = overtimeDateValue.split('-')
-            if (year && month && day) {
-                formattedDate = `${day}/${month}/${year}`
-            }
-        }
+    //     if (overtimeDateValue) {
+    //         const [year, month, day] = overtimeDateValue.split('-')
+    //         if (year && month && day) {
+    //             formattedDate = `${day}/${month}/${year}`
+    //         }
+    //     }
 
-        let formattedHours = ''
-        const numericHours = Number(numHoursValue)
+    //     let formattedHours = ''
+    //     const numericHours = Number(numHoursValue)
 
-        if (numHoursValue && !Number.isNaN(numericHours) && numericHours > 0) {
-            // Decimal is a fraction of an hour: 1.5 -> 1hr 30min
-            const hours = Math.floor(numericHours)
-            const minutes = Math.round((numericHours - hours) * 60)
-            const parts = []
+    //     if (numHoursValue && !Number.isNaN(numericHours) && numericHours > 0) {
+    //         // Decimal is a fraction of an hour: 1.5 -> 1hr 30min
+    //         const hours = Math.floor(numericHours)
+    //         const minutes = Math.round((numericHours - hours) * 60)
+    //         const parts = []
 
-            if (hours > 0) {
-                parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`)
-            }
+    //         if (hours > 0) {
+    //             parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`)
+    //         }
 
-            if (minutes > 0) {
-                parts.push(`${minutes} ${minutes === 1 ? 'Minute' : 'Minutes'}`)
-            }
+    //         if (minutes > 0) {
+    //             parts.push(`${minutes} ${minutes === 1 ? 'Minute' : 'Minutes'}`)
+    //         }
 
-            formattedHours = parts.join(' & ')
-        }
+    //         formattedHours = parts.join(' & ')
+    //     }
 
-        return { formattedDate, formattedHours }
-    }, [overtimeDateValue, numHoursValue])
+    //     return { formattedDate, formattedHours }
+    // }, [overtimeDateValue, numHoursValue])
 
     return (
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-x-3'>
@@ -114,7 +114,7 @@ function OvertimeForm({
                 className='col-span-1 sm:col-span-2 ot-approved-by-input'
             />
 
-            <div className='col-span-1 sm:col-span-2 mt-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 space-y-1.5'>
+            {/* <div className='col-span-1 sm:col-span-2 mt-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 space-y-1.5'>
                 <p className='text-xs font-semibold uppercase tracking-wide text-gray-400'>
                     Overtime that will be logged
                 </p>
@@ -132,7 +132,7 @@ function OvertimeForm({
 
             <p className='col-span-1 sm:col-span-2 mt-2 text-xs text-gray-500'>
                 The decimal represents a fraction of an hour. For example, 1.5 means 1 hour and 30 minutes.
-            </p>
+            </p> */}
         </div>
     )
 }

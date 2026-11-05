@@ -67,7 +67,7 @@ function Overtime() {
             }
         } catch (error) {
             logger.error('Error saving overtime:', error)
-            toast.error('Failed to save overtime. Please try again.')
+            toast.error('Failed to save overtime. ' + error.message)
         }
     }
 

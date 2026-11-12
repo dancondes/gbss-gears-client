@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
 import Alert from '@/components/Alert'
 import CompanyBrand from '@/components/CompanyBrand'
 import DevelopmentBanner from '@/components/DevelopmentBanner'
 import { useAuthStore } from '@/store'
+import { syncAuthFromStorage } from '@/store/auth-store'
 import { login as loginUser } from '@/services/auth-service'
 import { getUserIdFromToken } from '@/utilities/jwt-utils'
+import { hasValidStoredToken } from '@/utilities/auth-storage'
 import { isResultSuccessful } from '@/utilities'
 import AcronymBreakdown from '@/components/AcronymBreakdown'
 
@@ -40,12 +41,13 @@ function getLoginErrorMessage(error) {
 }
 
 const Login = () => {
-    const navigate = useNavigate()
-    const token = useAuthStore((state) => state.token)
     const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
     const [now, setNow] = useState(new Date())
     const errorRef = useRef(null)
+    // Set once a successful login triggers the page reload, so the form stays in its
+    // "Signing in…" state instead of flickering back before the reload completes.
+    const isRedirectingRef = useRef(false)
 
     const {
         register,
@@ -58,12 +60,6 @@ const Login = () => {
         },
         mode: 'onSubmit'
     })
-
-    useEffect(function () {
-        if (token) {
-            navigate('/', { replace: true })
-        }
-    }, [token, navigate])
 
     // Running timestamp — small, functional nod to what an attendance system is for
     useEffect(function () {
@@ -82,6 +78,14 @@ const Login = () => {
     async function onSubmit(data) {
         setFormError('')
 
+        // Another tab may have logged in while this one sat on the login page.
+        // Check localStorage directly and do NOT call the login API when a valid
+        // token is already stored. Syncing the store lets GuestRoute redirect to "/".
+        if (hasValidStoredToken()) {
+            syncAuthFromStorage()
+            return
+        }
+
         try {
             setLoading(true)
             const result = await loginUser(data)
@@ -96,6 +100,11 @@ const Login = () => {
 
                 const { login } = useAuthStore.getState()
                 login(result.data)
+
+                // Hard reload so the whole app boots fresh with the new session.
+                // login() has already written the tokens to localStorage (persist is synchronous).
+                isRedirectingRef.current = true
+                window.location.replace('/')
             } else {
                 setFormError(getLoginErrorMessage(result))
             }
@@ -103,7 +112,9 @@ const Login = () => {
         } catch (err) {
             setFormError(getLoginErrorMessage(err))
         } finally {
-            setLoading(false)
+            if (!isRedirectingRef.current) {
+                setLoading(false)
+            }
         }
     }
 

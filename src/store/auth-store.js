@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import useTabStore from './tab-store';
 import { ALLOWED_TO_IMPERSONATE } from '@/constants/database-id';
+import { AUTH_STORAGE_KEY, readStoredAuth } from '@/utilities/auth-storage'
+import { getUserIdFromToken } from '@/utilities/jwt-utils'
 
 const ADMIN_ID = 'b3d9fdc9-52e1-419b-b59f-0812aa590488'
 const TEAM_LEAD_ID = '09b62cd6-f215-439a-8606-ead5519bab6a'
@@ -111,7 +113,7 @@ const useAuthStore = create(
             }
         }),
         {
-            name: 'gears-auth-storage',
+            name: AUTH_STORAGE_KEY,
             partialize: function(state) {
                 return {
                     token: state.token,
@@ -122,5 +124,62 @@ const useAuthStore = create(
         }
     )
 );
+
+// The identity the app is acting as: the impersonated user's token if impersonating,
+// otherwise the real token. Derived from tokens only, so it never depends on the
+// shape of the `user` object.
+function identityOf(token, impersonatedUser) {
+    return getUserIdFromToken(impersonatedUser?.token || token)
+}
+
+/**
+ * Pull whatever is currently in localStorage into this tab's store.
+ * Zustand's persist only reads storage once at startup, so another tab's token
+ * rotation, logout or impersonation change would otherwise never reach this tab.
+ */
+export function syncAuthFromStorage() {
+    const stored = readStoredAuth()
+    const state = useAuthStore.getState()
+
+    // Nothing stored: another tab logged out (or storage was cleared)
+    if (!stored.token) {
+        if (state.token) state.logout()
+        return
+    }
+
+    const tokensChanged =
+        stored.token !== state.token || stored.refreshToken !== state.refreshToken
+    const impersonationChanged =
+        (stored.impersonatedUser?.token ?? null) !== (state.impersonatedUser?.token ?? null)
+
+    if (!tokensChanged && !impersonationChanged) {
+        return
+    }
+
+    // The account we're acting as changed in another tab (different login, impersonation
+    // started or ended): drop the stale user so ProtectedRoute loads the right one.
+    const identityChanged =
+        !!state.user &&
+        identityOf(state.token, state.impersonatedUser) !== identityOf(stored.token, stored.impersonatedUser)
+
+    useAuthStore.setState({
+        token: stored.token,
+        refreshToken: stored.refreshToken,
+        impersonatedUser: stored.impersonatedUser ?? null,
+    })
+
+    if (identityChanged) {
+        state.setUser(null)
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        // e.key === null means localStorage.clear() was called
+        if (e.key === AUTH_STORAGE_KEY || e.key === null) {
+            syncAuthFromStorage()
+        }
+    })
+}
 
 export default useAuthStore;

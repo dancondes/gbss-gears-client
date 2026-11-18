@@ -8,3 +8,4 @@ export { default as useUIStore } from './ui-store';
 export { default as useTabStore } from './tab-store';
 export { default as useNotificationStore } from './notification-store';
 export { default as useFormsMenuStore } from './forms-menu-store';
+export { default as useServerStatusStore } from './server-status-store';

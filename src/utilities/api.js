@@ -1,5 +1,6 @@
 import axios from 'axios'
 import useAuthStore, { syncAuthFromStorage } from '@/store/auth-store'
+import useServerStatusStore, { isOutageStatus } from '@/store/server-status-store'
 import { isTokenExpired } from './jwt-utils'
 
 /**
@@ -33,6 +34,8 @@ apiClient.interceptors.request.use(
 
         if (token && isTokenExpired(token)) {
             authState.setSessionExpired(true)
+            // Plain object (not an AxiosError). The response interceptor below
+            // passes these through untouched.
             return Promise.reject({
                 status: 401,
                 message: 'Session expired. Please log in again.',
@@ -60,11 +63,24 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
     (response) => {
+        useServerStatusStore.getState().setServerAvailable()
+
         if (response.config.rawResponse) return response
         // Return the data directly for successful responses
         return response.data
     },
     async (error) => {
+        // Aborted/cancelled requests (unmounts, AbortController) are not outages
+        if (axios.isCancel(error)) {
+            return Promise.reject(error)
+        }
+
+        // Rejections created by our own request interceptor (e.g. expired token)
+        // are plain objects, not AxiosErrors. Pass them through; they are not outages.
+        if (!axios.isAxiosError(error)) {
+            return Promise.reject(error)
+        }
+
         const originalRequest = error.config
 
         // Handle specific error cases
@@ -72,6 +88,16 @@ apiClient.interceptors.response.use(
             // The request was made and the server responded with a status code
             // that falls out of the range of 2xx
             const { status, data } = error.response
+
+            if (isOutageStatus(status)) {
+                useServerStatusStore.getState().setServerUnavailable({
+                    status,
+                    message: data?.message,
+                })
+            } else {
+                // Any non-outage response (401, 404, 500...) proves the server is reachable
+                useServerStatusStore.getState().setServerAvailable()
+            }
 
             switch (status) {
                 case 401: {
@@ -120,13 +146,27 @@ apiClient.interceptors.response.use(
             })
         } else if (error.request) {
             // The request was made but no response was received
+            // Being offline is not a server outage
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                return Promise.reject({
+                    status: null,
+                    message: 'Network error - please check your connection',
+                    errors: null,
+                })
+            }
+
+            useServerStatusStore.getState().setServerUnavailable({
+                message: 'Network error - please check your connection',
+            })
+
             return Promise.reject({
                 status: null,
                 message: 'Network error - please check your connection',
                 errors: null,
             })
         } else {
-            // Something happened in setting up the request that triggered an Error
+            // Something happened in setting up the request that triggered an Error.
+            // This is a client-side problem, not a server outage.
             return Promise.reject({
                 status: null,
                 message: error.message || 'Request failed',

@@ -21,21 +21,59 @@ import {
     getPendingUserGuide,
 } from '@/utilities/user-guide-launcher'
 import logger from '@/utilities/logger'
+import { useUpdateNoticeStore } from '@/store/update-notice-store'
+import { isChunkLoadError } from '@/utilities/chunk-error'
+import UpdateBanner from './UpdateBanner'
 
 function TabErrorFallback({ error, onClose }) {
     const [showDetails, setShowDetails] = useState(false)
+    const isStaleBuild = isChunkLoadError(error)
 
     useEffect(() => {
-        const errorMessage = error?.message || ''
-        const shouldReloadPage = errorMessage.includes('Failed to fetch dynamically imported module') || errorMessage.includes('Importing a module script failed')
+        if (!error) return
 
-        if (shouldReloadPage) {
-            alert('A critical error occurred while loading this tab. The page will now reload to recover from the error.')
-            logger.error('Critical error detected in tab:', error)
-            window.location.reload()
+        if (isStaleBuild) {
+            logger.error('Stale build detected:', error)
+            // Tell the banner at the top of the page to appear
+            useUpdateNoticeStore.getState().showUpdateNotice()
+        } else {
+            logger.error('Tab error:', error)
         }
-    }, [error])
+    }, [error, isStaleBuild])
 
+    // The system was updated while this page was open: ask the user to reload
+    if (isStaleBuild) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                <svg className="h-12 w-12 text-primary mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">A new version is available</h2>
+                <p className="text-sm text-gray-600 mb-2 max-w-md">
+                    The system was just updated. Reload the page to open this tab with the latest version.
+                </p>
+                <p className="text-sm text-gray-500 mb-5 max-w-md">
+                    Reloading only takes a moment. If you have anything unsaved in another tab, save it first.
+                </p>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={function () { window.location.reload() }}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:opacity-90 focus:outline-none cursor-pointer"
+                    >
+                        Reload Page
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none cursor-pointer"
+                    >
+                        Close Tab
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    // Any other error: original fallback, unchanged
     return (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
             <svg className="h-12 w-12 text-danger mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -311,6 +349,8 @@ const Layout = () => {
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <DevelopmentBanner />
+            {/* Shows only after the system was updated while the page was open */}
+            <UpdateBanner />
             <MenuBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
             {/* Container for Main Content */}

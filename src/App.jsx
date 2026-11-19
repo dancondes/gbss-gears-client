@@ -12,6 +12,8 @@ import { swrConfig, defaultFetcher } from '@/lib/swr-config'
 import { MessageModalProvider } from '@/contexts/MessageModalContext'
 import Login from '@/pages/auth/Login'
 import ViewDocumentPage from '@/pages/other/ViewDocumentPage'
+import MaintenancePage from './components/MaintenancePage'
+import { useServerStatusStore } from './store'
 
 function PageLoader() {
     return <Spinner />
@@ -35,6 +37,12 @@ function AppRoutes() {
 }
 
 function App() {
+    const isServerUnavailable = useServerStatusStore(state => state.isServerUnavailable)
+
+    if (isServerUnavailable) {
+        return <MaintenancePage />
+    }
+
     return (
         <MessageModalProvider>
             <Toaster

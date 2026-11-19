@@ -78,8 +78,7 @@ function ClockInOut() {
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
 
-    // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
-    const isBeforeNoonManila = () => {
+    function getIsBeforeNoonManila() {
         const manilaHour = Number(
             new Intl.DateTimeFormat('en-US', {
                 timeZone: 'Asia/Manila',
@@ -89,6 +88,20 @@ function ClockInOut() {
         )
         return manilaHour < 12
     }
+
+    const [isBeforeNoonManila, setIsBeforeNoonManila] = useState(getIsBeforeNoonManila)
+
+    useEffect(() => {
+        if (!isBeforeNoonManila) return
+
+        const timerId = setInterval(() => {
+            if (!getIsBeforeNoonManila()) {
+                setIsBeforeNoonManila(false)
+            }
+        }, 1000)
+
+        return () => clearInterval(timerId)
+    }, [isBeforeNoonManila])
 
     const isFieldDisabled = useCallback((field) => {
         // disable all fields if user has already checked out
@@ -120,22 +133,22 @@ function ClockInOut() {
                 return !!checkInTime
 
             case 'break1Out':
-                return combinedOut || lunchOut // no Break 1 if user already took the combined break or lunch
+                return !isBeforeNoonManila || combinedOut || lunchOut // no Break 1 after noon, or if user already took the combined break or lunch
 
             case 'lunchOut':
                 return false // no more validations for Lunch — user can take lunch anytime after check-in
 
             case 'break2Out':
-                return combinedOut || !lunchOut || isBeforeNoonManila() // no Break 2 if user has already taken the combined break, hasn't taken lunch yet, or it's earlier than 12:00 PM Manila time
+                return combinedOut || isBeforeNoonManila // no Break 2 if user has already taken the combined break or it's earlier than 12:00 PM Manila time
 
             case 'combinedOut':
-                return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
+                return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2
 
             case 'checkOutTime':
                 return !checkInTime
 
             case 'checkOut15':
-                return !earlyCheckOut15 || break1Out && break2Out
+                return !earlyCheckOut15 || (break1Out && break2Out) || combinedOut
 
             case 'checkOut30':
                 return !earlyCheckOut30 || break1Out || break2Out || combinedOut
@@ -144,7 +157,7 @@ function ClockInOut() {
                 return !earlyCheckOut60 || lunchOut
 
             case 'checkOut75':
-                return !earlyCheckOut75 || (break1Out && break2Out) || lunchOut
+                return !earlyCheckOut75 || (break1Out && break2Out) || combinedOut || lunchOut
 
             case 'checkOut90':
                 return !earlyCheckOut90 || break1Out || break2Out || combinedOut || lunchOut
@@ -153,7 +166,7 @@ function ClockInOut() {
                 return false
         }
     }, [checkInTime, checkOutTime, break1Out, break1In, break2Out, break2In, combinedOut, combinedIn, lunchOut, lunchIn,
-        combinedBreak, earlyCheckOut15, earlyCheckOut30, earlyCheckOut60, earlyCheckOut75, earlyCheckOut90
+        combinedBreak, earlyCheckOut15, earlyCheckOut30, earlyCheckOut60, earlyCheckOut75, earlyCheckOut90, isBeforeNoonManila
     ])
 
     useEffect(() => {

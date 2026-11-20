@@ -78,8 +78,7 @@ function ClockInOut() {
     // End
     const [checkOutTime, setCheckOutTime] = useState(null)
 
-    // Returns true if it's currently earlier than 12:00 PM Manila time (UTC+8)
-    const isBeforeNoonManila = () => {
+    function getIsBeforeNoonManila() {
         const manilaHour = Number(
             new Intl.DateTimeFormat('en-US', {
                 timeZone: 'Asia/Manila',
@@ -90,15 +89,29 @@ function ClockInOut() {
         return manilaHour < 12
     }
 
-    const isFieldDisabled = useCallback((field) => {
+    const [isBeforeNoonManila, setIsBeforeNoonManila] = useState(getIsBeforeNoonManila)
+
+    useEffect(() => {
+        if (!isBeforeNoonManila) return
+
+        const timerId = setInterval(() => {
+            if (!getIsBeforeNoonManila()) {
+                setIsBeforeNoonManila(false)
+            }
+        }, 1000)
+
+        return () => clearInterval(timerId)
+    }, [isBeforeNoonManila])
+
+    const getFieldDisabledReason = useCallback(function (field) {
         // disable all fields if user has already checked out
         if (checkOutTime) {
-            return true
+            return 'You have already checked out for the day.'
         }
 
         // disable all fields except checkInTime if checkInTime is not set yet
         if (field !== 'checkInTime' && !checkInTime) {
-            return true
+            return 'You need to check in first.'
         }
 
         // Any pair where "out" has been logged but "in" hasn't yet —
@@ -112,49 +125,93 @@ function ClockInOut() {
 
         // disable fields if there's an open pair (out without in) — except for the "in" field of that pair
         if (hasOpenPair) {
-            return true
+            return 'Complete your current break or lunch before starting another one.'
         }
 
         switch (field) {
             case 'checkInTime':
-                return !!checkInTime
+                return checkInTime ? 'You are already checked in.' : null
 
             case 'break1Out':
-                return combinedOut || lunchOut // no Break 1 if user already took the combined break or lunch
+                if (!isBeforeNoonManila) return 'The 1st break can only be taken before 12:00 PM Manila time.'
+                if (combinedOut) return 'You already took the combined break.'
+                // if (lunchOut) return 'You already took lunch.'
+                return null
 
             case 'lunchOut':
-                return false // no more validations for Lunch — user can take lunch anytime after check-in
+                return null // no more validations for Lunch — user can take lunch anytime after check-in
 
             case 'break2Out':
-                return combinedOut || !lunchOut || isBeforeNoonManila() // no Break 2 if user has already taken the combined break, hasn't taken lunch yet, or it's earlier than 12:00 PM Manila time
+                if (combinedOut) return 'You already took the combined break.'
+                if (isBeforeNoonManila) return 'The 2nd break is available starting at 12:00 PM Manila time.'
+                return null
 
             case 'combinedOut':
-                return !combinedBreak || break1Out || break2Out // no combined break if user has already taken Break 1 or Break 2 TODO: check if this is enabled after lunch
+                if (!combinedBreak) return 'You do not have access to the combined break feature.'
+                if (break1Out) return 'You already took the 1st break.'
+                if (break2Out) return 'You already took the 2nd break.'
+                return null
 
             case 'checkOutTime':
-                return !checkInTime
+                return !checkInTime ? 'You need to check in first.' : null
 
             case 'checkOut15':
-                return !earlyCheckOut15 || break1Out && break2Out
+                if (!earlyCheckOut15) return 'You do not have access to this feature.'
+                if (break1Out && break2Out) return 'You already took both 15-minute breaks.'
+                if (combinedOut) return 'You already took the combined break.'
+                return null
 
             case 'checkOut30':
-                return !earlyCheckOut30 || break1Out || break2Out || combinedOut
+                if (!earlyCheckOut30) return 'You do not have access to this feature.'
+                if (break1Out) return 'You already took the 1st break.'
+                if (break2Out) return 'You already took the 2nd break.'
+                if (combinedOut) return 'You already took the combined break.'
+                return null
 
             case 'checkOut60':
-                return !earlyCheckOut60 || lunchOut
+                if (!earlyCheckOut60) return 'You do not have access to this feature.'
+                if (lunchOut) return 'You already took lunch, so this early checkout option is unavailable.'
+                return null
 
             case 'checkOut75':
-                return !earlyCheckOut75 || (break1Out && break2Out) || lunchOut
+                if (!earlyCheckOut75) return 'You do not have access to this feature.'
+                if (break1Out && break2Out) return 'You already took both 15-minute breaks.'
+                if (combinedOut) return 'You already took the combined break.'
+                if (lunchOut) return 'You already took lunch, so this early checkout option is unavailable.'
+                return null
 
             case 'checkOut90':
-                return !earlyCheckOut90 || break1Out || break2Out || combinedOut || lunchOut
+                if (!earlyCheckOut90) return 'You do not have access to this feature.'
+                if (break1Out) return 'You already took the 1st break.'
+                if (break2Out) return 'You already took the 2nd break.'
+                if (combinedOut) return 'You already took the combined break.'
+                if (lunchOut) return 'You already took lunch, so this early checkout option is unavailable.'
+                return null
 
             default:
-                return false
+                return null
         }
     }, [checkInTime, checkOutTime, break1Out, break1In, break2Out, break2In, combinedOut, combinedIn, lunchOut, lunchIn,
-        combinedBreak, earlyCheckOut15, earlyCheckOut30, earlyCheckOut60, earlyCheckOut75, earlyCheckOut90
+        combinedBreak, earlyCheckOut15, earlyCheckOut30, earlyCheckOut60, earlyCheckOut75, earlyCheckOut90, isBeforeNoonManila
     ])
+
+    const isFieldDisabled = useCallback(function (field) {
+        return Boolean(getFieldDisabledReason(field))
+    }, [getFieldDisabledReason])
+
+    function getButtonTitle(field) {
+        return getFieldDisabledReason(field) || (isSubmitting || isFetchingEntries ? 'Please wait while the time entries are being updated.' : undefined)
+    }
+
+    function getOutButtonTitle(field, outTime) {
+        return outTime ? 'You already logged this action.' : getButtonTitle(field)
+    }
+
+    function getInButtonTitle(outTime, inTime) {
+        if (inTime) return 'You already logged this action.'
+        if (!outTime) return 'You need to log the break or lunch out first.'
+        return isSubmitting || isFetchingEntries ? 'Please wait while the time entries are being updated.' : undefined
+    }
 
     useEffect(() => {
         refreshTimeEntries()
@@ -379,6 +436,7 @@ function ClockInOut() {
                                     label="Check In"
                                     onClick={() => setLocationModalOpen(true)}
                                     disabled={isFieldDisabled('checkInTime')}
+                                    title={getButtonTitle('checkInTime')}
                                 />
                                 <TimeDisplay time={formatTime(checkInTime)} large />
                             </div>
@@ -415,6 +473,8 @@ function ClockInOut() {
                                         onOut={() => handleButtonClick('0')}
                                         onIn={() => handleButtonClick('1')}
                                         disabled={isFieldDisabled('break1Out')}
+                                        outTitle={getOutButtonTitle('break1Out', break1Out)}
+                                        inTitle={getInButtonTitle(break1Out, break1In)}
                                     />
                                     <BreakRow
                                         label="2nd (15mins)"
@@ -423,6 +483,8 @@ function ClockInOut() {
                                         onOut={() => handleButtonClick('2')}
                                         onIn={() => handleButtonClick('3')}
                                         disabled={isFieldDisabled('break2Out')}
+                                        outTitle={getOutButtonTitle('break2Out', break2Out)}
+                                        inTitle={getInButtonTitle(break2Out, break2In)}
                                     />
                                     <BreakRow
                                         label="Combined (30mins)"
@@ -431,6 +493,8 @@ function ClockInOut() {
                                         onOut={() => handleButtonClick('4')}
                                         onIn={() => handleButtonClick('5')}
                                         disabled={isFieldDisabled('combinedOut')}
+                                        outTitle={getOutButtonTitle('combinedOut', combinedOut)}
+                                        inTitle={getInButtonTitle(combinedOut, combinedIn)}
                                     />
                                 </div>
 
@@ -442,6 +506,8 @@ function ClockInOut() {
                                         onOut={() => handleButtonClick('o')}
                                         onIn={() => handleButtonClick('i')}
                                         disabled={isFieldDisabled('lunchOut')}
+                                        outTitle={getOutButtonTitle('lunchOut', lunchOut)}
+                                        inTitle={getInButtonTitle(lunchOut, lunchIn)}
                                     />
                                 </div>
                             </div>
@@ -457,6 +523,7 @@ function ClockInOut() {
                                     label="Check Out"
                                     onClick={() => handleButtonClick('O')}
                                     disabled={isFieldDisabled('checkOutTime')}
+                                    title={getButtonTitle('checkOutTime')}
                                 />
                                 <TimeDisplay time={formatTime(checkOutTime)} large />
                             </div>
@@ -470,30 +537,35 @@ function ClockInOut() {
                                         label={'15mins Break\n+ Check Out'}
                                         onClick={function () { handleButtonClick('g') }}
                                         disabled={isFieldDisabled('checkOut15')}
+                                        title={getButtonTitle('checkOut15')}
                                     />
 
                                     <CombinedCheckoutButton
                                         label={'30mins Break\n+ Check Out'}
                                         onClick={function () { handleButtonClick('F') }}
                                         disabled={isFieldDisabled('checkOut30')}
+                                        title={getButtonTitle('checkOut30')}
                                     />
 
                                     <CombinedCheckoutButton
                                         label={'1hr Break\n+ Check Out'}
                                         onClick={function () { handleButtonClick('Z') }}
                                         disabled={isFieldDisabled('checkOut60')}
+                                        title={getButtonTitle('checkOut60')}
                                     />
 
                                     <CombinedCheckoutButton
                                         label={'1hr 15 Break\n+ Check Out'}
                                         onClick={function () { handleButtonClick('Y') }}
                                         disabled={isFieldDisabled('checkOut75')}
+                                        title={getButtonTitle('checkOut75')}
                                     />
 
                                     <CombinedCheckoutButton
                                         label={'1hr 30 Break\n+ Check Out'}
                                         onClick={function () { handleButtonClick('X') }}
                                         disabled={isFieldDisabled('checkOut90')}
+                                        title={getButtonTitle('checkOut90')}
                                     />
                                 </div>
                             </div>

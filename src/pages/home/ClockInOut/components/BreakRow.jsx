@@ -4,7 +4,7 @@ import { calcDuration, formatTime } from '../helpers'
 import ClockButton from './ClockButton'
 import TimeDisplay from './TimeDisplay'
 
-function BreakRow({ label, outTime, inTime, onOut, onIn, disabled }) {
+function BreakRow({ label, outTime, inTime, onOut, onIn, disabled, outTitle, inTitle }) {
     const duration = calcDuration(outTime, inTime)
 
     return (
@@ -18,13 +18,13 @@ function BreakRow({ label, outTime, inTime, onOut, onIn, disabled }) {
 
             {/* Out row */}
             <div className="flex items-center gap-3">
-                <ClockButton label="Out" onClick={onOut} disabled={!!outTime || disabled} small />
+                <ClockButton label="Out" onClick={onOut} disabled={!!outTime || disabled} title={outTitle} small />
                 <TimeDisplay time={formatTime(outTime)} />
             </div>
 
             {/* In row */}
             <div className="flex items-center gap-3">
-                <ClockButton label="In" onClick={onIn} disabled={!outTime || !!inTime} small />
+                <ClockButton label="In" onClick={onIn} disabled={!outTime || !!inTime} title={inTitle} small />
                 <TimeDisplay time={formatTime(inTime)} />
             </div>
         </div>
@@ -38,6 +38,8 @@ BreakRow.propTypes = {
     onOut: PropTypes.func.isRequired,
     onIn: PropTypes.func.isRequired,
     disabled: PropTypes.bool,
+    outTitle: PropTypes.string,
+    inTitle: PropTypes.string,
 }
 
 export default BreakRow

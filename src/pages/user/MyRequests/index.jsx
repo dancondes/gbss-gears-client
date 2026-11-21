@@ -80,7 +80,18 @@ function MyRequests() {
             },
             {
                 accessorKey: 'comment',
-                header: 'Comment'
+                header: 'Comment',
+                cell: ({ getValue }) => {
+                    return (
+                        <p style={{
+                            width: '150px',
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere'
+                        }}>
+                            {getValue() || '-'}
+                        </p>
+                    )
+                }
             },
             {
                 accessorKey: 'status',

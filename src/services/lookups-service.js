@@ -19,6 +19,10 @@ export function getEmployeeList() {
     return get(ROUTES.LOOKUPS.EMPLOYEE_LIST)
 }
 
+export function getTimeLogsEmployeeList() {
+    return get(ROUTES.LOOKUPS.TIME_LOGS_EMPLOYEE_LIST)
+}
+
 export function getEnquiryTypes() {
     return get(ROUTES.LOOKUPS.ENQUIRY_TYPES)
 }
@@ -31,9 +35,9 @@ export function getLeaveTypes() {
     return get(ROUTES.LOOKUPS.LEAVE_TYPES)
 }
 
-export function useFetchEmployeeOptions(config) {
+export function useFetchEmployeeOptions(config, isTimeLogs = false) {
     const { valueKey, labelKey } = config || {}
-    return useFetchOptions(getEmployeeList, {
+    return useFetchOptions(isTimeLogs ? getTimeLogsEmployeeList : getEmployeeList, {
         valueKey: valueKey || 'name',
         labelKey: labelKey || 'name',
         transform: (list) => list.map(emp => ({

@@ -43,7 +43,7 @@ export default function Records() {
     }
 
     const { data, mutate } = useSWR(user?.userId ? ['team-records', user?.userId, filters.current] : null, fetchTeamRecords)
-    const { options: employeeOptions } = useFetchEmployeeOptions()
+    const { options: employeeOptions } = useFetchEmployeeOptions(null, true)
 
     useRefetchOnTabActive('Team-Records', mutate)
 

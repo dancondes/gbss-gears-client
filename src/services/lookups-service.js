@@ -55,14 +55,14 @@ export function useFetchLeaveTypeOptions(config) {
                     if (leaveType.id == HALFDAY_EARLY_OUT_LEAVE_TYPE_ID) {
                         return {
                             id: leaveType.id,
-                            description: 'Half Day (AM) deducted from VL'
+                            description: 'Half Day (PM) deducted from VL'
                         }
                     }
 
                     if (leaveType.id == HALFDAY_LATE_LEAVE_TYPE_ID) {
                         return {
                             id: leaveType.id,
-                            description: 'Half Day (PM) deducted from VL'
+                            description: 'Half Day (AM) deducted from VL'
                         }
                     }
 

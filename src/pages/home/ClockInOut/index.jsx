@@ -287,7 +287,8 @@ function ClockInOut() {
             variant: 'info',
             onConfirm: () => {
                 handleSaveTimeEntry(type, location, homeLocation)
-            }
+            },
+            confirmButtonOnLeft: true
         })
     }
 

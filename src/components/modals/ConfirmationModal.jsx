@@ -14,6 +14,7 @@ const ConfirmationModal = ({
     icon = null,
     loading = false,
     textAlign = 'center', // 'left', 'center', 'right'
+    confirmButtonOnLeft = false, // New prop to control button order
 }) => {
     const [isShaking, setIsShaking] = useState(false)
 
@@ -91,6 +92,27 @@ const ConfirmationModal = ({
         </p>
     ))
 
+    const cancelButton = (
+        <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            {cancelText}
+        </button>
+    )
+    const confirmButton = (
+        <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className={`flex-1 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer ${currentVariant.buttonBg} disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+            {loading ? 'Loading...' : confirmText}
+        </button>
+    )
+
     return (
         <div className="fixed inset-0 z-100 overflow-y-auto">
             {/* Backdrop */}
@@ -139,22 +161,17 @@ const ConfirmationModal = ({
 
                     {/* Buttons */}
                     <div className="flex gap-3 mt-6">
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            disabled={loading}
-                            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {cancelText}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onConfirm}
-                            disabled={loading}
-                            className={`flex-1 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer ${currentVariant.buttonBg} disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                            {loading ? 'Loading...' : confirmText}
-                        </button>
+                        {confirmButtonOnLeft ? (
+                            <>
+                                {confirmButton}
+                                {cancelButton}
+                            </>
+                        ) : (
+                            <>
+                                {cancelButton}
+                                {confirmButton}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -175,6 +192,7 @@ ConfirmationModal.propTypes = {
     icon: PropTypes.node,
     loading: PropTypes.bool,
     textAlign: PropTypes.oneOf(['left', 'center', 'right']),
+    confirmButtonOnLeft: PropTypes.bool, // New prop to control button order
 }
 
 export default ConfirmationModal

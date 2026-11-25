@@ -169,6 +169,7 @@ export function MessageModalProvider({ children }) {
             onError: options.onError || null,
             closeOnConfirm: options.closeOnConfirm !== false,
             textAlign: options.textAlign || 'center', // 'left', 'center', 'right'
+            confirmButtonOnLeft: !!options.confirmButtonOnLeft
         })
     }
 
@@ -435,6 +436,7 @@ export function MessageModalProvider({ children }) {
                 onCancel={handleCancelModal}
                 loading={confirmationState.loading}
                 textAlign={confirmationState.textAlign}
+                confirmButtonOnLeft={confirmationState.confirmButtonOnLeft}
             />
 
             <BlobViewerModal

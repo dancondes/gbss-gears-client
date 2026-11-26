@@ -38,6 +38,7 @@ export const ROUTES = {
         APPROVERS: '/Lookups/approvers',
         PAY_PERIODS: '/Lookups/pay-periods',
         EMPLOYEE_LIST: '/Lookups/employee-list',
+        TIME_LOGS_EMPLOYEE_LIST: '/Lookups/time-logs-employee-list',
         ENQUIRY_TYPES: '/Lookups/enquiry-types',
         ROLES: '/Lookups/roles',
         LEAVE_TYPES: '/Lookups/leave-types',

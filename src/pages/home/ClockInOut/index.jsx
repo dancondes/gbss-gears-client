@@ -287,7 +287,8 @@ function ClockInOut() {
             variant: 'info',
             onConfirm: () => {
                 handleSaveTimeEntry(type, location, homeLocation)
-            }
+            },
+            confirmButtonOnLeft: true
         })
     }
 
@@ -325,7 +326,7 @@ function ClockInOut() {
             }
         } catch (error) {
             logger.error('Error saving time entry:', error)
-            toast.error('Failed to save time entry. Please try again.')
+            toast.error(error?.message || 'Failed to save time entry. Please try again.')
         } finally {
             setIsSubmitting(false)
         }

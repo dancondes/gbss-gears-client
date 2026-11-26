@@ -67,6 +67,8 @@ export function formatDate(dateString, format = 'DD/MM/YYYY') {
     switch (format) {
         case 'DD/MM/YYYY':
             return `${dd}/${mm}/${year}`
+        case 'DD-MM-YYYY':
+            return `${dd}-${mm}-${year}`
         case 'MM/DD/YYYY':
             return `${mm}/${dd}/${year}`
         case 'YYYY-MM-DD':

@@ -1,6 +1,7 @@
 export const API_CALL_TIMEOUT_LIMIT = 180 * 1000; // 3 minutes
 export const LOADING_MESSAGE_DELAY = 10 * 1000; // 10 seconds
 export const GBSS_DOMAIN = '@gbss.com.au';
+export const USER_ID_FOR_COUNTER = [310, 1825, 1865, 2721]
 
 export const FILE_PATHS = {
     TASK_DOCUMENTS: (ticketId) => `Attachments/Tickets/${ticketId}/`,

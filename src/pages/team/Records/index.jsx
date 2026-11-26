@@ -6,7 +6,7 @@ import useRefetchOnTabActive from '@/hooks/use-refresh-tab-on-tab-active'
 import { getTimeEntries } from '@/services/event-service'
 import { getLogTypes, useFetchEmployeeOptions } from '@/services/lookups-service'
 import { useAuthStore } from '@/store'
-import { getCurrentDate } from '@/utilities/date-utilities'
+import { formatDate, getCurrentDate } from '@/utilities/date-utilities'
 import React, { useMemo, useRef, useState } from 'react'
 import useSWR from 'swr'
 
@@ -72,6 +72,11 @@ export default function Records() {
     ], [])
 
     async function handleSearch(serverFilters) {
+        // if there's no changes in the date range, we don't need to refetch the data
+        if (serverFilters.dateFrom === filters.current.dateFrom && serverFilters.dateTo === filters.current.dateTo) {
+            return
+        }
+
         const mappedFilters = {
             dateFrom: serverFilters.dateFrom || currentDate,
             dateTo: serverFilters.dateTo || currentDate,
@@ -88,7 +93,7 @@ export default function Records() {
             return dateFrom
         }
 
-        return `${dateFrom} to ${dateTo}`
+        return `${formatDate(dateFrom, 'DD-MM-YYYY')} to ${formatDate(dateTo, 'DD-MM-YYYY')}`
     }
 
     return (

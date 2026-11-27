@@ -187,7 +187,7 @@ function ProtectedRoute({ children }) {
     }
 
     if (shouldRedirect || !isAuthenticated || !token) {
-        return <Navigate to="/login" replace />
+        return <Navigate to="/login" state={{ from: location }} replace />
     }
 
     return children

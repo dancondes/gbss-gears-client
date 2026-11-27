@@ -95,6 +95,7 @@ Notes:
 ### 3) `useBlobViewerModal`
 
 For previewing one or multiple attachments.
+Provide `blobPath` for files loaded by path, or `blob` for an already-loaded file.
 
 ```jsx
 import useBlobViewerModal from '@/hooks/use-blob-viewer-modal'
@@ -107,6 +108,10 @@ function Example() {
             { filename: 'resume.pdf', blobPath: 'Applicants/1/resume.pdf' },
             { filename: 'portfolio.png', blobPath: 'Applicants/1/portfolio.png' }
         ])
+    }
+
+    function handleViewGeneratedFile(blob) {
+        openViewer([{ filename: 'payslip.pdf', blob }])
     }
 
     function handleViewOne(doc) {

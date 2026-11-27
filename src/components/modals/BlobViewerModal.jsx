@@ -100,10 +100,11 @@ function FileViewer({ filename, blobPath, zoom, blobCacheRef, onBlobFetch }) {
     const containerRef = React.useRef(null)
 
     useEffect(function () {
+        let currentUrl = null
+
         if (!blobPath) return
 
-        let currentUrl = null
-        const fileExt = blobPath.split('.').pop()?.toLowerCase()
+        const fileExt = filename?.split('.').pop()?.toLowerCase() || blobPath.split('.').pop()?.toLowerCase()
 
         // Check if blob is already cached
         const cachedBlob = blobCacheRef?.current?.[blobPath]
@@ -125,7 +126,16 @@ function FileViewer({ filename, blobPath, zoom, blobCacheRef, onBlobFetch }) {
         setObjectUrl(null)
         setBlob(null)
 
-        getFile(blobPath)
+        const fileRequest = blobPath.startsWith('blob:')
+            ? window.fetch(blobPath).then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Failed to load the file.')
+                }
+                return response.blob()
+            })
+            : getFile(blobPath)
+
+        fileRequest
             .then(function (result) {
                 const blobToUse = fileExt === 'pdf'
                     ? new Blob([result], { type: 'application/pdf' })
@@ -150,7 +160,7 @@ function FileViewer({ filename, blobPath, zoom, blobCacheRef, onBlobFetch }) {
                 window.URL.revokeObjectURL(currentUrl)
             }
         }
-    }, [blobPath, blobCacheRef, onBlobFetch])
+    }, [filename, blobPath, blobCacheRef, onBlobFetch])
 
     function handleMouseDown(e) {
         if (zoom <= 1) return

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import FormInput from '@/components/form/FormInput'
 import Alert from '@/components/Alert'
@@ -40,7 +41,17 @@ function getLoginErrorMessage(error) {
     return error?.message || 'We could not sign you in right now. Please try again later.'
 }
 
+function getLoginRedirectPath(from) {
+    const pathname = from?.pathname
+    if (!pathname || !pathname.startsWith('/') || pathname.startsWith('//')) {
+        return '/'
+    }
+
+    return `${pathname}${from.search || ''}${from.hash || ''}`
+}
+
 const Login = () => {
+    const location = useLocation()
     const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
     const [now, setNow] = useState(new Date())
@@ -80,7 +91,7 @@ const Login = () => {
 
         // Another tab may have logged in while this one sat on the login page.
         // Check localStorage directly and do NOT call the login API when a valid
-        // token is already stored. Syncing the store lets GuestRoute redirect to "/".
+        // token is already stored. Syncing the store lets GuestRoute restore the requested route.
         if (hasValidStoredToken()) {
             syncAuthFromStorage()
             return
@@ -104,7 +115,7 @@ const Login = () => {
                 // Hard reload so the whole app boots fresh with the new session.
                 // login() has already written the tokens to localStorage (persist is synchronous).
                 isRedirectingRef.current = true
-                window.location.replace('/')
+                window.location.replace(getLoginRedirectPath(location.state?.from))
             } else {
                 setFormError(getLoginErrorMessage(result))
             }

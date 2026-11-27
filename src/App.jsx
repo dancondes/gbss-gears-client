@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import React, { Suspense, useEffect } from 'react'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 import { Toaster } from 'sonner'
 import Layout from '@/components/Layout'
@@ -14,9 +14,23 @@ import Login from '@/pages/auth/Login'
 import ViewDocumentPage from '@/pages/other/ViewDocumentPage'
 import MaintenancePage from './components/MaintenancePage'
 import { useServerStatusStore } from './store'
+import useTabNavigation from '@/hooks/use-tab-navigation'
 
 function PageLoader() {
     return <Spinner />
+}
+
+function PayslipDeepLink() {
+    const { navigate } = useTabNavigation()
+
+    useEffect(function () {
+        navigate('/user/payslip', {
+            id: 'Payslip',
+            label: 'Payslip',
+        })
+    }, [navigate])
+
+    return <Navigate to="/" replace />
 }
 
 function AppRoutes() {
@@ -24,6 +38,14 @@ function AppRoutes() {
         <Routes>
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/view-document/:encryptedPath" element={<ViewDocumentPage />} />
+            <Route
+                path="/payslip"
+                element={
+                    <ProtectedRoute>
+                        <PayslipDeepLink />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="*"
                 element={

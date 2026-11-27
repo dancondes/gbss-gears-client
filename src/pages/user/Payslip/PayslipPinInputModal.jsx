@@ -25,7 +25,7 @@ function PayslipPinInputModal({
         formState: { errors },
         handleSubmit,
     } = useForm({
-        mode: 'onBlur'
+        mode: 'onSubmit'
     })
 
     async function onSubmit(data) {

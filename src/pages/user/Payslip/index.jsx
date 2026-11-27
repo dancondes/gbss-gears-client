@@ -12,11 +12,13 @@ import { useAuthStore, useNotificationStore } from '@/store'
 import PayslipPinInputModal from './PayslipPinInputModal'
 import OpenTicketModal from '../Leaves/components/OpenTicketModal'
 import { ENQUIRY_TYPE_ID_FOR_PAYROLL } from '@/constants/database-id'
+import useBlobViewerModal from '@/hooks/use-blob-viewer-modal'
 
 function Payslip() {
     const user = useAuthStore((state) => state.user)
     const [showPinInputModal, setShowPinInputModal] = useState(!user?.payslipPinVerified)
     const addNotification = useNotificationStore((state) => state.addNotification)
+    const { openBlobViewerInNewWindow } = useBlobViewerModal()
 
     async function fetchPayslipPeriods() {
         try {
@@ -51,7 +53,7 @@ function Payslip() {
                 cell: ({ row }) => {
                     const documentData = row.original
                     const buttons = [
-                        // { type: 'view', action: handleView },
+                        { type: 'view', action: handleView },
                         { type: 'download', action: handleDownload },
                     ]
 
@@ -59,6 +61,32 @@ function Payslip() {
                 }
             }
         ], [])
+
+    async function handleView(data) {
+        try {
+            toast.success('Payslip request started. It will open in a new window once generated.')
+            const result = await getPayslip(data)
+            const filename = `${user?.employeeInfo?.empNo}_${data?.payPeriod}_Payslip.pdf`
+            openBlobViewerInNewWindow({
+                filename,
+                blob: new Blob([result], { type: 'application/pdf' }),
+            })
+            addNotification({
+                type: 'success',
+                title: 'Payslip Ready',
+                message: `Your payslip for ${data?.payPeriod} is ready to view in a new window.`,
+                showToast: true,
+            })
+        } catch (error) {
+            logger.error('Error opening payslip:', error)
+            addNotification({
+                type: 'error',
+                title: 'Payslip View Failed',
+                message: error?.message || 'An error occurred while opening your payslip. Please try again later.',
+                showToast: true,
+            })
+        }
+    }
 
     async function handleDownload(data) {
         try {

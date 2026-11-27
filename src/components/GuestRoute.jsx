@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store'
 import { syncAuthFromStorage } from '@/store/auth-store'
 import { AUTH_STORAGE_KEY } from '@/utilities/auth-storage'
@@ -10,6 +10,7 @@ import Spinner from './Spinner'
 function GuestRoute({ children }) {
     const token = useAuthStore((state) => state.token)
     const logout = useAuthStore((state) => state.logout)
+    const location = useLocation()
     const [isInitialized, setIsInitialized] = useState(false)
     const [hasValidToken, setHasValidToken] = useState(false)
 
@@ -65,7 +66,7 @@ function GuestRoute({ children }) {
     }
 
     if (hasValidToken) {
-        return <Navigate to="/" replace />
+        return <Navigate to={location.state?.from || '/'} replace />
     }
 
     return children

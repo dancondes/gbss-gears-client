@@ -77,16 +77,18 @@ function normalizeAttachment(attachment) {
         attachment.blobPath ||
         attachment.path ||
         attachment.filePath
+    const blob = attachment.blob
 
-    if (!blobPath) return null
+    if (!blobPath && !blob) return null
 
     const filename =
         attachment.filename ||
         attachment.name ||
         attachment.fileName ||
+        blob?.name ||
         getFilenameFromPath(blobPath)
 
-    return { filename, blobPath }
+    return { filename, blobPath, blob }
 }
 
 function normalizeAttachments(attachments) {
@@ -295,7 +297,6 @@ export function MessageModalProvider({ children }) {
         hideInputModal()
     }
 
-    // not being used as of 2026/06/18 - we are now using showBlobViewerInNewWindow instead for better UX and as requested by users
     function showBlobViewerModal(attachments) {
         showBlobViewerInNewWindow(normalizeAttachments(attachments))
     }
@@ -349,23 +350,27 @@ export function MessageModalProvider({ children }) {
 
     /**
      * 
-     * @param {*} documents - an object of name and path
+     * @param {*} documents - file metadata with a name and path or blob
      */
     function showBlobViewerInNewWindow(documents) {
-        if (!document) return
-
-        if (Array.isArray(document) && document.length === 0) return
+        if (!documents) return
+        if (Array.isArray(documents) && documents.length === 0) return
 
         // for opening in new tab
         // const encoded = encodePaths(document.path)
         // window.open(`/view-document/${encoded}`, '_blank', 'noopener,noreferrer')
 
         // for opening in new window
-        const normalized = Array.isArray(documents) ? documents.map(normalizeAttachment) : [normalizeAttachment(documents)]
+        const normalized = normalizeAttachments(Array.isArray(documents) ? documents : [documents])
+        if (normalized.length === 0) return
 
-        if (normalized.length === 0 || normalized.every((d) => !d.blobPath)) return
-
-        const encoded = encodePaths(normalized)
+        const attachments = normalized.map(function (attachment) {
+            return {
+                filename: attachment.filename,
+                blobPath: attachment.blobPath || window.URL.createObjectURL(attachment.blob),
+            }
+        })
+        const encoded = encodePaths(attachments)
         const width = 1100
         const height = 850
         const left = Math.round(window.screenX + (window.outerWidth - width) / 2)
